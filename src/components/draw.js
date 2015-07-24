@@ -21,7 +21,6 @@ define(function (require) {
         .layout(self.opts.layout || "rows");
       var chart = self.chart = chartFunc().options(self.opts);
       var size;
-      var selection;
 
       evaluate(self);
       self.remove(); // Remove previous charts if any
@@ -29,8 +28,9 @@ define(function (require) {
       size = sizeFunc().width(width).height(height)(self.selection);
       if (size[0] >= 0 || size[1] >= 0) return; // size = [width, height]
 
-      selection = self.selection.call(layout.size(size));
-      selection.call(chart);
+      self.selection
+        .call(layout.size(size))
+        .call(chart);
     };
   };
 });
