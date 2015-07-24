@@ -16,9 +16,9 @@ define(function (require) {
           .height(data.height);
 
         Object.keys(defaults).forEach(function (attr) {
-          if (data.options[attr]) {
+          if (data.options && data.options[attr]) {
             chart[attr](data.options[attr]);
-          } else if (opts[attr]) {
+          } else if (opts && opts[attr]) {
             chart[attr](opts[attr]);
           } else {
             chart[attr](defaults[attr]);

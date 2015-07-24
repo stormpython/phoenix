@@ -121,12 +121,15 @@ define(function (require) {
    * and prepares the chart object for garbage collection.
    */
   Phx.prototype.destroy = function () {
+    this.removeAllListeners();
     this.remove();
-    this.el = null;
-    this.data = null;
-    this.opts = null;
     this.selection.datum(null);
     this.selection = null;
+    this.chart = null;
+    this.layout = null;
+    this.opts = null;
+    this.data = null;
+    this.el = null;
   };
 
   /**
