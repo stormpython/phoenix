@@ -10,18 +10,21 @@ define(function (require) {
         var div = d3.select(this);
         var type = data.options.type || opts.type || "bar";
         var defaults = defaultOptions[type];
-        var values = data.options.values || opts.values || getValues;
+        var values = data.options.accessor || opts.accessor || getValues;
         var chart = jee.chart[type]()
           .width(data.width)
           .height(data.height);
 
         Object.keys(defaults).forEach(function (attr) {
+          var transFunc = defaults[attr];
+          var chartFunc = chart[attr];
+
           if (data.options && data.options[attr]) {
-            chart[attr](data.options[attr]);
+            setAttr(transFunc, chartFunc, data.options[attr]);
           } else if (opts && opts[attr]) {
-            chart[attr](opts[attr]);
+            setAttr(transFunc, chartFunc, opts[attr]);
           } else {
-            chart[attr](defaults[attr]);
+            setAttr(transFunc, chartFunc);
           }
         });
 
@@ -29,8 +32,13 @@ define(function (require) {
       });
     }
 
-    function getValues (d) {
-      return d.values;
+    function getValues(d) {
+      return d.data;
+    }
+
+    function setAttr(transFunc, chartFunc, attrVal) {
+      var val = attrVal ? transFunc(attrVal) : transFunc();
+      chartFunc(val);
     }
 
     component.options = function (_) {
