@@ -37,8 +37,10 @@ define(function (require) {
     }
 
     function setAttr(transFunc, chartFunc, attrVal) {
-      var val = attrVal ? transFunc(attrVal) : transFunc();
-      chartFunc(val);
+      if (transFunc) {
+        var val = attrVal ? transFunc(attrVal) : transFunc();
+        chartFunc(val);
+      }
     }
 
     component.options = function (_) {
