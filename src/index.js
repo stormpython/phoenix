@@ -1,8 +1,8 @@
 define(function (require) {
+  require("jubilee"); // contains d3
   var draw = require("components/draw");
   var setEventListener = require("components/set_event_listener");
   var sumListeners = require("components/sum_listeners");
-  require("jubilee"); // contains d3
 
   /**
    * D3 Charting Library wrapper
