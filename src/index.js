@@ -1,3 +1,3 @@
 define(function (require) {
-  return require("main");
+  return require("phx");
 });
