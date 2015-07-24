@@ -1,5 +1,5 @@
 require.config({
-  baseUrl: "src",
+  baseUrl: "src/components",
   paths: {
     jubilee: "../bower_components/jubilee/build/jubilee.min",
   },

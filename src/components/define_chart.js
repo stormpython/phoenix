@@ -1,5 +1,5 @@
 define(function (require) {
-  var chartTypes = require("components/chart_types");
+  var chartTypes = require("chart_types");
 
   return function (data, opts) {
     if (!opts.type) {

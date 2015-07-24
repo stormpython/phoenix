@@ -3,9 +3,9 @@
  * parameters for drawing chart(s).
  */
 define(function (require) {
-  var defineChart = require("components/define_chart");
-  var layoutFunc = require("components/layout");
-  var sizeFunc = require("components/size");
+  var defineChart = require("define_chart");
+  var layoutFunc = require("layout");
+  var sizeFunc = require("size");
 
   function evaluate(self) {
     if (!self.selection || !self.selection.node()) {

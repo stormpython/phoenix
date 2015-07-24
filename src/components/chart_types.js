@@ -1,8 +1,8 @@
 define(function (require) {
   return {
-    area: require("components/chart/area"),
-    bar: require("components/chart/bar"),
-    line: require("components/chart/line"),
-    pie: require("components/chart/pie")
+    area: require("chart/area"),
+    bar: require("chart/bar"),
+    line: require("chart/line"),
+    pie: require("chart/pie")
   };
 });
