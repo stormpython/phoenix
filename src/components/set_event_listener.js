@@ -1,3 +1,7 @@
+/**
+ * Returns a function that accepts an event type (e.g. 'click')
+ * and an event listener function, and sets the event listener on the chart.
+ */
 define(function () {
   return function (value, self) {
     return function (event, listener) {
