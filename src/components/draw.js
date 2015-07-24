@@ -19,12 +19,13 @@ define(function (require) {
     return function (width, height) {
       var layout = self.layout = layoutFunc()
         .layout(self.opts.layout || "rows");
-      var chart = self.chart = chartFunc().options(self.opts);
+      var chart;
       var size;
 
       evaluate(self);
       self.remove(); // Remove previous charts if any
 
+      chart = self.chart = chartFunc().options(self.opts);
       size = sizeFunc().width(width).height(height)(self.selection);
       if (size[0] >= 0 || size[1] >= 0) return; // size = [width, height]
 
