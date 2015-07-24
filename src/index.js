@@ -71,6 +71,27 @@ define(function (require) {
   };
 
   /**
+   * Sets value for an options attribute.
+   *
+   * @param {String} name - Options attribute
+   * @param {*} value - Value for options attribute
+   */
+  Phx.prototype.set = function (name, value) {
+    this.opts[name] = value;
+    this.draw();
+  };
+
+  /**
+   * Returns an options object attribute.
+   *
+   * @param {String} name - Options attribute
+   * @returns {*}
+   */
+  Phx.prototype.get = function (name) {
+    return this.opts[name];
+  };
+
+  /**
    * Draws the chart(s).
    *
    * @param {Function|Number} [width] - Specifies width of DOM element

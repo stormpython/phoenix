@@ -6,6 +6,7 @@ define(function (require) {
       throw new Error("A chart type has not been not specified.");
     }
 
-    return chartTypes[opts.type](data, opts);
+    var chart = chartTypes[opts.type] || chartTypes["bar"];
+    return chart(data, opts);
   };
 });
