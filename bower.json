@@ -19,7 +19,8 @@
     "test",
     "tests"
   ],
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "jubilee": "git@github.com:stormpython/jubilee.git"
   }
 }

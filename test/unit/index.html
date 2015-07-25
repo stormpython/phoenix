@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Unit tests</title>
+    <link rel="stylesheet" media="all" href="../../node_modules/mocha/mocha.css">
+  </head>
+  <body>
+    <div id="mocha"></div>
+
+    <script src="../../node_modules/mocha/mocha.js"></script>
+    <script src="../../node_modules/chai/chai.js"></script>
+    <script src="../../node_modules/requirejs/require.js"></script>
+    <script>
+      mocha.setup({
+        ui: "bdd",
+        reporter: "html"
+      });
+      require.config({
+        baseUrl: '/',
+        paths: {
+          specs: "test/unit/specs",
+          fixtures: "test/unit/fixtures",
+          phx: "src/index"
+        }
+      });
+      <!-- Tests -->
+      require([], function () {
+        mocha.run();
+      });
+    </script>
+  </body>
+</html>
