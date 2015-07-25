@@ -1,6 +1,6 @@
 define(function (require) {
   var jee = require("jubilee");
-  var defaultOptions = require("options");
+  var chartOptions = require("chart_options");
 
   return function chart() {
     var opts = null;
@@ -10,7 +10,7 @@ define(function (require) {
       selection.each(function (data, index) {
         var div = d3.select(this);
         var type = data.options.type || opts.type || "bar";
-        var defaults = defaultOptions[type];
+        var defaults = chartOptions[type];
         var accessor = data.options.accessor || opts.accessor;
         var values = setAccessor(accessor) || getValues;
         var chart = jee.chart[type]()
