@@ -11,7 +11,8 @@ define(function (require) {
         var div = d3.select(this);
         var type = data.options.type || opts.type || "bar";
         var defaults = defaultOptions[type];
-        var values = data.options.accessor || opts.accessor || getValues;
+        var accessor = data.options.accessor || opts.accessor;
+        var values = setAccessor(accessor) || getValues;
         var chart = jee.chart[type]()
           .width(data.width)
           .height(data.height)
@@ -36,6 +37,10 @@ define(function (require) {
 
     function getValues(d) {
       return d.data;
+    }
+
+    function setAccessor(val) {
+      if (val) return function (d) { return d[val]; };
     }
 
     function setAttr(transFunc, chartFunc, attrVal) {
