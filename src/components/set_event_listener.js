@@ -5,8 +5,8 @@
 define(function () {
   return function (value, self) {
     return function (event, listener) {
-      if (!self.chart) throw new Error("Invalid chart options");
       if (!self.selection) throw new Error("A valid element is required");
+      if (!self.chart) throw new Error("Invalid chart options");
 
       self.chart[value](event, listener); // value => 'on' or 'off'
       self._listeners = self.chart.listeners(); // Redefine listeners

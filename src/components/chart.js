@@ -4,6 +4,7 @@ define(function (require) {
 
   return function chart() {
     var opts = null;
+    var listeners = {};
 
     function component(selection) {
       selection.each(function (data, index) {
@@ -13,7 +14,8 @@ define(function (require) {
         var values = data.options.accessor || opts.accessor || getValues;
         var chart = jee.chart[type]()
           .width(data.width)
-          .height(data.height);
+          .height(data.height)
+          .listeners(listeners);
 
         Object.keys(defaults).forEach(function (attr) {
           var transFunc = defaults[attr];
@@ -46,6 +48,34 @@ define(function (require) {
     component.options = function (_) {
       if (!arguments.length) return opts;
       opts = _;
+      return component;
+    };
+
+    component.listeners = function (_) {
+      if (!arguments.length) return listeners;
+      listeners = _;
+      return component;
+    };
+
+    component.on = function (event, listener) {
+      if (arguments.length === 2 && typeof listener === "function") {
+        if (!listeners[event]) { listeners[event] = []; }
+        listeners[event].push(listener);
+      }
+      return component;
+    };
+
+    component.off = function (event, listener) {
+      if (arguments.length === 1 && listeners[event]) {
+        listeners[event] = null;
+      }
+      if (arguments.length === 2 && typeof listener === "function") {
+        if (!listeners[event]) return;
+
+        listeners[event] = listeners[event].filter(function (handler) {
+          return handler !== listener;
+        });
+      }
       return component;
     };
 
