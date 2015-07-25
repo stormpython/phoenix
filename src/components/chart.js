@@ -59,7 +59,7 @@ define(function (require) {
 
     component.on = function (event, listener) {
       if (arguments.length === 2 && typeof listener === "function") {
-        if (!listeners[event]) { listeners[event] = []; }
+        if (!listeners[event]) listeners[event] = [];
         listeners[event].push(listener);
       }
       return component;
