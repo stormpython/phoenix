@@ -75,11 +75,11 @@ define(function (require) {
         listeners[event] = null;
       }
       if (arguments.length === 2 && typeof listener === "function") {
-        if (!listeners[event]) return;
-
-        listeners[event] = listeners[event].filter(function (handler) {
-          return handler !== listener;
-        });
+        if (listeners[event]) {
+          listeners[event] = listeners[event].filter(function (handler) {
+            return handler !== listener;
+          });
+        }
       }
       return component;
     };
