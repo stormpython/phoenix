@@ -1,6 +1,8 @@
 define(function (require) {
   require("jubilee"); // contains d3
+  var chart = require("chart");
   var draw = require("draw");
+  var layout = require("layout");
   var setEventListener = require("set_event_listener");
   var sumListeners = require("sum_listeners");
 
@@ -16,7 +18,10 @@ define(function (require) {
 
     this._listeners = {};
     this.element(el);
-    this.chart = null;
+    this.data = [];
+    this.opts = {};
+    this.layout = layout();
+    this.chart = chart();
   }
 
   /**
