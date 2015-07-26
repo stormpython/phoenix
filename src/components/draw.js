@@ -15,14 +15,14 @@ define(function (require) {
 
   return function (self) {
     return function (width, height) {
-      var layout = self.layout.layout(self.opts.layout || "rows");
+      var layout = self._layout.layout(self.opts.layout || "rows");
       var chart;
       var size;
 
       evaluate(self);
       self.remove(); // Remove previous charts if any
 
-      chart = self.chart.options(self.opts);
+      chart = self._chart.options(self.opts);
       size = sizeFunc().width(width).height(height)(self.selection);
       if (size[0] >= 0 || size[1] >= 0) return; // size = [width, height]
 

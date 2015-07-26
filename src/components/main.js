@@ -16,12 +16,12 @@ define(function (require) {
   function Phx(el) {
     if (!(this instanceof Phx)) return new Phx(el);
 
+    this._chart = chart();
+    this._layout = layout();
     this._listeners = {};
     this.element(el);
     this.data = [];
     this.opts = {};
-    this.layout = layout();
-    this.chart = chart();
   }
 
   /**
@@ -130,8 +130,8 @@ define(function (require) {
     this.remove();
     this.selection.datum(null);
     this.selection = null;
-    this.chart = null;
-    this.layout = null;
+    this._chart = null;
+    this._layout = null;
     this.opts = null;
     this.data = null;
     this.el = null;
@@ -167,17 +167,16 @@ define(function (require) {
     var listeners = self._listeners;
 
     if (!self.selection) throw new Error ("...");
-    if (!self.chart) throw new Error("...");
 
     if (listeners && typeof listeners === "object") {
       Object.keys(listeners).forEach(function (event) {
         self.remove();
-        self.selection.call(self.chart.off(event)); // remove listeners
+        self.selection.call(self._chart.off(event)); // remove listeners
       });
     }
     listeners = {}; // Reset listeners object
     self.remove();
-    self.selection.call(self.chart.listeners(listeners));
+    self.selection.call(self._chart.listeners(listeners));
   };
 
   /**
