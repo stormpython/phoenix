@@ -24,7 +24,7 @@ define(function (require) {
 
       chart = self._chart.options(self.opts);
       size = sizeFunc().width(width).height(height)(self.selection);
-      if (size[0] >= 0 || size[1] >= 0) return; // size = [width, height]
+      if (size[0] <= 0 || size[1] <= 0) return; // size = [width, height]
 
       self.selection
         .call(layout.size(size))
