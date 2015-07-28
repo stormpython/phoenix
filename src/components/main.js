@@ -171,8 +171,6 @@ define(function (require) {
     var self = this;
     var listeners = self._listeners;
 
-    if (!self._selection) throw new Error ("...");
-
     if (listeners && typeof listeners === "object") {
       Object.keys(listeners).forEach(function (event) {
         self.remove();
