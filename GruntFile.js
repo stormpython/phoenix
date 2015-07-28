@@ -61,14 +61,14 @@ module.exports = function(grunt) {
     copy: {
       css: {
         files: [
-          { src: "src/style/pheonix.css", dest: "build/phoenix.css" }
+          { src: "src/components/styles/pheonix.css", dest: "src/styles/phoenix.css" }
         ]
       }
     },
     cssmin: {
       dist: {
         files: {
-          "build/phoenix.min.css" : ["build/phoenix.css"]
+          "src/styles/phoenix.min.css" : ["build/phoenix.css"]
         }
       }
     }

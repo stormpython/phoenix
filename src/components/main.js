@@ -19,7 +19,7 @@ define(function (require) {
     this._chart = chart();
     this._layout = layout();
     this._listeners = {};
-    this.element(el);
+    this.element(el || null);
     this.data = [];
     this.opts = {};
   }
