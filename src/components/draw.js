@@ -6,7 +6,7 @@ define(function (require) {
   var sizeFunc = require("size");
 
   function evaluate(self) {
-    if (!self.selection || !self.selection.node()) {
+    if (!self._selection || !self._selection.node()) {
       throw new Error("A valid element is required");
     }
     if (!self.data) throw new Error("No data provided");
@@ -23,10 +23,10 @@ define(function (require) {
       self.remove(); // Remove previous charts if any
 
       chart = self._chart.options(self.opts);
-      size = sizeFunc().width(width).height(height)(self.selection);
+      size = sizeFunc().width(width).height(height)(self._selection);
       if (size[0] <= 0 || size[1] <= 0) return; // size = [width, height]
 
-      self.selection
+      self._selection
         .call(layout.size(size))
         .call(chart);
     };

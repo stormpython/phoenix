@@ -5,13 +5,13 @@
 define(function () {
   return function (value, self) {
     return function (event, listener) {
-      if (!self.selection) throw new Error("A valid element is required");
+      if (!self._selection) throw new Error("A valid element is required");
 
       self._chart[value](event, listener); // value => 'on' or 'off'
       self._listeners = self._chart.listeners(); // Redefine listeners
 
       self.remove();
-      self.selection.call(self._chart); // Redraw chart
+      self._selection.call(self._chart); // Redraw chart
     };
   };
 });

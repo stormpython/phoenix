@@ -39,7 +39,7 @@ define(function (require) {
     }
 
     this.el = el; // => Setter
-    this.selection = d3.select(el); // Create d3 selection
+    this._selection = d3.select(el); // Create d3 selection
   };
 
   /**
@@ -52,12 +52,17 @@ define(function (require) {
   Phx.prototype.data = function (data) {
     if (!arguments.length) return this.data; // => Getter
     if (!(data instanceof Array)) {
-      throw new Error("The data method expects an array as input");
+      throw new Error("data expects an array as input");
     }
-    if (!this.selection) throw new Error("A valid element is required");
+
+    data.every(function (obj) {
+      if (!(obj instanceof Object)) {
+        throw new Error("data expects an array of objects");
+      }
+    });
 
     this.data = data; // => Setter
-    this.selection.datum(this.data); // Bind data
+    this._selection.datum(this.data); // Bind data
   };
 
   /**
@@ -128,8 +133,8 @@ define(function (require) {
   Phx.prototype.destroy = function () {
     this.removeAllListeners();
     this.remove();
-    this.selection.datum(null);
-    this.selection = null;
+    this._selection.datum(null);
+    this._selection = null;
     this._chart = null;
     this._layout = null;
     this.opts = null;
@@ -166,17 +171,17 @@ define(function (require) {
     var self = this;
     var listeners = self._listeners;
 
-    if (!self.selection) throw new Error ("...");
+    if (!self._selection) throw new Error ("...");
 
     if (listeners && typeof listeners === "object") {
       Object.keys(listeners).forEach(function (event) {
         self.remove();
-        self.selection.call(self._chart.off(event)); // remove listeners
+        self._selection.call(self._chart.off(event)); // remove listeners
       });
     }
     listeners = {}; // Reset listeners object
     self.remove();
-    self.selection.call(self._chart.listeners(listeners));
+    self._selection.call(self._chart.listeners(listeners));
   };
 
   /**
