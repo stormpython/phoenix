@@ -9,7 +9,7 @@ define(function (require) {
     if (!self._selection || !self._selection.node()) {
       throw new Error("A valid element is required");
     }
-    if (!self.data) throw new Error("No data provided");
+    if (!self.datum) throw new Error("No data provided");
     if (!self.opts) throw new Error("No options given");
   }
 

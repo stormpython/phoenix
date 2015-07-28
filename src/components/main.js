@@ -20,7 +20,7 @@ define(function (require) {
     this._layout = layout();
     this._listeners = {};
     this.element(el || null);
-    this.data = [];
+    this.datum = [];
     this.opts = {};
   }
 
@@ -49,20 +49,20 @@ define(function (require) {
    * @param {Array} [data] - Array of objects
    * @returns {Function|*}
    */
-  Phx.prototype.data = function (data) {
-    if (!arguments.length) return this.data; // => Getter
-    if (!(data instanceof Array)) {
+  Phx.prototype.data = function (datum) {
+    if (!arguments.length) return this.datum; // => Getter
+    if (!(datum instanceof Array)) {
       throw new Error("data expects an array as input");
     }
 
-    data.every(function (obj) {
+    datum.every(function (obj) {
       if (!(obj instanceof Object)) {
         throw new Error("data expects an array of objects");
       }
     });
 
-    this.data = data; // => Setter
-    this._selection.datum(this.data); // Bind data
+    this.datum = datum; // => Setter
+    this._selection.datum(this.datum); // Bind data
   };
 
   /**
@@ -138,7 +138,7 @@ define(function (require) {
     this._chart = null;
     this._layout = null;
     this.opts = null;
-    this.data = null;
+    this.datum = null;
     this.el = null;
   };
 
