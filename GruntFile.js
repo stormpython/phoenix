@@ -26,8 +26,9 @@ module.exports = function(grunt) {
       compile: {
         options: {
           baseUrl: ".",
+          name: "node_modules/almond/almond",
           mainConfigFile: "src/require.config.js",
-          include: ["src/require.config"],
+          include: ["src/require.config", "phx"],
           optimize: "none",
           out: "build/phoenix.js",
         }
@@ -84,7 +85,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-contrib-connect");
   grunt.loadNpmTasks("grunt-mocha");
 
-  grunt.registerTask("default", ["copy", "connect", "concat", "watch"]);
+  grunt.registerTask("default", ["copy", "connect", "watch"]);
   grunt.registerTask("lint", ["jshint"]);
   grunt.registerTask("test", ["mocha"]);
   grunt.registerTask("build", ["requirejs", "copy"]);

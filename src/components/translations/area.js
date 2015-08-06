@@ -1,7 +1,7 @@
 define(function (require) {
   return {
     margin: function (_) {
-      var defaults = require("options/defaults/margin");
+      var defaults;
 
       if (!arguments.length || !_) return defaults;
       if (typeof _ !== "object") throw new Error("An object is expected");
@@ -42,7 +42,7 @@ define(function (require) {
       return _;
     },
     color: function (_) {
-      var defaults = require("options/defaults/color");
+      var defaults;
 
       if (!arguments.length || !_) return defaults;
       if (typeof _ !== "function") throw new Error("A function is expected");

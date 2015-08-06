@@ -1,24 +1,24 @@
 define(function (require) {
   var jee = require("jubilee");
-  var chartOptions = require("chart_options");
+  var chartOptions = require("src/components/chart_options");
 
   return function chart() {
-    var opts = null;
+    var opts = {};
     var listeners = {};
 
     function component(selection) {
       selection.each(function (data, index) {
         var div = d3.select(this);
-        var type = data.options.type || opts.type || "bar";
+        var type = data.options && data.options.type || opts.type || "bar";
         var defaults = chartOptions[type];
-        var accessor = data.options.accessor || opts.accessor;
+        var accessor = data.options && data.options.accessor || opts.accessor;
         var values = setAccessor(accessor) || getValues;
         var chart = jee.chart[type]()
           .width(data.width)
           .height(data.height)
           .listeners(listeners);
 
-        Object.keys(defaults).forEach(function (attr) {
+        Object.keys(defaults || {}).forEach(function (attr) {
           var transFunc = defaults[attr];
           var chartFunc = chart[attr];
 

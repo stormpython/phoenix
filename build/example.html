@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+  <script data-main="../src/require.config.js"
+          src="../node_modules/requirejs/require.js"></script>
+  <script>
+    require(["../src/index"], function (Phx) {
+      var child = document.createElement("div");
+      var div = document.body.appendChild(child);
+      div.setAttribute("style", "position: relative; width: 500px; height: 500px;");
+
+      var chart = new Phx(div);
+      chart.data([{}, {}, {}]).set("layout", "grid").data([{}]).draw();
+    });
+  </script>
+
+</body>
+</html>

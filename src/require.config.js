@@ -1,8 +1,8 @@
 require.config({
-  baseUrl: "src/components",
+  baseUrl: "/",
   paths: {
-    jubilee: "../../bower_components/jubilee/build/jubilee.min",
-    phx: "main"
+    jubilee: "bower_components/jubilee/build/jubilee.min",
+    phx: "src/components/main"
   },
   shim: {},
   packages: []

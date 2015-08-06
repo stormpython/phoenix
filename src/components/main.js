@@ -1,10 +1,19 @@
 define(function (require) {
   require("jubilee"); // contains d3
-  var chart = require("chart");
-  var draw = require("draw");
-  var layout = require("layout");
-  var setEventListener = require("set_event_listener");
-  var sumListeners = require("sum_listeners");
+  var chart = require("src/components/chart");
+  var layout = require("src/components/layout");
+  var sizeFunc = require("src/components/size");
+  var sumListeners = require("src/components/sum_listeners");
+
+  function evaluate(self) {
+    if (!self._selection || !self._selection.node()) {
+      throw new Error("A valid element is required");
+    }
+    if (!self._datum || !self._selection.datum()) {
+      throw new Error("No data provided");
+    }
+    if (!self._opts) throw new Error("No options given");
+  }
 
   /**
    * D3 Charting Library wrapper
@@ -20,8 +29,8 @@ define(function (require) {
     this._layout = layout();
     this._listeners = {};
     this.element(el || null);
-    this.datum = [];
-    this.opts = {};
+    this._datum = [];
+    this._opts = {};
   }
 
   /**
@@ -32,25 +41,26 @@ define(function (require) {
    * @returns {*}
    */
   Phx.prototype.element = function (el) {
-    if (!arguments.length) return this.el; // => Getter
+    if (!arguments.length) return this._el; // => Getter
     if (!(el instanceof HTMLElement) && !(el instanceof String) ||
       !(d3.select(el).node())) {
       throw new Error("A valid element is required");
     }
 
-    this.el = el; // => Setter
+    this._el = el; // => Setter
     this._selection = d3.select(el); // Create d3 selection
+    return this;
   };
 
   /**
    * Binds data to the d3 selection,
    * or returns the bound data array.
    *
-   * @param {Array} [data] - Array of objects
+   * @param {Array} [datum] - Array of objects
    * @returns {Function|*}
    */
   Phx.prototype.data = function (datum) {
-    if (!arguments.length) return this.datum; // => Getter
+    if (!arguments.length) return this._datum; // => Getter
     if (!(datum instanceof Array)) {
       throw new Error("data expects an array as input");
     }
@@ -61,8 +71,9 @@ define(function (require) {
       }
     });
 
-    this.datum = datum; // => Setter
-    this._selection.datum(this.datum); // Bind data
+    this._datum = datum; // => Setter
+    this._selection.datum(this._datum); // Bind data
+    return this;
   };
 
   /**
@@ -72,12 +83,13 @@ define(function (require) {
    * @returns {*}
    */
   Phx.prototype.options = function (opts) {
-    if (!arguments.length) return this.opts; // => Getter
+    if (!arguments.length) return this._opts; // => Getter
     if (!(opts instanceof Object)) {
       throw new Error("The options method expects a valid object");
     }
 
-    this.opts = opts; // => Setter
+    this._opts = opts; // => Setter
+    return this;
   };
 
   /**
@@ -87,8 +99,9 @@ define(function (require) {
    * @param {*} value - Value for options attribute
    */
   Phx.prototype.set = function (name, value) {
-    this.opts[name] = value;
+    this._opts[name] = value;
     this.draw();
+    return this;
   };
 
   /**
@@ -98,7 +111,7 @@ define(function (require) {
    * @returns {*}
    */
   Phx.prototype.get = function (name) {
-    return this.opts[name];
+    return this._opts[name];
   };
 
   /**
@@ -108,7 +121,24 @@ define(function (require) {
    * @param {Function|Number} [height] - Specifies height of DOM element
    * @returns {*}
    */
-  Phx.prototype.draw = draw(this);
+  Phx.prototype.draw = function (width, height) {
+    var layout = this._layout.layout(this._opts.layout || "rows");
+    var chart;
+    var size;
+
+    evaluate(this);
+    this.remove(); // Remove previous charts if any
+
+    chart = this._chart.options(this._opts);
+    size = sizeFunc().width(width).height(height)(this._selection);
+    if (size[0] <= 0 || size[1] <= 0) return; // size = [width, height]
+
+    this._selection
+      .call(layout.size(size))
+      .call(chart);
+
+    return this;
+  };
 
   /**
    * Resizes the chart(s).
@@ -117,13 +147,14 @@ define(function (require) {
    * @param {Function|Number} [height] - Specifies height of DOM element
    * @returns {*}
    */
-  Phx.prototype.resize = draw(this);
+  Phx.prototype.resize = Phx.prototype.draw;
 
   /**
    * Removes (erases) chart(s) from the selected DOM element.
    */
   Phx.prototype.remove = function () {
-    if (this.el) d3.select(this.el).selectAll("*").remove();
+    if (this._el) d3.select(this._el).selectAll("*").remove();
+    return this;
   };
 
   /**
@@ -137,9 +168,9 @@ define(function (require) {
     this._selection = null;
     this._chart = null;
     this._layout = null;
-    this.opts = null;
-    this.datum = null;
-    this.el = null;
+    this._opts = null;
+    this._datum = null;
+    this._el = null;
   };
 
   /**
@@ -149,7 +180,16 @@ define(function (require) {
    * @param {Function} listener - Listener for specified event type
    * @returns {*}
    */
-  Phx.prototype.on = setEventListener("on", this);
+  Phx.prototype.on = function (event, listener) {
+    if (!this._selection) throw new Error("A valid element is required");
+
+    this._chart.on(event, listener); // value => 'on' or 'off'
+    this._listeners = this._chart.listeners(); // Redefine listeners
+
+    this.remove();
+    this._selection.call(this._chart); // Redraw chart
+    return this;
+  };
 
   /**
    * Removes event listeners from chart(s).
@@ -161,7 +201,16 @@ define(function (require) {
    * @param {Function} [listener] - Listener for specified event type
    * @returns {*}
    */
-  Phx.prototype.off = setEventListener("off", this);
+  Phx.prototype.off = function (event, listener) {
+    if (!this._selection) throw new Error("A valid element is required");
+
+    this._chart.off(event, listener); // value => 'on' or 'off'
+    this._listeners = this._chart.listeners(); // Redefine listeners
+
+    this.remove();
+    this._selection.call(this._chart); // Redraw chart
+    return this;
+  };
 
   /**
    * Removes all event listeners from chart(s),
