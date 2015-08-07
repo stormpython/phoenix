@@ -18,7 +18,7 @@ define(function (require) {
           .height(data.height)
           .listeners(listeners);
 
-        Object.keys(defaults || {}).forEach(function (attr) {
+        Object.keys(defaults).forEach(function (attr) {
           var transFunc = defaults[attr];
           var chartFunc = chart[attr];
 

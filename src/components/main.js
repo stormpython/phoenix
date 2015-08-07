@@ -42,9 +42,9 @@ define(function (require) {
    */
   Phx.prototype.element = function (el) {
     if (!arguments.length) return this._el; // => Getter
-    if (!(el instanceof HTMLElement) && !(el instanceof String) ||
+    if (!(el instanceof HTMLElement) && !(el instanceof String) &&
       !(d3.select(el).node())) {
-      throw new Error("A valid element is required");
+      throw new Error("Phx requires a valid HTML element");
     }
 
     this._el = el; // => Setter
@@ -57,7 +57,7 @@ define(function (require) {
    * or returns the bound data array.
    *
    * @param {Array} [datum] - Array of objects
-   * @returns {Function|*}
+   * @returns {*}
    */
   Phx.prototype.data = function (datum) {
     if (!arguments.length) return this._datum; // => Getter
@@ -80,7 +80,7 @@ define(function (require) {
    * Sets the options object, or returns the current options.
    *
    * @param {Object} [opts] - Chart options
-   * @returns {*}
+   * @returns {Phx}
    */
   Phx.prototype.options = function (opts) {
     if (!arguments.length) return this._opts; // => Getter
@@ -93,10 +93,12 @@ define(function (require) {
   };
 
   /**
-   * Sets value for an options attribute.
+   * Sets value for an options attribute
+   * and redraws the chart.
    *
    * @param {String} name - Options attribute
    * @param {*} value - Value for options attribute
+   * @returns {Phx}
    */
   Phx.prototype.set = function (name, value) {
     this._opts[name] = value;
@@ -136,7 +138,6 @@ define(function (require) {
     this._selection
       .call(layout.size(size))
       .call(chart);
-
     return this;
   };
 
@@ -145,12 +146,14 @@ define(function (require) {
    *
    * @param {Function|Number} [width] - Specifies width of DOM element
    * @param {Function|Number} [height] - Specifies height of DOM element
-   * @returns {*}
+   * @returns {Phx}
    */
   Phx.prototype.resize = Phx.prototype.draw;
 
   /**
    * Removes (erases) chart(s) from the selected DOM element.
+   *
+   * @returns {Phx}
    */
   Phx.prototype.remove = function () {
     if (this._el) d3.select(this._el).selectAll("*").remove();
@@ -160,17 +163,20 @@ define(function (require) {
   /**
    * Removes chart(s) from the selected DOM element,
    * and prepares the chart object for garbage collection.
+   *
+   * @returns {Phx}
    */
   Phx.prototype.destroy = function () {
     this.removeAllListeners();
     this.remove();
-    this._selection.datum(null);
     this._selection = null;
     this._chart = null;
     this._layout = null;
     this._opts = null;
     this._datum = null;
     this._el = null;
+
+    return this;
   };
 
   /**
@@ -178,7 +184,7 @@ define(function (require) {
    *
    * @param {String} event - DOM event, e.g. 'click'
    * @param {Function} listener - Listener for specified event type
-   * @returns {*}
+   * @returns {Phx}
    */
   Phx.prototype.on = function (event, listener) {
     if (!this._selection) throw new Error("A valid element is required");
@@ -199,7 +205,7 @@ define(function (require) {
    *
    * @param {String} event - DOM event, e.g. 'click'
    * @param {Function} [listener] - Listener for specified event type
-   * @returns {*}
+   * @returns {Phx}
    */
   Phx.prototype.off = function (event, listener) {
     if (!this._selection) throw new Error("A valid element is required");
@@ -215,10 +221,12 @@ define(function (require) {
   /**
    * Removes all event listeners from chart(s),
    * and resets the listeners object.
+   *
+   * @returns {Phx}
    */
   Phx.prototype.removeAllListeners = function () {
+    var listeners = this._listeners;
     var self = this;
-    var listeners = self._listeners;
 
     if (listeners && typeof listeners === "object") {
       Object.keys(listeners).forEach(function (event) {
@@ -227,8 +235,9 @@ define(function (require) {
       });
     }
     listeners = {}; // Reset listeners object
-    self.remove();
-    self._selection.call(self._chart.listeners(listeners));
+    this.remove();
+    this._selection.call(this._chart.listeners(listeners));
+    return this;
   };
 
   /**

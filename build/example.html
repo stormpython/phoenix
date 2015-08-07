@@ -11,10 +11,13 @@
     require(["../src/index"], function (Phx) {
       var child = document.createElement("div");
       var div = document.body.appendChild(child);
-      div.setAttribute("style", "position: relative; width: 500px; height: 500px;");
+      div.setAttribute("style", "position: relative");
+      div.style.width = "500px";
+      div.style.height = "500px";
+      div.className = "chart";
 
-      var chart = new Phx(div);
-      chart.data([{}, {}, {}]).set("layout", "grid").data([{}]).draw();
+      var chart = new Phx();
+      console.log(chart);
     });
   </script>
 
