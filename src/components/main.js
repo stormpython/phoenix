@@ -121,7 +121,7 @@ define(function (require) {
    *
    * @param {Function|Number} [width] - Specifies width of DOM element
    * @param {Function|Number} [height] - Specifies height of DOM element
-   * @returns {*}
+   * @returns {Phx}
    */
   Phx.prototype.draw = function (width, height) {
     var layout = this._layout.layout(this._opts.layout || "rows");
@@ -133,11 +133,15 @@ define(function (require) {
 
     chart = this._chart.options(this._opts);
     size = sizeFunc().width(width).height(height)(this._selection);
-    if (size[0] <= 0 || size[1] <= 0) return; // size = [width, height]
+    if (size[0] <= 0 || size[1] <= 0) { // size = [width, height]
+      throw new Error("The chart cannot be drawn because either the " +
+        "width: " + size[0] + " or height: " + size[1] +
+        " of the HTML element is <= 0.");
+    }
 
-    this._selection
-      .call(layout.size(size))
-      .call(chart);
+    this._chartClass = "." + layout.cssClass();
+    this._selection.call(layout.size(size))
+      .selectAll(this._chartClass).call(chart);
     return this;
   };
 
@@ -171,6 +175,7 @@ define(function (require) {
     this.remove();
     this._selection = null;
     this._chart = null;
+    this._chartClass = null;
     this._layout = null;
     this._opts = null;
     this._datum = null;
@@ -191,9 +196,6 @@ define(function (require) {
 
     this._chart.on(event, listener); // value => 'on' or 'off'
     this._listeners = this._chart.listeners(); // Redefine listeners
-
-    this.remove();
-    this._selection.call(this._chart); // Redraw chart
     return this;
   };
 
@@ -212,9 +214,6 @@ define(function (require) {
 
     this._chart.off(event, listener); // value => 'on' or 'off'
     this._listeners = this._chart.listeners(); // Redefine listeners
-
-    this.remove();
-    this._selection.call(this._chart); // Redraw chart
     return this;
   };
 
@@ -225,18 +224,9 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.removeAllListeners = function () {
-    var listeners = this._listeners;
-    var self = this;
-
-    if (listeners && typeof listeners === "object") {
-      Object.keys(listeners).forEach(function (event) {
-        self.remove();
-        self._selection.call(self._chart.off(event)); // remove listeners
-      });
-    }
-    listeners = {}; // Reset listeners object
-    this.remove();
-    this._selection.call(this._chart.listeners(listeners));
+    var listeners = this._listeners = {};
+    this._chart.listeners(listeners);
+    this.draw();
     return this;
   };
 

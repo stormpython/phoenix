@@ -11,7 +11,8 @@ define(function (require) {
         var div = d3.select(this);
         var type = data.options && data.options.type || opts.type || "bar";
         var defaults = chartOptions[type];
-        var accessor = data.options && data.options.accessor || opts.accessor;
+        var accessor = data && data.options && data.options.accessor
+          || opts.accessor;
         var values = setAccessor(accessor) || getValues;
         var chart = jee.chart[type]()
           .width(data.width)
@@ -19,19 +20,19 @@ define(function (require) {
           .listeners(listeners);
 
         Object.keys(defaults).forEach(function (attr) {
-          var transFunc = defaults[attr];
+          var defaultFunc = defaults[attr];
           var chartFunc = chart[attr];
 
-          if (data.options && data.options[attr]) {
-            setAttr(transFunc, chartFunc, data.options[attr]);
+          if (data && data.options && data.options[attr]) {
+            setAttr(defaultFunc, chartFunc, data.options[attr]);
           } else if (opts && opts[attr]) {
-            setAttr(transFunc, chartFunc, opts[attr]);
+            setAttr(defaultFunc, chartFunc, opts[attr]);
           } else {
-            setAttr(transFunc, chartFunc);
+            setAttr(defaultFunc, chartFunc);
           }
         });
 
-        div.datum(values).call(chart); // Draw Chart
+        div.call(chart.accessor(values)); // Draw Chart
       });
     }
 
@@ -43,9 +44,9 @@ define(function (require) {
       if (val) return function (d) { return d[val]; };
     }
 
-    function setAttr(transFunc, chartFunc, attrVal) {
-      if (transFunc) {
-        var val = attrVal ? transFunc(attrVal) : transFunc();
+    function setAttr(defaultFunc, chartFunc, attrVal) {
+      if (defaultFunc) {
+        var val = attrVal ? defaultFunc(attrVal) : defaultFunc();
         chartFunc(val);
       }
     }
