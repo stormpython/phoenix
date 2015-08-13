@@ -1,101 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title></title>
-  <style>
-    body {
-      font: 10px sans-serif;
-    }
-    .axis path,
-    .axis line {
-      fill: none;
-      stroke: #000;
-      shape-rendering: crispEdges;
-    }
-  </style>
-</head>
-<body>
-  <script data-main="../src/require.config.js"
-          src="../node_modules/requirejs/require.js"></script>
-  <script>
-    require(["../src/index"], function (Phx) {
-      // Setting up DOM Element
-      var child = document.createElement("div");
-      var div = document.body.appendChild(child);
-      div.setAttribute("style", "position: relative");
-      div.style.width = "500px";
-      div.style.height = "500px";
+  <head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+      body {
+        font: 10px sans-serif;
+      }
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+    </style>
+  </head>
+  <body>
+    <script data-main="../src/require.config.js"
+            src="../node_modules/requirejs/require.js"></script>
+    <script>
+      require(["../src/index"], function (Phx) {
+        // Setting up DOM Element
+        var child = document.createElement("div");
+        var div = document.body.appendChild(child);
+        div.setAttribute("style", "position: relative");
+        div.style.width = "500px";
+        div.style.height = "500px";
 
-      // Charts
-      var chart1 = {
-        data: [
-          [
-            {x: 1411761450000, y: 41 },
-            {x: 1411761480000, y: 18 },
-            {x: 1411761510000, y: 22 },
-            {x: 1411761540000, y: 17 },
-            {x: 1411761570000, y: 17 }
+        // Charts
+        var chart1 = {
+          data: [
+            [
+              {x: 1411761450000, y: 41 },
+              {x: 1411761480000, y: 18 },
+              {x: 1411761510000, y: 22 },
+              {x: 1411761540000, y: 17 },
+              {x: 1411761570000, y: 17 }
+            ],
+            [
+              { x: 1411761450000, y: 191 },
+              { x: 1411761480000, y: 188 },
+              { x: 1411761510000, y: 132 },
+              { x: 1411761540000, y: 147 },
+              { x: 1411761570000, y: 157 }
+            ]
           ]
-        ]
-      };
+        };
 
-      var chart2 = {
-        options: {
-          yScale: {
-            domain: [0, 200]
-          }
-        },
-        data: [
-          [
-            { x: 1411761450000, y: 91 },
-            { x: 1411761480000, y: 88 },
-            { x: 1411761510000, y: 32 },
-            { x: 1411761540000, y: 47 },
-            { x: 1411761570000, y: 57 }
+        var chart2 = {
+          data: [
+            [
+              { x: 1411761450000, y: 91 },
+              { x: 1411761480000, y: 88 },
+              { x: 1411761510000, y: 32 },
+              { x: 1411761540000, y: 47 },
+              { x: 1411761570000, y: 57 }
+            ]
           ]
-        ]
-      };
+        };
 
-      var chart3 = {
-        data: [
-          [
-            { x: 1411761450000, y: 191 },
-            { x: 1411761480000, y: 188 },
-            { x: 1411761510000, y: 132 },
-            { x: 1411761540000, y: 147 },
-            { x: 1411761570000, y: 157 }
+        var chart3 = {
+          data: [
+            [
+              { x: 1411761450000, y: 191 },
+              { x: 1411761480000, y: 188 },
+              { x: 1411761510000, y: 132 },
+              { x: 1411761540000, y: 147 },
+              { x: 1411761570000, y: 157 }
+            ]
           ]
-        ]
-      };
+        };
 
-      var charts = [chart1, chart2, chart3];
+        var charts = [chart1, chart2, chart3];
+        var options = {
+          layout: "grid",
+          type: "area",
+          interpolate: "basis",
+          zeroLine: { add: false },
+          yAxis: { show: true }
+        };
+        var areaChart = new Phx(div).options(options).data(charts);
+        var clickFunction = function (e) { console.log(e); };
+        var brushFunction = function (brush) { console.log(brush.extent()); };
 
-      var options = {
-        layout: "columns",
-        type: "area",
-        interpolate: "basis",
-        zeroLine: {add: false},
-        yAxis: {
-          show: true
-        },
-        yScale: {
-          domain: [0, 200]
-        }
-      };
-
-      var areaChart = new Phx(div)
-        .options(options)
-        .data(charts);
-
-      var clickFunction = function (e) { console.log(e); };
-
-      areaChart.on("click", clickFunction);
-      areaChart.on("brush", function (e) { console.log(e.extent()); });
-      areaChart.set("layout", "grid");
-      areaChart.removeAllListeners();
-    });
-  </script>
-
-</body>
+        areaChart.on("click", clickFunction);
+        areaChart.on("brush", brushFunction);
+        areaChart.draw();
+      });
+    </script>
+  </body>
 </html>
