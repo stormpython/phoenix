@@ -71,18 +71,27 @@
           ]
         };
 
-        var charts = [chart1, chart2, chart3];
+        var chart4 = {
+          data: [
+            [
+              { x: 1411761450000, y: 101 },
+              { x: 1411761480000, y: 18 },
+              { x: 1411761510000, y: 32 },
+              { x: 1411761540000, y: 147 },
+              { x: 1411761570000, y: 67 }
+            ]
+          ]
+        };
+
+        var charts = [chart1, chart2, chart3, chart4];
         var options = {
           layout: "grid",
           type: "line",
-//          interpolate: "basis",
+          interpolate: "basis",
           zeroLine: { add: false },
           xAxis: { show: true },
           yAxis: { show: true },
           yScale: { domain: [0, 240] },
-          lines: {
-            interpolate: "basis"
-          },
           circles: {
             show: false
           }
