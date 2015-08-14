@@ -74,10 +74,18 @@
         var charts = [chart1, chart2, chart3];
         var options = {
           layout: "grid",
-          type: "area",
-          interpolate: "basis",
+          type: "line",
+//          interpolate: "basis",
           zeroLine: { add: false },
-          yAxis: { show: true }
+          xAxis: { show: true },
+          yAxis: { show: true },
+          yScale: { domain: [0, 240] },
+          lines: {
+            interpolate: "basis"
+          },
+          circles: {
+            show: false
+          }
         };
         var areaChart = new Phx(div).options(options).data(charts);
         var clickFunction = function (e) { console.log(e); };
