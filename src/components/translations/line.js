@@ -1,5 +1,13 @@
 define(function (require) {
   require("jubilee"); // Includes D3
+  // API functions
+  var functionAPI = require("src/components/translations/api/function");
+  var numberAPI = require("src/components/translations/api/number");
+  var objectAPI = require("src/components/translations/api/object");
+  var stringAPI = require("src/components/translations/api/string");
+  var valueAPI = require("src/components/translations/api/value");
+
+  // Defaults
   var margin = require("src/components/translations/defaults/margin");
   var defined = require("src/components/translations/defaults/defined");
   var scale = require("src/components/translations/defaults/scale");
@@ -10,36 +18,36 @@ define(function (require) {
   var lines = {
     groupClass: "paths",
     lineClass: "line",
-    //stroke: function (d, i) { return color(i); },
+    stroke: function (d, i) { return i; },
     strokeWidth: 3,
     opacity: 1,
-    interpolate: "linear",
     tension:  0.7
   };
   var circles = {
-    show: true,
+    show: false,
     groupClass: "circle layer",
     circleClass: "circle",
-    //fill: function (d, i, j) { return color(j); },
+    fill: function (d, i, j) { return j; },
     stroke: null,
     radius: 5,
     strokeWidth: 3
   };
 
   return {
-    margin: require("src/components/translations/api/object")(margin),
-    x: require("src/components/translations/api/value")("x"),
-    y: require("src/components/translations/api/value")("y"),
-    defined: require("src/components/translations/api/function")(defined),
-    interpolate: require("src/components/translations/api/string")("linear"),
-    color: require("src/components/translations/api/function")(d3.scale.category10()),
-    xScale: require("src/components/translations/api/object")(scale),
-    yScale: require("src/components/translations/api/object")(scale),
-    xAxis: require("src/components/translations/api/object")(xAxis),
-    yAxis: require("src/components/translations/api/object")(yAxis),
-    clipPath: require("src/components/translations/api/object")(clipPath),
-    zeroLine: require("src/components/translations/api/object")(zeroLine),
-    lines: require("src/components/translations/api/object")(lines),
-    circles: require("src/components/translations/api/object")(circles)
+    margin: objectAPI(margin),
+    x: valueAPI("x"),
+    y: valueAPI("y"),
+    defined: functionAPI(defined),
+    interpolate: stringAPI("linear"),
+    tension: numberAPI(0.7),
+    color: functionAPI(d3.scale.category10()),
+    xScale: objectAPI(scale),
+    yScale: objectAPI(scale),
+    xAxis: objectAPI(xAxis),
+    yAxis: objectAPI(yAxis),
+    clipPath: objectAPI(clipPath),
+    zeroLine: objectAPI(zeroLine),
+    lines: objectAPI(lines),
+    circles: objectAPI(circles)
   };
 });

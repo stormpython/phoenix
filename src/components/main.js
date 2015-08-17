@@ -133,11 +133,7 @@ define(function (require) {
 
     chart = this._chart.options(this._opts);
     size = sizeFunc().width(width).height(height)(this._selection);
-    if (size[0] <= 0 || size[1] <= 0) { // size = [width, height]
-      throw new Error("The chart cannot be drawn because either the " +
-        "width: " + size[0] + " or height: " + size[1] +
-        " of the HTML element is <= 0.");
-    }
+    if (size[0] <= 0 || size[1] <= 0) return this;
 
     this._chartClass = "." + layout.cssClass();
     this._selection.call(layout.size(size))
@@ -249,12 +245,8 @@ define(function (require) {
    * @returns {Number}
    */
   Phx.prototype.listenerCount = function (event) {
-    var listeners = this._listeners;
-    var listenersKeyLength = Object.keys(listeners).length;
-
     if (!arguments.length) return sumListeners(this._listeners);
-    if (!listenersKeyLength) return 0;
-    if (event && listeners[event]) return listeners[event].length;
+    if (event && this._listeners[event]) return this._listeners[event].length;
   };
 
   /**

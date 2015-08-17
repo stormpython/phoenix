@@ -15,6 +15,7 @@ define(function (require) {
       selection.each(function (data) {
         // Appends divs based on the data array
         var layout = jee.layout.base().type(type).size(size);
+
         var div = d3.select(this).selectAll("divs")
           .data(layout(data));
 
@@ -28,21 +29,11 @@ define(function (require) {
         div
           .attr("class", cssClass)
           .style("position", "absolute")
-          .style("left", function (d) {
-            return d.dx + "px";
-          })
-          .style("top", function (d) {
-            return d.dy + "px";
-          })
-          .style("width", function (d) {
-            return d.width + "px";
-          })
-          .style("height", function (d) {
-            return d.height + "px";
-          });
+          .style("left", function (d) { return d.dx + "px"; })
+          .style("top", function (d) { return d.dy + "px"; })
+          .style("width", function (d) { return d.width + "px"; })
+          .style("height", function (d) { return d.height + "px"; });
       });
-
-      return selection;
     }
 
     // Sets css class on div(s)

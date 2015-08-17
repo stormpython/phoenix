@@ -1,3 +1,6 @@
+/**
+ *
+ */
 define(function (require) {
   return {
     area: require("src/components/translations/area"),

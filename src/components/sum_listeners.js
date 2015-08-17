@@ -1,5 +1,6 @@
 /**
- * Returns a count of event listeners from a listeners object.
+ * Returns the sum of items in arrays
+ * from an object whose key values are arrays.
  */
 define(function () {
   return function (listeners) {

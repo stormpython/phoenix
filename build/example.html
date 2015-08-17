@@ -29,6 +29,9 @@
 
         // Charts
         var chart1 = {
+          options: {
+            yScale: { domain: [17, 41] }
+          },
           data: [
             [
               {x: 1411761450000, y: 41 },
@@ -52,9 +55,9 @@
             [
               { x: 1411761450000, y: 91 },
               { x: 1411761480000, y: 88 },
-              { x: 1411761510000, y: 32 },
-              { x: 1411761540000, y: 47 },
-              { x: 1411761570000, y: 57 }
+              { x: 1411761510000, y: -32 },
+              { x: 1411761540000, y: -47 },
+              { x: 1411761570000, y: -57 }
             ]
           ]
         };
@@ -83,25 +86,78 @@
           ]
         };
 
-        var charts = [chart1, chart2, chart3, chart4];
-        var options = {
-          layout: "grid",
-          type: "line",
-          interpolate: "basis",
-          zeroLine: { add: false },
-          xAxis: { show: true },
-          yAxis: { show: true },
-          yScale: { domain: [0, 240] },
-          circles: {
-            show: false
-          }
+        var chart5 = {
+          data: [
+            [
+              { x: 1411761450000, y: 101 },
+              { x: 1411761480000, y: 18 },
+              { x: 1411761510000, y: 32 },
+              { x: 1411761540000, y: 147 },
+              { x: 1411761570000, y: 67 }
+            ]
+          ]
         };
-        var areaChart = new Phx(div).options(options).data(charts);
+
+        var chart6 = {
+          data: [
+            [
+              { x: 1411761450000, y: 101 },
+              { x: 1411761480000, y: 18 },
+              { x: 1411761510000, y: 32 },
+              { x: 1411761540000, y: 147 },
+              { x: 1411761570000, y: 67 }
+            ]
+          ]
+        };
+
+        var chart7 = {
+          data: [
+            [
+              { x: 1411761450000, y: 101 },
+              { x: 1411761480000, y: 18 },
+              { x: 1411761510000, y: 32 },
+              { x: 1411761540000, y: 147 },
+              { x: 1411761570000, y: 67 }
+            ]
+          ]
+        };
+
+        var chart8 = {
+          data: [
+            [
+              { x: 1411761450000, y: 101 },
+              { x: 1411761480000, y: 18 },
+              { x: 1411761510000, y: 32 },
+              { x: 1411761540000, y: 147 },
+              { x: 1411761570000, y: 67 }
+            ]
+          ]
+        };
+
         var clickFunction = function (e) { console.log(e); };
         var brushFunction = function (brush) { console.log(brush.extent()); };
+        var charts = [
+          chart1,
+          chart2,
+          chart3,
+          chart4,
+          chart5,
+          chart6
+        ];
+        var options = {
+          layout: "grid",
+          type: "area",
+          interpolate: "basis",
+          zeroLine: { add: true },
+          yScale: { domain: [-60, 240] }
+        };
 
-        areaChart.on("click", clickFunction);
-        areaChart.on("brush", brushFunction);
+        var areaChart = new Phx(div)
+          .options(options)
+          .data(charts)
+          .on("click", clickFunction)
+          .on("brush", brushFunction);
+
         areaChart.draw();
       });
     </script>

@@ -21,11 +21,16 @@
         paths: {
           specs: "test/unit/specs",
           fixtures: "test/unit/fixtures",
+          jubilee: "bower_components/jubilee/build/jubilee",
           phx: "src/index"
         }
       });
       <!-- Tests -->
-      require([], function () {
+      require([
+        "specs/size",
+        "specs/sum_listeners",
+        "specs/layout"
+      ], function () {
         mocha.run();
       });
     </script>

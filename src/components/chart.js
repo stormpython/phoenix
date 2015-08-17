@@ -1,3 +1,6 @@
+/**
+ *
+ */
 define(function (require) {
   var jee = require("jubilee");
   var chartOptions = require("src/components/chart_options");
@@ -9,12 +12,12 @@ define(function (require) {
     function component(selection) {
       selection.each(function (data, index) {
         var div = d3.select(this);
-        var type = data.options && data.options.type || opts.type || "bar";
-        var defaults = chartOptions[type];
-        var accessor = data && data.options && data.options.accessor
-          || opts.accessor;
-        var values = setAccessor(accessor) || getValues;
-        var chart = jee.chart[type]()
+        var dataOpts = data && data.options || {};
+        var chartType = dataOpts.type || opts.type || "bar";
+        var defaults = chartOptions[chartType];
+        var accessor = dataOpts.accessor || opts.accessor || "data";
+        var values = setAccessor(accessor);
+        var chart = jee.chart[chartType]()
           .width(data.width)
           .height(data.height)
           .listeners(listeners);
@@ -23,9 +26,9 @@ define(function (require) {
           var defaultFunc = defaults[attr];
           var chartFunc = chart[attr];
 
-          if (data && data.options && data.options[attr]) {
-            setAttr(defaultFunc, chartFunc, data.options[attr]);
-          } else if (opts && opts[attr]) {
+          if (dataOpts[attr]) {
+            setAttr(defaultFunc, chartFunc, dataOpts[attr]);
+          } else if (opts[attr]) {
             setAttr(defaultFunc, chartFunc, opts[attr]);
           } else {
             setAttr(defaultFunc, chartFunc);
@@ -34,10 +37,6 @@ define(function (require) {
 
         div.call(chart.accessor(values)); // Draw Chart
       });
-    }
-
-    function getValues(d) {
-      return d.data;
     }
 
     function setAccessor(val) {
