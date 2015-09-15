@@ -1,5 +1,5 @@
 {
-  "name": "phoenix",
+  "name": "phoenix-charts",
   "version": "0.1.0",
   "description": "D3 Charting Library",
   "main": "src/index.js",
