@@ -1,5 +1,5 @@
 define(function (require) {
-  describe("Sum Listener Counts Tests", function () {
+  describe("Sum Listener Count Tests", function () {
     var sumListeners = require("src/components/sum_listeners");
     var fiveItems = {
       click: ["item1"],

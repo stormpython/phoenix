@@ -1,53 +1,31 @@
-/**
- *
- */
 define(function (require) {
   var jee = require("jubilee");
-  var chartOptions = require("src/components/chart_options");
 
   return function chart() {
     var opts = {};
     var listeners = {};
 
     function component(selection) {
-      selection.each(function (data, index) {
+      selection.each(function (data) {
         var div = d3.select(this);
         var dataOpts = data && data.options || {};
-        var chartType = dataOpts.type || opts.type || "bar";
-        var defaults = chartOptions[chartType];
-        var accessor = dataOpts.accessor || opts.accessor || "data";
-        var values = setAccessor(accessor);
+        var chartType = dataOpts.type || opts.type || "series";
+        var accessor = jee.valuator(dataOpts.accessor || opts.accessor || "data");
         var chart = jee.chart[chartType]()
           .width(data.width)
           .height(data.height)
           .listeners(listeners);
 
-        Object.keys(defaults).forEach(function (attr) {
-          var defaultFunc = defaults[attr];
-          var chartFunc = chart[attr];
-
-          if (dataOpts[attr]) {
-            setAttr(defaultFunc, chartFunc, dataOpts[attr]);
-          } else if (opts[attr]) {
-            setAttr(defaultFunc, chartFunc, opts[attr]);
-          } else {
-            setAttr(defaultFunc, chartFunc);
-          }
+        [opts, dataOpts].forEach(function (o) {
+          d3.entries(o).forEach(function (d) {
+            if (typeof chart[d.key] === "function") {
+              chart[d.key](d.value);
+            }
+          });
         });
 
-        div.call(chart.accessor(values)); // Draw Chart
+        div.call(chart.accessor(accessor)); // Draw Chart
       });
-    }
-
-    function setAccessor(val) {
-      if (val) return function (d) { return d[val]; };
-    }
-
-    function setAttr(defaultFunc, chartFunc, attrVal) {
-      if (defaultFunc) {
-        var val = attrVal ? defaultFunc(attrVal) : defaultFunc();
-        chartFunc(val);
-      }
     }
 
     component.options = function (_) {

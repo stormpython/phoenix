@@ -24,13 +24,13 @@
         var child = document.createElement("div");
         var div = document.body.appendChild(child);
         div.setAttribute("style", "position: relative");
-        div.style.width = "500px";
+        div.style.width = "700px";
         div.style.height = "500px";
 
         // Charts
         var chart1 = {
           options: {
-            yScale: { domain: [17, 41] }
+            bar: { group: true, groupPadding: 0.1 }
           },
           data: [
             [
@@ -136,26 +136,26 @@
 
         var clickFunction = function (e) { console.log(e); };
         var brushFunction = function (brush) { console.log(brush.extent()); };
-        var charts = [
-          chart1,
-          chart2,
-          chart3,
-          chart4,
-          chart5,
-          chart6
-        ];
+        var charts = [ chart1, chart2, chart3, chart4, chart5, chart6 ];
         var options = {
           layout: "grid",
-          type: "area",
-          interpolate: "basis",
-          zeroLine: { add: true },
-          yScale: { domain: [-60, 240] }
+          zeroLine: { show: true },
+          yScale: {
+            nice: true
+          },
+          line: [{
+            interpolate: "basis"
+          }, {
+            scale: "y",
+            interpolate: "linear"
+          }]
         };
 
         var areaChart = new Phx(div)
           .options(options)
           .data(charts)
           .on("click", clickFunction)
+          .on("mouseover", clickFunction)
           .on("brush", brushFunction);
 
         areaChart.draw();

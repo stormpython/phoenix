@@ -9,7 +9,7 @@ define(function (require) {
     if (!self._selection || !self._selection.node()) {
       throw new Error("A valid element is required");
     }
-    if (!self._datum || !self._selection.datum()) {
+    if (!self._datum && !self._datum.length || !self._selection.datum()) {
       throw new Error("No data provided");
     }
     if (!self._opts) throw new Error("No options given");
@@ -84,7 +84,7 @@ define(function (require) {
    */
   Phx.prototype.options = function (opts) {
     if (!arguments.length) return this._opts; // => Getter
-    if (!(opts instanceof Object)) {
+    if (!(opts instanceof Object) || opts instanceof Array) {
       throw new Error("The options method expects a valid object");
     }
 
@@ -93,8 +93,7 @@ define(function (require) {
   };
 
   /**
-   * Sets value for an options attribute
-   * and redraws the chart.
+   * Sets value for an options attribute.
    *
    * @param {String} name - Options attribute
    * @param {*} value - Value for options attribute
@@ -102,7 +101,6 @@ define(function (require) {
    */
   Phx.prototype.set = function (name, value) {
     this._opts[name] = value;
-    this.draw();
     return this;
   };
 
@@ -124,13 +122,14 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.draw = function (width, height) {
-    var layout = this._layout.layout(this._opts.layout || "rows");
+    var layout;
     var chart;
     var size;
 
     evaluate(this);
     this.remove(); // Remove previous charts if any
 
+    layout = this._layout.layout(this._opts.layout || "rows");
     chart = this._chart.options(this._opts);
     size = sizeFunc().width(width).height(height)(this._selection);
     if (size[0] <= 0 || size[1] <= 0) return this;
@@ -156,7 +155,7 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.remove = function () {
-    if (this._el) d3.select(this._el).selectAll("*").remove();
+    if (this._selection) this._selection.selectAll("*").remove();
     return this;
   };
 
@@ -208,7 +207,8 @@ define(function (require) {
   Phx.prototype.off = function (event, listener) {
     if (!this._selection) throw new Error("A valid element is required");
 
-    this._chart.off(event, listener); // value => 'on' or 'off'
+    if (arguments.length === 1) this._chart.off(event);
+    if (arguments.length === 2) this._chart.off(event, listener);
     this._listeners = this._chart.listeners(); // Redefine listeners
     return this;
   };
@@ -222,7 +222,6 @@ define(function (require) {
   Phx.prototype.removeAllListeners = function () {
     var listeners = this._listeners = {};
     this._chart.listeners(listeners);
-    this.draw();
     return this;
   };
 
@@ -247,6 +246,7 @@ define(function (require) {
   Phx.prototype.listenerCount = function (event) {
     if (!arguments.length) return sumListeners(this._listeners);
     if (event && this._listeners[event]) return this._listeners[event].length;
+    if (event && !this._listeners[event]) return 0;
   };
 
   /**

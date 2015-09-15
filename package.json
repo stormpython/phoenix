@@ -2,9 +2,8 @@
   "name": "phoenix",
   "version": "0.1.0",
   "description": "D3 Charting Library",
-  "main": "GruntFile.js",
+  "main": "src/index.js",
   "directories": {
-    "doc": "docs",
     "test": "test"
   },
   "scripts": {
@@ -16,8 +15,9 @@
   },
   "keywords": [
     "d3",
+    "jubilee",
     "charting",
-    "library"
+    "library",
   ],
   "author": "Shelby Sturgis",
   "license": "MIT",
@@ -41,5 +41,8 @@
     "grunt-contrib-nodeunit": "^0.4.1",
     "grunt-mocha": "^0.4.13",
     "almond": "^0.3.1"
+  },
+  "dependencies": {
+    "jubilee": "0.0.3"
   }
 }
