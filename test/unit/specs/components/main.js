@@ -1,6 +1,7 @@
 define(function (require) {
-  describe("Phoenix API Tests", function () {
-    require("jubilee");
+  require("jubilee");
+
+  describe("Main Tests", function () {
     var Phx = require("phx");
     var fixture = require("fixtures/fixture");
     var data = [

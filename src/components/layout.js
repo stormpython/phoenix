@@ -37,7 +37,7 @@ define(function (require) {
     }
 
     // Sets css class on div(s)
-    component.cssClass = function (_) {
+    component.class = function (_) {
       if (!arguments.length) return cssClass;
       cssClass = _;
       return component;

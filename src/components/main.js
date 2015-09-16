@@ -134,7 +134,7 @@ define(function (require) {
     size = sizeFunc().width(width).height(height)(this._selection);
     if (size[0] <= 0 || size[1] <= 0) return this;
 
-    this._chartClass = "." + layout.cssClass();
+    this._chartClass = "." + layout.class();
     this._selection.call(layout.size(size))
       .selectAll(this._chartClass).call(chart);
     return this;

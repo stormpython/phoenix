@@ -22,9 +22,9 @@ define(function (require) {
     describe("API tests", function () {
       it("should set the css class", function () {
         var klass = "test";
-        testLayout.cssClass("test"); // set css class
+        testLayout.class("test"); // set css class
 
-        chai.assert.equal(testLayout.cssClass(), klass);
+        chai.assert.equal(testLayout.class(), klass);
       });
 
       it("should set the layout type", function () {
@@ -59,9 +59,9 @@ define(function (require) {
 
       it("should set the css class", function () {
         var klass = "test";
-        selection.call(testLayout.cssClass(klass));
+        selection.call(testLayout.class(klass));
 
-        selection.selectAll("." + testLayout.cssClass())
+        selection.selectAll("." + testLayout.class())
           .each(function () {
             chai.assert.equal(this.getAttribute("class"), klass);
           });
@@ -71,7 +71,7 @@ define(function (require) {
         ["rows", "grid", "columns"].forEach(function (layout) {
           selection.call(testLayout.layout(layout));
 
-          selection.selectAll("." + testLayout.cssClass())
+          selection.selectAll("." + testLayout.class())
             .each(function (d) {
               chai.assert.property(d, "dx");
               chai.assert.property(d, "dy");
@@ -87,7 +87,7 @@ define(function (require) {
           selection.selectAll("*").remove();
           selection.call(testLayout.layout(layout).size(dims));
 
-          selection.selectAll("." + testLayout.cssClass())
+          selection.selectAll("." + testLayout.class())
             .each(function () {
               if (layout === "rows") {
                 chai.assert.equal(this.clientWidth, dims[0]);

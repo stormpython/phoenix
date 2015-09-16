@@ -27,10 +27,11 @@
       });
       <!-- Tests -->
       require([
-        "specs/layout",
-        "specs/main",
-        "specs/size",
-        "specs/sum_listeners"
+        "specs/index",
+        "specs/components/layout",
+        "specs/components/main",
+        "specs/components/size",
+        "specs/components/sum_listeners"
       ], function () {
         mocha.run();
       });
