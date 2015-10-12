@@ -1,6 +1,6 @@
 {
   "name": "phx",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "D3 Charting Library",
   "main": "src/index.js",
   "directories": {
@@ -15,7 +15,7 @@
   },
   "keywords": [
     "d3",
-    "jubilee"
+    "charts"
   ],
   "author": "Shelby Sturgis",
   "license": "MIT",
@@ -41,6 +41,6 @@
     "almond": "^0.3.1"
   },
   "dependencies": {
-    "jubilee": "0.0.3"
+    "d3": "3.5.6"
   }
 }
