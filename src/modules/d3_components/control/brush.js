@@ -1,5 +1,5 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
 
   /**
    * Creates a brush component and binds it to an <svg></svg>.
@@ -7,7 +7,7 @@ define(function (require) {
   return function brush() {
     // Private variables
     var margin = { top: 0, right: 0, bottom: 0, left: 0 };
-    var cssClass = "brush";
+    var cssClass = 'brush';
     var opacity = 0.2;
     var width = null;
     var height = null;
@@ -25,22 +25,22 @@ define(function (require) {
         height = height - margin.top - margin.bottom;
 
         var brush = d3.svg.brush()
-          .on("brushstart", function () {
+          .on('brushstart', function () {
             brushStartCallback.forEach(function (listener) {
               listener.call(this, brush, data, index);
             });
           })
-          .on("brush", function () {
+          .on('brush', function () {
             brushCallback.forEach(function (listener) {
               listener.call(this, brush, data, index);
             });
           })
-          .on("brushend", function () {
+          .on('brushend', function () {
             brushEndCallback.forEach(function (listener) {
               listener.call(this, brush, data, index);
 
               // Clear brush
-              d3.selectAll("g." + cssClass)
+              d3.selectAll('g.' + cssClass)
                 .call(brush.clear());
             });
           });
@@ -53,27 +53,27 @@ define(function (require) {
         var brushG = d3.select(this);
 
         // Remove previous brush
-        brushG.select("g." + cssClass).remove();
+        brushG.select('g.' + cssClass).remove();
 
         // Attach new brush
-        brushG.append("g")
-          .attr("class", cssClass)
-          .attr("opacity", opacity)
+        brushG.append('g')
+          .attr('class', cssClass)
+          .attr('opacity', opacity)
           .call(brush)
-          .selectAll("rect");
+          .selectAll('rect');
 
-        if (width) { brushG.attr("width", width); }
-        if (height) { brushG.attr("height", height); }
+        if (width) { brushG.attr('width', width); }
+        if (height) { brushG.attr('height', height); }
       });
     }
 
     // Public API
     component.margin = function (_) {
       if (!arguments.length) { return margin; }
-      margin.top = typeof _.top !== "undefined" ? _.top : margin.top;
-      margin.right = typeof _.right !== "undefined" ? _.right : margin.right;
-      margin.bottom = typeof _.bottom !== "undefined" ? _.bottom : margin.bottom;
-      margin.left = typeof _.left !== "undefined" ? _.left : margin.left;
+      margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
+      margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
+      margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
+      margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
       return component;
     };
 
@@ -127,21 +127,21 @@ define(function (require) {
 
     component.brushstart = function (_) {
       if (!arguments.length) { return brushStartCallback; }
-      if (typeof _ === "function") { brushStartCallback.push(_); }
+      if (typeof _ === 'function') { brushStartCallback.push(_); }
       else if (Array.isArray(_)) { brushStartCallback = _; }
       return component;
     };
 
     component.brush = function (_) {
       if (!arguments.length) { return brushCallback; }
-      if (typeof _ === "function") { brushCallback.push(_); }
+      if (typeof _ === 'function') { brushCallback.push(_); }
       else if (Array.isArray(_)) { brushCallback = _; }
       return component;
     };
 
     component.brushend = function (_) {
       if (!arguments.length) { return brushEndCallback; }
-      if (typeof _ === "function") { brushEndCallback.push(_); }
+      if (typeof _ === 'function') { brushEndCallback.push(_); }
       else if (Array.isArray(_)) { brushEndCallback = _; }
       return component;
     };

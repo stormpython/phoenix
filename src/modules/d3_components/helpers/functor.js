@@ -1,6 +1,6 @@
 define(function (require) {
-  var d3 = require("d3");
-  var builder = require("builder");
+  var d3 = require('d3');
+  var builder = require('./builder');
 
   /**
    * Builds and return a function based on key value pairs
@@ -18,13 +18,13 @@ define(function (require) {
 
     constructor.function = function (_) {
       if (!arguments.length) { return func; }
-      func = typeof _ !== "function" ? func : _;
+      func = typeof _ !== 'function' ? func : _;
       return constructor;
     };
 
     constructor.options = function (_) {
       if (!arguments.length) { return opts; }
-      opts = typeof _ !== "object" ? opts : _;
+      opts = typeof _ !== 'object' ? opts : _;
       return constructor;
     };
 

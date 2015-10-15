@@ -1,18 +1,19 @@
 define(function (require) {
-  var d3 = require("d3");
-  var chart = require("src/main/chart");
-  var layout = require("src/main/layout");
-  var sizeFunc = require("src/helpers/size");
-  var sumListeners = require("src/helpers/sum_listeners");
+  var d3 = require('d3');
+  var d3Components = require('d3_components');
+  var chart = d3Components.mixed.chart;
+  var layout = d3Components.element.div;
+  var sizeFunc = require('src/modules/helpers/size');
+  var sumListeners = require('src/modules/helpers/sum_listeners');
 
   function evaluate(self) {
     if (!self._selection || !self._selection.node()) {
-      throw new Error("A valid element is required");
+      throw new Error('A valid element is required');
     }
     if (!self._datum && !self._datum.length || !self._selection.datum()) {
-      throw new Error("No data provided");
+      throw new Error('No data provided');
     }
-    if (!self._opts) throw new Error("No options given");
+    if (!self._opts) throw new Error('No options given');
   }
 
   /**
@@ -44,7 +45,7 @@ define(function (require) {
     if (!arguments.length) return this._el; // => Getter
     if (!(el instanceof HTMLElement) && !(el instanceof String) &&
       !(d3.select(el).node())) {
-      throw new Error("Phx requires a valid HTML element");
+      throw new Error('Phx requires a valid HTML element');
     }
 
     this._el = el; // => Setter
@@ -62,12 +63,12 @@ define(function (require) {
   Phx.prototype.data = function (datum) {
     if (!arguments.length) return this._datum; // => Getter
     if (!(datum instanceof Array)) {
-      throw new Error("data expects an array as input");
+      throw new Error('data expects an array as input');
     }
 
     datum.every(function (obj) {
       if (!(obj instanceof Object)) {
-        throw new Error("data expects an array of objects");
+        throw new Error('data expects an array of objects');
       }
     });
 
@@ -85,7 +86,7 @@ define(function (require) {
   Phx.prototype.options = function (opts) {
     if (!arguments.length) return this._opts; // => Getter
     if (!(opts instanceof Object) || opts instanceof Array) {
-      throw new Error("The options method expects a valid object");
+      throw new Error('The options method expects a valid object');
     }
 
     this._opts = opts; // => Setter
@@ -129,12 +130,12 @@ define(function (require) {
     evaluate(this);
     this.remove(); // Remove previous charts if any
 
-    layout = this._layout.layout(this._opts.layout || "rows");
+    layout = this._layout.layout(this._opts.layout || 'rows');
     chart = this._chart.options(this._opts);
     size = sizeFunc().width(width).height(height)(this._selection);
     if (size[0] <= 0 || size[1] <= 0) return this;
 
-    this._chartClass = "." + layout.class();
+    this._chartClass = '.' + layout.class();
     this._selection.call(layout.size(size))
       .selectAll(this._chartClass).call(chart);
     return this;
@@ -155,7 +156,7 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.remove = function () {
-    if (this._selection) this._selection.selectAll("*").remove();
+    if (this._selection) this._selection.selectAll('*').remove();
     return this;
   };
 
@@ -187,7 +188,7 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.on = function (event, listener) {
-    if (!this._selection) throw new Error("A valid element is required");
+    if (!this._selection) throw new Error('A valid element is required');
 
     this._chart.on(event, listener); // value => 'on' or 'off'
     this._listeners = this._chart.listeners(); // Redefine listeners
@@ -196,8 +197,8 @@ define(function (require) {
 
   /**
    * Removes event listeners from chart(s).
-   * e.g. chart.off("click") => Removes all click listeners
-   * e.g. chart.off("click", clickFunction) => Removes clickFunction
+   * e.g. chart.off('click') => Removes all click listeners
+   * e.g. chart.off('click', clickFunction) => Removes clickFunction
    * from click event listeners array.
    *
    * @param {String} event - DOM event, e.g. 'click'
@@ -205,7 +206,7 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.off = function (event, listener) {
-    if (!this._selection) throw new Error("A valid element is required");
+    if (!this._selection) throw new Error('A valid element is required');
 
     if (arguments.length === 1) this._chart.off(event);
     if (arguments.length === 2) this._chart.off(event, listener);
@@ -227,7 +228,7 @@ define(function (require) {
 
   /**
    * Returns the listeners array for a specified event type,
-   * e.g. "click".
+   * e.g. 'click'.
    *
    * @param {String} event - DOM event, e.g. 'click'
    * @returns {Array}

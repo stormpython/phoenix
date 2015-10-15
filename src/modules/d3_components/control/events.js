@@ -2,8 +2,8 @@
  * Adds event listeners to DOM elements
  */
 define(function (require) {
-  var d3 = require("d3");
-  var targetIndex = require("src/modules/helpers/target_index");
+  var d3 = require('d3');
+  var targetIndex = require('src/modules/d3_components/helpers/target_index');
 
   return function events() {
     // Private variables
@@ -41,7 +41,7 @@ define(function (require) {
     // Public API
     component.listeners = function (_) {
       if (!arguments.length) { return listeners; }
-      listeners = typeof _ === "object" ? _ : listeners;
+      listeners = typeof _ === 'object' ? _ : listeners;
       return component;
     };
 

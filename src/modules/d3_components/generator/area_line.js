@@ -1,8 +1,9 @@
 define(function (require) {
-  var d3 = require("d3");
-  var layout = require('src/modules/d3_generators/layout/area_line');
-  var path = require("src/modules/element/svg/path");
-  var builder = require("builder");
+  var d3 = require('d3');
+  var d3Components = require('d3_components');
+  var layout = d3Components.layout.areaLine;
+  var path = d3Components.element.path;
+  var builder = d3Components.builder;
 
   return function line() {
     var options = {};
@@ -13,7 +14,7 @@ define(function (require) {
         var pathLayout = builder(options, layout());
         var path = builder(properties, path());
 
-        d3.select(this).append("g")
+        d3.select(this).append('g')
           .datum(pathLayout(data))
           .call(path);
       });
