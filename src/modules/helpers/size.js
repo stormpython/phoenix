@@ -1,13 +1,14 @@
-/**
- * Returns a function that returns an array of
- * the width and height of a DOM element.
- * Accepts either a function that returns a
- * number or a number as values for width and height.
- * Or if width and height are undefined, it uses the
- * clientWidth and clientHeight from the DOM element.
- * Validates that the width and height are valid numbers.
- */
 define(function () {
+  /**
+   * Returns a function that returns an array of
+   * the width and height of a DOM element.
+   * Accepts either a function that returns a
+   * number or a number as values for width and height.
+   * Or if width and height are undefined, it uses the
+   * clientWidth and clientHeight from the DOM element.
+   * Validates that the width and height are valid numbers.
+   */
+
   return function size() {
     var width = null;
     var height = null;
