@@ -1,77 +1,68 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
 
   return function line() {
-    var accessor = function (d) { return d; };
-    var x1 = 0;
-    var x2 = 0;
-    var y1 = 0;
-    var y2 = 0;
-
-    var cssClass = "line";
+    var color = d3.scale.category10();
+    var x1 = function (d) { return d.x1 || 0; };
+    var x2 = function (d) { return d.x2 || 0; };
+    var y1 = function (d) { return d.y1 || 0; };
+    var y2 = function (d) { return d.y2 || 0; };
+    var cssClass = 'line';
     var stroke = colorFill;
     var strokeWidth = 2;
     var opacity = 1;
 
     function element(selection) {
-      selection.each(function (data, index) {
-        data = accessor.call(this, data, index);
+      selection.each(function (data) {
 
-        var lines = d3.select(this)
-          .selectAll("." + cssClass)
+        var lines = d3.select(this).selectAll('line')
           .data(data);
 
         // Exit
         lines.exit().remove();
 
         // Enter
-        lines.enter().append("line");
+        lines.enter().append('line');
 
         // Update
         lines
-          .attr("class", cssClass)
-          .attr("x1", x1)
-          .attr("x2", x2)
-          .attr("y1", y1)
-          .attr("y2", y2)
-          .attr("stroke", stroke)
-          .attr("stroke-width", strokeWidth)
-          .style("opacity", opacity);
+          .attr('class', cssClass)
+          .attr('x1', x1)
+          .attr('x2', x2)
+          .attr('y1', y1)
+          .attr('y2', y2)
+          .attr('stroke', stroke)
+          .attr('stroke-width', strokeWidth)
+          .style('opacity', opacity);
       });
     }
 
     function colorFill(d, i) {
-      return d3.scale.category10()(i);
+      return color(i);
     }
 
     // Public API
-    element.accessor = function (_) {
-      if (!arguments.length) { return accessor; }
-      accessor = _;
-      return element;
-    };
-    
     element.x1 = function (_) {
       if (!arguments.length) { return x1; }
-      x1 = _;
+      x1 = d3.functor(_);
       return element;
     };
 
     element.x2 = function (_) {
       if (!arguments.length) { return x2; }
-      x2 = _;
+      x2 = d3.functor(_);
       return element;
     };
 
     element.y1 = function (_) {
       if (!arguments.length) { return y1; }
-      y1 = _;
+      y1 = d3.functor(_);
       return element;
     };
 
     element.y2 = function (_) {
       if (!arguments.length) { return y2; }
-      y2 = _;
+      y2 = d3.functor(_);
       return element;
     };
 

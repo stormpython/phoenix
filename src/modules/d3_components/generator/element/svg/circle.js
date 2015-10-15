@@ -1,25 +1,20 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
 
   return function circle() {
-    var accessor = function (d) { return d; };
-    var cx = function (d) { return d.x; };
-    var cy = function (d) { return d.y; };
-    var radius = 5;
-
-    // Options
-    var cssClass = "circles";
+    var color = d3.scale.category10();
+    var cx = function (d) { return d.dx; };
+    var cy = function (d) { return d.dy; };
+    var radius = function (d) { return d.radius || 5; };
+    var cssClass = 'circle';
     var fill = colorFill;
     var stroke = colorFill;
     var strokeWidth = 0;
     var opacity = null;
 
     function element(selection) {
-      selection.each(function (data, index) {
-        data = accessor.call(this, data, index);
-
-        var circles = d3.select(this)
-          .selectAll("." + cssClass)
+      selection.each(function (data) {
+        var circles = d3.select(this).selectAll('circle')
           .data(data);
 
         // Exit
@@ -27,47 +22,41 @@ define(function (require) {
 
         // Enter
         circles
-          .enter().append("circle");
+          .enter().append('circle');
 
         // Update
         circles
-          .attr("class", cssClass)
-          .attr("fill", fill)
-          .attr("stroke", stroke)
-          .attr("stroke-width", strokeWidth)
-          .attr("r", radius)
-          .attr("cx", cx)
-          .attr("cy", cy)
-          .style("opacity", opacity);
+          .attr('class', cssClass)
+          .attr('fill', fill)
+          .attr('stroke', stroke)
+          .attr('stroke-width', strokeWidth)
+          .attr('r', radius)
+          .attr('cx', cx)
+          .attr('cy', cy)
+          .style('opacity', opacity);
       });
     }
 
     function colorFill (d, i) {
-      return d3.scale.category10()(i);
+      return color(i);
     }
 
     // Public API
-    element.accessor = function (_) {
-      if (!arguments.length) { return accessor; }
-      accessor = _;
-      return element;
-    };
-
     element.cx = function (_) {
       if (!arguments.length) { return cx; }
-      cx = _;
+      cx = d3.functor(_);
       return element;
     };
 
     element.cy = function (_) {
       if (!arguments.length) { return cy; }
-      cy = _;
+      cy = d3.functor(_);
       return element;
     };
 
     element.radius = function (_) {
       if (!arguments.length) { return radius; }
-      radius = _;
+      radius = d3.functor(_);
       return element;
     };
 

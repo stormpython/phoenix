@@ -1,72 +1,60 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
 
   return function image() {
-    var accessor = function (d) { return d; };
-    var x = function (d) { return d.x; };
-    var y = function (d) { return d.y; };
-    var width = 10;
-    var height = 10;
+    var x = function (d) { return d.dx; };
+    var y = function (d) { return d.dy; };
+    var width = function (d) { return d.width || 10; };
+    var height = function (d) { return d.height || 10; };
     var xlink = null;
     var preserveAspectRatio = null;
-
-    // Options
-    var cssClass = "image";
+    var cssClass = 'image';
 
     function element(selection) {
-      selection.each(function (data, index) {
-        data = accessor.call(this, data, index);
-
-        var images = d3.select(this)
-          .selectAll("." + cssClass)
+      selection.each(function (data) {
+        var images = d3.select(this).selectAll('image')
           .data(data);
 
         // Exit
         images.exit().remove();
 
         // Enter
-        images.enter().append("image");
+        images.enter().append('image');
 
         // Update
         images
-          .attr("class", cssClass)
-          .attr("x", x)
-          .attr("y", y)
-          .attr("width", width)
-          .attr("height", height)
-          .attr("xlink:href", xlink)
-          .attr("preserveAspectRatio", preserveAspectRatio);
+          .attr('class', cssClass)
+          .attr('x', x)
+          .attr('y', y)
+          .attr('width', width)
+          .attr('height', height)
+          .attr('xlink:href', xlink)
+          .attr('preserveAspectRatio', preserveAspectRatio);
       });
     }
 
     // Public API
-    element.accessor = function (_) {
-      if (!arguments.length) { return accessor; }
-      accessor = _;
-      return element;
-    };
-    
     element.x = function (_) {
       if (!arguments.length) { return x; }
-      x = _;
+      x = d3.functor(_);
       return element;
     };
 
     element.y = function (_) {
       if (!arguments.length) { return y; }
-      y = _;
+      y = d3.functor(_);
       return element;
     };
 
     element.width = function (_) {
       if (!arguments.length) { return width; }
-      width = _;
+      width = d3.functor(_);
       return element;
     };
 
     element.height = function (_) {
       if (!arguments.length) { return height; }
-      height = _;
+      height = d3.functor(_);
       return element;
     };
 

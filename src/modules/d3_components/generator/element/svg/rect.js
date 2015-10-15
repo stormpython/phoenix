@@ -1,93 +1,95 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
 
   return function rect() {
-    var accessor = function (d) { return d; };
-    var x = function (d) { return d.x; };
-    var y = function (d) { return d.y; };
-    var rx = 0;
-    var ry = 0;
-    var width = null;
-    var height = null;
+    var color = d3.scale.category10();
+    var accessor = function (d) { return d.values; };
+    var x = function (d) { return d.dx; };
+    var y = function (d) { return d.dy; };
+    var rx = function (d) { return d.rx || 0; };
+    var ry = function (d) { return d.ry || 0; };
+    var width = function (d) { return d.width; };
+    var height = function (d) { return d.height; };
 
     // Options
-    var cssClass = "bar";
+    var cssClass = 'bar';
     var fill = colorFill;
     var stroke = colorFill;
     var strokeWidth = 0;
     var opacity = 1;
 
     function element(selection) {
-      selection.each(function (data, index) {
-        data = accessor.call(this, data, index);
+      selection.each(function (data) {
+        data = data.map(function (d, i) {
+          return accessor.call(this, d, i);
+        });
 
-        var bars = d3.select(this)
-          .selectAll("." + cssClass)
+        var bars = d3.select(this).selectAll('rect')
           .data(data);
 
         bars.exit().remove();
 
-        bars.enter().append("rect");
+        bars.enter().append('rect');
 
         bars
-          .attr("class", cssClass)
-          .attr("fill", fill)
-          .attr("stroke", stroke)
-          .attr("stroke-width", strokeWidth)
-          .attr("x", x)
-          .attr("y", y)
-          .attr("rx", rx)
-          .attr("ry", ry)
-          .attr("width", width)
-          .attr("height", height)
-          .style("opacity", opacity);
+          .attr('class', cssClass)
+          .attr('fill', fill)
+          .attr('stroke', stroke)
+          .attr('stroke-width', strokeWidth)
+          .attr('x', x)
+          .attr('y', y)
+          .attr('rx', rx)
+          .attr('ry', ry)
+          .attr('width', width)
+          .attr('height', height)
+          .style('opacity', opacity);
       });
     }
 
     function colorFill(d, i) {
-      return d3.scale.category10()(i);
+      return color(i);
     }
 
     // Public API
     element.accessor = function (_) {
       if (!arguments.length) { return accessor; }
-      accessor = _;
+      accessor = d3.functor(_);
       return element;
     };
 
     element.x = function (_) {
       if (!arguments.length) { return x; }
-      x = _;
+      x = d3.functor(_);
       return element;
     };
 
     element.y = function (_) {
       if (!arguments.length) { return y; }
-      y = _;
+      y = d3.functor(_);
       return element;
     };
 
     element.rx = function (_) {
       if (!arguments.length) { return rx; }
-      rx = _;
+      rx = d3.functor(_);
       return element;
     };
 
     element.ry = function (_) {
       if (!arguments.length) { return ry; }
-      ry = _;
+      ry = d3.functor(_);
       return element;
     };
 
     element.width = function (_) {
       if (!arguments.length) { return width; }
-      width = _;
+      width = d3.functor(_);
       return element;
     };
 
     element.height = function (_) {
       if (!arguments.length) { return height; }
-      height = _;
+      height = d3.functor(_);
       return element;
     };
 

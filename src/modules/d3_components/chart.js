@@ -7,10 +7,9 @@ define(function (require) {
 
     function component(selection) {
       selection.each(function (data) {
-        var div = d3.select(this);
         var dataOpts = data && data.options || {};
         var chartType = dataOpts.type || opts.type || "series";
-        var accessor = jee.valuator(dataOpts.accessor || opts.accessor || "data");
+        var accessor = dataOpts.accessor || opts.accessor || "data";
         var chart = jee.chart[chartType]()
           .width(data.width)
           .height(data.height)
@@ -24,7 +23,10 @@ define(function (require) {
           });
         });
 
-        div.call(chart.accessor(accessor)); // Draw Chart
+        if (typeof chart.accessor)
+
+        d3.select(this)
+          .call(chart); // Draw Chart
       });
     }
 

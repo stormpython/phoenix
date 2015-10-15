@@ -1,9 +1,9 @@
 define(function (require) {
-  require("jubilee"); // contains d3
-  var chart = require("src/components/chart");
-  var layout = require("src/components/layout");
-  var sizeFunc = require("src/components/size");
-  var sumListeners = require("src/components/sum_listeners");
+  var d3 = require("d3");
+  var chart = require("src/main/chart");
+  var layout = require("src/main/layout");
+  var sizeFunc = require("src/helpers/size");
+  var sumListeners = require("src/helpers/sum_listeners");
 
   function evaluate(self) {
     if (!self._selection || !self._selection.node()) {

@@ -1,51 +1,47 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
 
   return function path() {
-    var accessor = function (d) { return d; };
-    var pathGenerator = null;
-
-    // Options
-    var cssClass = "path";
-    var transform = "translate(0,0)";
-    var fill = "none";
-    var stroke = function (d, i) { return d3.scale.category10()(i); };
+    var color = d3.scale.category10();
+    var accessor = function (d) { return d.values; };
+    var path = function (d) { return d.d; };
+    var cssClass = 'path';
+    var transform = 'translate(0,0)';
+    var fill = 'none';
+    var stroke = function (d, i) { return color(i); };
     var strokeWidth = 1;
     var opacity = 1;
 
     function element(selection) {
-      selection.each(function (data, index) {
-        data = accessor.call(this, data, index);
-
-        var path = d3.select(this)
-          .selectAll("." + cssClass)
+      selection.each(function (data) {
+        var path = d3.select(this).selectAll('path')
           .data(data);
 
         path.exit().remove();
 
-        path.enter().append("path");
+        path.enter().append('path');
 
         path
-          .attr("transform", transform)
-          .attr("class", cssClass)
-          .attr("fill", fill)
-          .attr("stroke", stroke)
-          .attr("stroke-width", strokeWidth)
-          .attr("d", pathGenerator)
-          .style("opacity", opacity);
+          .attr('transform', transform)
+          .attr('class', cssClass)
+          .attr('fill', fill)
+          .attr('stroke', stroke)
+          .attr('stroke-width', strokeWidth)
+          .attr('d', path)
+          .style('opacity', opacity);
       });
     }
 
     // Public API
     element.accessor = function (_) {
       if (!arguments.length) { return accessor; }
-      accessor = _;
+      accessor = d3.functor(_);
       return element;
     };
 
-    element.pathGenerator = function (_) {
-      if (!arguments.length) { return pathGenerator; }
-      pathGenerator = _;
+    element.path = function (_) {
+      if (!arguments.length) { return path; }
+      path = d3.functor(_);
       return element;
     };
 

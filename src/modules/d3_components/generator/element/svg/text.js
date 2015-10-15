@@ -1,73 +1,61 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
 
   return function text() {
-    var accessor = function (d) { return d; };
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
-    var dx = 0;
-    var dy = 0;
+    var dx = function (d) { return d.dx || 0; };
+    var dy = function (d) { return d.dy || 0; };
     var transform = null;
-
-    // Options
-    var cssClass = "text";
-    var fill = "#ffffff";
-    var anchor = "middle";
-    var texts = "";
+    var cssClass = 'text';
+    var fill = '#ffffff';
+    var anchor = 'middle';
+    var texts = '';
 
     function element(selection) {
-      selection.each(function (data, index) {
-        data = accessor.call(this, data, index);
-
-        var text = d3.select(this)
-          .selectAll("." + cssClass)
+      selection.each(function (data) {
+        var text = d3.select(this).selectAll('text')
           .data(data);
 
         text.exit().remove();
 
-        text.enter().append("text");
+        text.enter().append('text');
 
         text
-          .attr("class", cssClass)
-          .attr("transform", transform)
-          .attr("x", x)
-          .attr("y", y)
-          .attr("dx", dx)
-          .attr("dy", dy)
-          .attr("fill", fill)
-          .style("text-anchor", anchor)
+          .attr('class', cssClass)
+          .attr('transform', transform)
+          .attr('x', x)
+          .attr('y', y)
+          .attr('dx', dx)
+          .attr('dy', dy)
+          .attr('fill', fill)
+          .style('text-anchor', anchor)
           .text(texts);
       });
     }
 
     // Public API
-    element.accessor = function (_) {
-      if (!arguments.length) { return accessor; }
-      accessor = _;
-      return element;
-    };
-
     element.x = function (_) {
       if (!arguments.length) { return x; }
-      x = _;
+      x = d3.functor(_);
       return element;
     };
 
     element.y = function (_) {
       if (!arguments.length) { return y; }
-      y = _;
+      y = d3.functor(_);
       return element;
     };
 
     element.dx = function (_) {
       if (!arguments.length) { return dx; }
-      dx = _;
+      dx = d3.functor(_);
       return element;
     };
 
     element.dy = function (_) {
       if (!arguments.length) { return dy; }
-      dy = _;
+      dy = d3.functor(_);
       return element;
     };
 
