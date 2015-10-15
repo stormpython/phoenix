@@ -2,7 +2,6 @@ This is a collection of style guides for Kibana projects. The include guides for
 
 - [JavaScript](#javascript-style-guide)
 - [Phoenix Project](#phoenix-style-guide)
-- [Html](#html-style-guide)
 
 # JavaScript Style Guide
 

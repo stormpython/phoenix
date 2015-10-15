@@ -1,6 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
-  var builder = require('./builder');
+  var builder = require('src/modules/d3_components/helpers/builder');
 
   /**
    * Builds and return a function based on key value pairs
