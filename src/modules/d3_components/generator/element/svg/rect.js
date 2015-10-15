@@ -10,8 +10,6 @@ define(function (require) {
     var ry = function (d) { return d.ry || 0; };
     var width = function (d) { return d.width; };
     var height = function (d) { return d.height; };
-
-    // Options
     var cssClass = 'bar';
     var fill = colorFill;
     var stroke = colorFill;
