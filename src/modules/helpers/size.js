@@ -11,14 +11,14 @@ define(function () {
 
   return function size(selection, width, height) {
     var node = selection.node();
-    var w = typeof width === "function" ? width() : width || node.clientWidth;
-    var h = typeof height === "function" ? height() : height ||
+    var w = typeof width === 'function' ? width() : width || node.clientWidth;
+    var h = typeof height === 'function' ? height() : height ||
     node.clientHeight;
 
-    if (typeof +w !== "number" || isNaN(+w) ||
-      typeof +h !== "number" || isNaN(+h)) {
-      throw new Error("width: " + w + " and height: " + h +
-        " must evaluate to a number.");
+    if (typeof +w !== 'number' || isNaN(+w) ||
+      typeof +h !== 'number' || isNaN(+h)) {
+      throw new Error('width: ' + w + ' and height: ' + h +
+        ' must evaluate to a number.');
     }
 
     return [+w, +h];
