@@ -132,7 +132,7 @@ define(function (require) {
 
     layout = this._layout.layout(this._opts.layout || 'rows');
     chart = this._chart.options(this._opts);
-    size = sizeFunc().width(width).height(height)(this._selection);
+    size = sizeFunc(this._selection, width, height);
     if (size[0] <= 0 || size[1] <= 0) return this;
 
     this._chartClass = '.' + layout.class();
