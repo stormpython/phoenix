@@ -7,14 +7,18 @@ define(function (require) {
   return function bars() {
     var options = {};
     var properties = {};
+    var g;
 
     function generator(selection) {
       selection.each(function (data) {
         var barLayout = builder(options, layout());
         var rects = builder(properties, rect());
 
-        d3.select(this).append("g")
-          .selectAll("g")
+        if (!g) {
+          g = d3.select(this).append("g");
+        }
+
+        g.selectAll("g")
           .data(barLayout(data))
           .enter().append("g")
           .call(rects);

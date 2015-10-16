@@ -8,14 +8,18 @@ define(function (require) {
   return function line() {
     var options = {};
     var properties = {};
+    var g;
 
     function generator(selection) {
       selection.each(function (data) {
         var pathLayout = builder(options, layout());
         var path = builder(properties, path());
 
-        d3.select(this).append('g')
-          .datum(pathLayout(data))
+        if (!g) {
+          g = d3.select(this).append('g');
+        }
+
+        g.datum(pathLayout(data))
           .call(path);
       });
     }

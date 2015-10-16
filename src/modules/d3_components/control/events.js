@@ -8,10 +8,13 @@ define(function (require) {
   return function events() {
     // Private variables
     var listeners = {};
+    var element;
 
     function component(selection) {
       selection.each(function () {
-        var element = d3.select(this);
+        if (!element) {
+          element = d3.select(this);
+        }
 
         d3.entries(listeners).forEach(function (e) {
           // Stop listening for event types that have

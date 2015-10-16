@@ -7,14 +7,18 @@ define(function (require) {
   return function points() {
     var options = {};
     var properties = {};
+    var g;
 
     function component(selection) {
       selection.each(function (data) {
         var scatterLayout = builder(options, layout());
         var circles = builder(properties, circle());
 
-        d3.select(this).append("g")
-          .datum(scatterLayout(data))
+        if (!g) {
+          g = d3.select(this).append("g");
+        }
+
+        g.datum(scatterLayout(data))
           .call(circles);
       });
     }

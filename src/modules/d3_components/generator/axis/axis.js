@@ -37,6 +37,9 @@ define(function (require) {
       transform: 'translate(0,0)',
       text: ''
     };
+    var g;
+    var text;
+    var rotation;
 
     function generator(selection) {
       selection.each(function () {
@@ -51,27 +54,29 @@ define(function (require) {
           .tickPadding(tick.padding)
           .tickFormat(tick.format);
 
-        var g = d3.select(this);
-
-        // Remove previous axis
-        g.select('g.' + gClass).remove();
+        if (!g) {
+          g = d3.select(this).append('g');
+        }
 
         // Attach axis
-        g.append('g')
-          .attr('class', gClass)
+        g.attr('class', gClass)
           .attr('transform', transform)
           .call(axis);
 
         if (rotateLabels.allow) {
           var axisLength = Math.abs(scale.range()[1] - scale.range()[0]);
-          var rotation = rotate()
-            .axisLength(axisLength);
 
+          if (!rotation) rotation = rotate();
+
+          rotation.axisLength(axisLength);
           g.call(builder(rotateLabels, rotation));
         }
 
-        g.append('text')
-          .attr('class', title.class)
+        if (!text) {
+          text = g.append('text');
+        }
+
+        g.attr('class', title.class)
           .attr('x', title.x)
           .attr('y', title.y)
           .attr('dx', title.dx)

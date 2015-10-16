@@ -8,19 +8,23 @@ define(function (require) {
     var y = 0;
     var width = 0;
     var height = 0;
+    var g;
+    var rect;
 
     function generator(selection) {
       selection.each(function () {
-        var g = d3.select(this);
+        if (!g) {
+          g = d3.select(this).append('clipPath')
+            .attr('id', id);
+        }
 
-        // Remove previous clip-path
-        g.select('clipPath').remove();
+        g.attr('transform', transform);
 
-        g.append('clipPath')
-          .attr('id', id)
-          .attr('transform', transform)
-          .append('rect')
-          .attr('x', x)
+        if (!rect) {
+          rect = g.append('rect');
+        }
+
+        rect.attr('x', x)
           .attr('y', y)
           .attr('width', width)
           .attr('height', height);
