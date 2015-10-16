@@ -35,43 +35,43 @@ define(function (require) {
 
     // Public API
     element.x = function (_) {
-      if (!arguments.length) { return x; }
+      if (!arguments.length) return x;
       x = d3.functor(_);
       return element;
     };
 
     element.y = function (_) {
-      if (!arguments.length) { return y; }
+      if (!arguments.length) return y;
       y = d3.functor(_);
       return element;
     };
 
     element.width = function (_) {
-      if (!arguments.length) { return width; }
+      if (!arguments.length) return width;
       width = d3.functor(_);
       return element;
     };
 
     element.height = function (_) {
-      if (!arguments.length) { return height; }
+      if (!arguments.length) return height;
       height = d3.functor(_);
       return element;
     };
 
     element.xlink = function (_) {
-      if (!arguments.length) { return xlink; }
+      if (!arguments.length) return xlink;
       xlink = _;
       return element;
     };
 
     element.preserveAspectRatio = function (_) {
-      if (!arguments.length) { return preserveAspectRatio; }
+      if (!arguments.length) return preserveAspectRatio;
       preserveAspectRatio = _;
       return element;
     };
 
     element.class = function (_) {
-      if (!arguments.length) { return cssClass; }
+      if (!arguments.length) return cssClass;
       cssClass = _;
       return element;
     };

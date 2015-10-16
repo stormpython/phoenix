@@ -4,7 +4,6 @@ define(function (require) {
   var rotate = require('src/modules/d3_components/generator/axis/rotate');
 
   return function axes() {
-    // Private variables
     var scale = d3.scale.linear();
     var orient = 'bottom';
     var tick = {
@@ -89,31 +88,31 @@ define(function (require) {
 
     // Public API
     generator.class = function (_) {
-      if (!arguments.length) { return gClass; }
+      if (!arguments.length) return gClass;
       gClass = _;
       return generator;
     };
 
     generator.transform = function (_) {
-      if (!arguments.length) { return transform; }
+      if (!arguments.length) return transform;
       transform = _;
       return generator;
     };
 
     generator.scale = function (_) {
-      if (!arguments.length) { return scale; }
+      if (!arguments.length) return scale;
       scale = _;
       return generator;
     };
 
     generator.orient = function (_) {
-      if (!arguments.length) { return orient; }
+      if (!arguments.length) return orient;
       orient = _;
       return generator;
     };
 
     generator.tick = function (_) {
-      if (!arguments.length) { return tick; }
+      if (!arguments.length) return tick;
       tick.number = typeof _.number !== 'undefined' ? _.number : tick.number;
       tick.values = typeof _.values !== 'undefined' ? _.values : tick.values;
       tick.size = typeof _.size !== 'undefined' ? _.size : tick.size;
@@ -125,7 +124,7 @@ define(function (require) {
     };
 
     generator.tickText = function (_) {
-      if (!arguments.length) { return tickText; }
+      if (!arguments.length) return tickText;
       tickText.transform = typeof _.transform !== 'undefined' ? _.transform : tickText.transform;
       tickText.anchor = typeof _.anchor !== 'undefined' ? _.anchor : tickText.anchor;
       tickText.x = typeof _.x !== 'undefined' ? _.x : tickText.x;
@@ -136,13 +135,13 @@ define(function (require) {
     };
 
     generator.rotateLabels = function (_) {
-      if (!arguments.length) { return rotateLabels; }
+      if (!arguments.length) return rotateLabels;
       rotateLabels = typeof _ !== 'object' ? rotateLabels : _;
       return generator;
     };
 
     generator.title = function (_) {
-      if (!arguments.length) { return title; }
+      if (!arguments.length) return title;
       title.class = typeof _.class !== 'undefined' ? _.class : title.class;
       title.x = typeof _.x !== 'undefined' ? _.x : title.x;
       title.y = typeof _.y !== 'undefined' ? _.y : title.y;

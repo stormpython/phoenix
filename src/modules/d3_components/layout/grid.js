@@ -1,5 +1,5 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
 
   return function grid() {
     // Private variables
@@ -34,8 +34,8 @@ define(function (require) {
 
     // Public API
     layout.size = function (_) {
-      if (!arguments.length) { return gridSize; }
-      gridSize = _;
+      if (!arguments.length) return gridSize;
+      gridSize = Array.isArray(_) && _.length === 2 ? _ : gridSize;
       return layout;
     };
 

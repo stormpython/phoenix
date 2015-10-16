@@ -1,16 +1,16 @@
-/**
- * Adds event listeners to DOM elements
- */
 define(function (require) {
   var d3 = require('d3');
-  var targetIndex = require('src/modules/d3_components/helpers/target_index');
+
+  /**
+   * Adds event listeners to DOM elements
+   */
 
   return function events() {
-    // Private variables
     var listeners = {};
+    var eventProcessor = function (e) { return e; };
     var element;
 
-    function component(selection) {
+    function control(selection) {
       selection.each(function () {
         if (!element) {
           element = d3.select(this);
@@ -27,14 +27,7 @@ define(function (require) {
             d3.event.stopPropagation(); // => event.stopPropagation()
 
             e.value.forEach(function (listener) {
-              // References the data point to calculate the correct index value
-              var svg = d3.event.target.farthestViewportElement;
-              var target = d3.select(d3.event.target);
-              var parent = !svg ? d3.select(d3.event.target) : d3.select(svg);
-              var datum = target.datum();
-              var index = targetIndex(parent, target) || 0;
-
-              listener.call(this, d3.event, datum, index);
+              listener.call(this, eventProcessor(d3.event));
             });
           });
         });
@@ -42,12 +35,18 @@ define(function (require) {
     }
 
     // Public API
-    component.listeners = function (_) {
-      if (!arguments.length) { return listeners; }
+    control.listeners = function (_) {
+      if (!arguments.length) return listeners;
       listeners = typeof _ === 'object' ? _ : listeners;
-      return component;
+      return control;
     };
 
-    return component;
+    control.eventProcessor = function (_) {
+      if (!arguments.length) return eventProcessor;
+      eventProcessor = typeof _ === 'function' ? _ : eventProcessor;
+      return control;
+    };
+
+    return control;
   };
 });

@@ -3,7 +3,6 @@ define(function (require) {
   var truncate = require("src/modules/d3_components/generator/axis/truncate");
 
   return function rotate() {
-    // Private variables
     var axisLength = 100;
     var measure = "width";
     var labelPadding = 5;
@@ -50,31 +49,31 @@ define(function (require) {
 
     // Public API
     component.axisLength = function (_) {
-      if (!arguments.length) { return axisLength; }
+      if (!arguments.length) return axisLength;
       axisLength = typeof _ !== "number" ? axisLength : _;
       return component;
     };
 
     component.measure = function (_) {
-      if (!arguments.length) { return measure; }
+      if (!arguments.length) return measure;
       measure = typeof _ !== "string" ? measure : _;
       return component;
     };
 
     component.labelPadding = function (_) {
-      if (!arguments.length) { return labelPadding; }
+      if (!arguments.length) return labelPadding;
       labelPadding = typeof _ !== "number" ? labelPadding : _;
       return component;
     };
 
     component.truncateLength = function (_) {
-      if (!arguments.length) { return truncateLength; }
+      if (!arguments.length) return truncateLength;
       truncateLength = typeof _ !== "number" ? truncateLength : _;
       return component;
     };
 
     component.text = function (_) {
-      if (!arguments.length) { return text; }
+      if (!arguments.length) return text;
       text.transform = typeof _.transform !== "undefined" ? _.transform : text.transform;
       text.x = typeof _.x !== "undefined" ? _.x : text.x;
       text.y = typeof _.y !== "undefined" ? _.y : text.y;

@@ -2,7 +2,6 @@ define(function (require) {
   var d3 = require('d3');
 
   return function truncate() {
-    // Private variables
     var maxCharLength = 10;
 
     function component(text) {
@@ -20,7 +19,7 @@ define(function (require) {
 
     // Public API
     component.maxCharLength = function (_) {
-      if (!arguments.length) { return maxCharLength; }
+      if (!arguments.length) return maxCharLength;
       maxCharLength = typeof _ !== 'number' ? maxCharLength : _;
       return component;
     };

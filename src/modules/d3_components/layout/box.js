@@ -1,5 +1,5 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
 
   return function box() {
     // Private variables
@@ -22,13 +22,13 @@ define(function (require) {
 
     // Public API
     layout.values = function (_) {
-      if (!arguments.length) { return values; }
+      if (!arguments.length) return values;
       values = _;
       return layout;
     };
 
     layout.accessor = function (_) {
-      if (!arguments.length) { return accessor; }
+      if (!arguments.length) return accessor;
       accessor = _;
       return layout;
     };

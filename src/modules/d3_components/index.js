@@ -24,20 +24,20 @@ define(function (require) {
       text: require('src/modules/d3_components/generator/element/svg/text')
     },
     generator: {
-      areaLine: require('src/modules/d3_components/generator/area_line'),
       axis: require('src/modules/d3_components/generator/axis/axis'),
       bars: require('src/modules/d3_components/generator/bars'),
       boxPlot: require('src/modules/d3_components/generator/boxplot'),
       clipPath: require('src/modules/d3_components/generator/clippath'),
       legend: require('src/modules/d3_components/generator/legend'),
+      path: require('src/modules/d3_components/generator/path'),
       points: require('src/modules/d3_components/generator/points')
     },
     layout: {
-      areaLine: require('src/modules/d3_components/layout/area_line'),
       bars: require('src/modules/d3_components/layout/bars'),
       base: require('src/modules/d3_components/layout/base'),
       box: require('src/modules/d3_components/layout/box'),
       grid: require('src/modules/d3_components/layout/grid'),
+      path: require('src/modules/d3_components/layout/path'),
       scatter: require('src/modules/d3_components/layout/scatter')
     },
     mixed: {

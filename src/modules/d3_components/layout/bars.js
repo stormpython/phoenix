@@ -27,7 +27,7 @@ define(function (require) {
       var groupScale = d3.scale.ordinal();
       var timeScale = d3.scale.ordinal()
         .rangeBands(xScale.range(), timePadding, 0);
-      var j = 0;
+      var j = 0; // stack layer counter
       var groupRange;
       var timeNotation;
       var extent;

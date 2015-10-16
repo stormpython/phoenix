@@ -1,27 +1,28 @@
 define(function (require) {
-  var d3 = require("d3");
-  var layout = require('src/modules/d3_generators/layout/scatter');
-  var circle = require("src/modules/element/svg/circle");
-  var builder = require("builder");
+  var d3 = require('d3');
+  var d3Components = require('d3_components');
+  var layout = d3Components.layout.path;
+  var path = d3Components.element.path;
+  var builder = d3Components.builder;
 
-  return function points() {
-    var scatterLayout = layout();
-    var circles = circle();
+  return function paths() {
+    var pathLayout = layout();
+    var paths = path();
     var property = {};
     var attr = {};
     var g;
 
     function generator(selection) {
       selection.each(function (data) {
-        scatterLayout = builder(property, scatterLayout);
-        circles = builder(attr, circles);
+        pathLayout = builder(property, pathLayout);
+        paths = builder(attr, paths);
 
         if (!g) {
-          g = d3.select(this).append("g");
+          g = d3.select(this).append('g');
         }
 
-        g.datum(scatterLayout(data))
-          .call(circles);
+        g.datum(pathLayout(data))
+          .call(paths);
       });
     }
 
@@ -38,7 +39,9 @@ define(function (require) {
     };
 
     generator.attr = function (prop, val) {
-      var validAttr = ['class', 'fill', 'stroke', 'strokeWidth', 'opacity'];
+      var validAttr = [
+        'transform', 'class', 'fill', 'stroke', 'strokeWidth', 'opacity'
+      ];
       var isValidProp = validAttr.indexOf(prop) !== -1;
 
       if (!arguments.length) return attr;

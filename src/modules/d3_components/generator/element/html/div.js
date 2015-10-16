@@ -47,14 +47,14 @@ define(function (require) {
     // Layout types => 'rows', 'columns', 'grid'
     generator.layout = function (_) {
       if (!arguments.length) return type;
-      type = _;
+      type = typeof _ === 'string' ? _ : type;
       return generator;
     };
 
     // Parent element size, [width, height]
     generator.size = function (_) {
       if (!arguments.length) return size;
-      size = _;
+      size = _ instanceof Array && _.length === 2 ? _ : size;
       return generator;
     };
 

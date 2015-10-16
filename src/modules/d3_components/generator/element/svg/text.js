@@ -36,55 +36,55 @@ define(function (require) {
 
     // Public API
     element.x = function (_) {
-      if (!arguments.length) { return x; }
+      if (!arguments.length) return x;
       x = d3.functor(_);
       return element;
     };
 
     element.y = function (_) {
-      if (!arguments.length) { return y; }
+      if (!arguments.length) return y;
       y = d3.functor(_);
       return element;
     };
 
     element.dx = function (_) {
-      if (!arguments.length) { return dx; }
+      if (!arguments.length) return dx;
       dx = d3.functor(_);
       return element;
     };
 
     element.dy = function (_) {
-      if (!arguments.length) { return dy; }
+      if (!arguments.length) return dy;
       dy = d3.functor(_);
       return element;
     };
 
     element.transform = function (_) {
-      if (!arguments.length) { return transform; }
+      if (!arguments.length) return transform;
       transform = _;
       return element;
     };
 
     element.class= function (_) {
-      if (!arguments.length) { return cssClass; }
+      if (!arguments.length) return cssClass;
       cssClass = _;
       return element;
     };
 
     element.anchor = function (_) {
-      if (!arguments.length) { return anchor; }
+      if (!arguments.length) return anchor;
       anchor = _;
       return element;
     };
 
     element.fill = function (_) {
-      if (!arguments.length) { return fill; }
+      if (!arguments.length) return fill;
       fill = _;
       return element;
     };
 
     element.text = function (_) {
-      if (!arguments.length) { return texts; }
+      if (!arguments.length) return texts;
       texts = _;
       return element;
     };

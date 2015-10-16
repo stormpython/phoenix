@@ -37,37 +37,37 @@ define(function (require) {
     }
 
     generator.id = function (_) {
-      if (!arguments.length) { return id; }
+      if (!arguments.length) return id;
       id = _;
       return generator;
     };
 
     generator.transform = function (_) {
-      if (!arguments.length) { return transform; }
+      if (!arguments.length) return transform;
       transform = _;
       return generator;
     };
 
     generator.x = function (_) {
-      if (!arguments.length) { return x; }
+      if (!arguments.length) return x;
       x = _;
       return generator;
     };
 
     generator.y = function (_) {
-      if (!arguments.length) { return y; }
+      if (!arguments.length) return y;
       y = _;
       return generator;
     };
 
     generator.width = function (_) {
-      if (!arguments.length) { return width; }
+      if (!arguments.length) return width;
       width = _;
       return generator;
     };
 
     generator.height = function (_) {
-      if (!arguments.length) { return height; }
+      if (!arguments.length) return height;
       height = _;
       return generator;
     };

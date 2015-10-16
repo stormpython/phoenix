@@ -50,73 +50,73 @@ define(function (require) {
 
     // Public API
     element.accessor = function (_) {
-      if (!arguments.length) { return accessor; }
+      if (!arguments.length) return accessor;
       accessor = d3.functor(_);
       return element;
     };
 
     element.x = function (_) {
-      if (!arguments.length) { return x; }
+      if (!arguments.length) return x;
       x = d3.functor(_);
       return element;
     };
 
     element.y = function (_) {
-      if (!arguments.length) { return y; }
+      if (!arguments.length) return y;
       y = d3.functor(_);
       return element;
     };
 
     element.rx = function (_) {
-      if (!arguments.length) { return rx; }
+      if (!arguments.length) return rx;
       rx = d3.functor(_);
       return element;
     };
 
     element.ry = function (_) {
-      if (!arguments.length) { return ry; }
+      if (!arguments.length) return ry;
       ry = d3.functor(_);
       return element;
     };
 
     element.width = function (_) {
-      if (!arguments.length) { return width; }
+      if (!arguments.length) return width;
       width = d3.functor(_);
       return element;
     };
 
     element.height = function (_) {
-      if (!arguments.length) { return height; }
+      if (!arguments.length) return height;
       height = d3.functor(_);
       return element;
     };
 
     element.class= function (_) {
-      if (!arguments.length) { return cssClass; }
+      if (!arguments.length) return cssClass;
       cssClass = _;
       return element;
     };
 
     element.fill = function (_) {
-      if (!arguments.length) { return fill; }
+      if (!arguments.length) return fill;
       fill = _;
       return element;
     };
 
     element.opacity = function (_) {
-      if (!arguments.length) { return opacity; }
+      if (!arguments.length) return opacity;
       opacity = _;
       return element;
     };
 
     element.stroke = function (_) {
-      if (!arguments.length) { return stroke; }
+      if (!arguments.length) return stroke;
       stroke = _;
       return element;
     };
 
     element.strokeWidth = function (_) {
-      if (!arguments.length) { return strokeWidth; }
+      if (!arguments.length) return strokeWidth;
       strokeWidth = _;
       return element;
     };

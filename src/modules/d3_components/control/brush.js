@@ -2,10 +2,9 @@ define(function (require) {
   var d3 = require('d3');
 
   /**
-   * Creates a brush component and binds it to an <svg></svg>.
+   * Creates a brush control and binds it to an <svg></svg>.
    */
   return function brush() {
-    // Private variables
     var margin = { top: 0, right: 0, bottom: 0, left: 0 };
     var cssClass = 'brush';
     var opacity = 0.2;
@@ -15,36 +14,43 @@ define(function (require) {
     var yScale = null;
     var extent = null;
     var clamp = false;
+    var brush = d3.svg.brush();
     var brushStartCallback = [];
     var brushCallback = [];
     var brushEndCallback = [];
     var brushG;
 
-    function component(selection) {
+    function control(selection) {
       selection.each(function (data, index) {
         width = width - margin.left - margin.right;
         height = height - margin.top - margin.bottom;
 
-        var brush = d3.svg.brush()
-          .on('brushstart', function () {
-            brushStartCallback.forEach(function (listener) {
-              listener.call(this, brush, data, index);
-            });
-          })
-          .on('brush', function () {
-            brushCallback.forEach(function (listener) {
-              listener.call(this, brush, data, index);
-            });
-          })
-          .on('brushend', function () {
-            brushEndCallback.forEach(function (listener) {
-              listener.call(this, brush, data, index);
-
-              // Clear brush
-              d3.selectAll('g.' + cssClass)
-                .call(brush.clear());
-            });
+        function brushStart() {
+          brushStartCallback.forEach(function (listener) {
+            listener.call(this, brush, data, index);
           });
+        }
+
+        function brushF() {
+          brushCallback.forEach(function (listener) {
+            listener.call(this, brush, data, index);
+          });
+        }
+
+        function brushEnd() {
+          brushEndCallback.forEach(function (listener) {
+            listener.call(this, brush, data, index);
+
+            // Clear brush
+            d3.selectAll('g.' + cssClass)
+              .call(brush.clear());
+          });
+        }
+
+        brush
+          .on('brushstart', brushStartCallback ? brushStart : null)
+          .on('brush', brushCallback ? brushF : null)
+          .on('brushend', brushEndCallback ? brushEnd : null);
 
         if (xScale) { brush.x(xScale); }
         if (yScale) { brush.y(yScale); }
@@ -67,84 +73,87 @@ define(function (require) {
     }
 
     // Public API
-    component.margin = function (_) {
-      if (!arguments.length) { return margin; }
+    control.margin = function (_) {
+      if (!arguments.length) return margin;
       margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
       margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
       margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
       margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
-      return component;
+      return control;
     };
 
-    component.width = function (_) {
-      if (!arguments.length) { return width; }
+    control.width = function (_) {
+      if (!arguments.length) return width;
       width = _;
-      return component;
+      return control;
     };
 
-    component.height = function (_) {
-      if (!arguments.length) { return height; }
+    control.height = function (_) {
+      if (!arguments.length) return height;
       height = _;
-      return component;
+      return control;
     };
 
-    component.opacity = function (_) {
-      if (!arguments.length) { return opacity; }
+    control.opacity = function (_) {
+      if (!arguments.length) return opacity;
       opacity = _;
-      return component;
+      return control;
     };
 
-    component.class = function (_) {
-      if (!arguments.length) { return cssClass; }
+    control.class = function (_) {
+      if (!arguments.length) return cssClass;
       cssClass = _;
-      return component;
+      return control;
     };
 
-    component.xScale = function (_) {
-      if (!arguments.length) { return xScale; }
+    control.xScale = function (_) {
+      if (!arguments.length) return xScale;
       xScale = _;
-      return component;
+      return control;
     };
 
-    component.yScale = function (_) {
-      if (!arguments.length) { return yScale; }
+    control.yScale = function (_) {
+      if (!arguments.length) return yScale;
       yScale = _;
-      return component;
+      return control;
     };
 
-    component.extent = function (_) {
-      if (!arguments.length) { return extent; }
+    control.extent = function (_) {
+      if (!arguments.length) return extent;
       extent = _;
-      return component;
+      return control;
     };
 
-    component.clamp = function (_) {
-      if (!arguments.length) { return clamp; }
+    control.clamp = function (_) {
+      if (!arguments.length) return clamp;
       clamp = _;
-      return component;
+      return control;
     };
 
-    component.brushstart = function (_) {
-      if (!arguments.length) { return brushStartCallback; }
-      if (typeof _ === 'function') { brushStartCallback.push(_); }
-      else if (Array.isArray(_)) { brushStartCallback = _; }
-      return component;
+    control.brushstart = function (_) {
+      if (!arguments.length) return brushStartCallback;
+      if (typeof _ === 'function') brushStartCallback.push(_);
+      if (Array.isArray(_)) brushStartCallback = _;
+      if (_ === null) brushStartCallback = _;
+      return control;
     };
 
-    component.brush = function (_) {
-      if (!arguments.length) { return brushCallback; }
-      if (typeof _ === 'function') { brushCallback.push(_); }
-      else if (Array.isArray(_)) { brushCallback = _; }
-      return component;
+    control.brush = function (_) {
+      if (!arguments.length) return brushCallback;
+      if (typeof _ === 'function') brushCallback.push(_);
+      if (Array.isArray(_)) brushCallback = _;
+      if (_ === null) brushCallback = _;
+      return control;
     };
 
-    component.brushend = function (_) {
-      if (!arguments.length) { return brushEndCallback; }
-      if (typeof _ === 'function') { brushEndCallback.push(_); }
-      else if (Array.isArray(_)) { brushEndCallback = _; }
-      return component;
+    control.brushend = function (_) {
+      if (!arguments.length) return brushEndCallback;
+      if (typeof _ === 'function') brushEndCallback.push(_);
+      if (Array.isArray(_)) brushEndCallback = _;
+      if (_ === null) brushEndCallback = _;
+      return control;
     };
 
-    return component;
+    return control;
   };
 });

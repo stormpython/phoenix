@@ -65,13 +65,13 @@ define(function (require) {
 
     // Public API
     layout.x = function (_) {
-      if (!arguments.length) { return x; }
+      if (!arguments.length) return x;
       x = d3.functor(_);
       return layout;
     };
 
     layout.y = function (_) {
-      if (!arguments.length) { return y; }
+      if (!arguments.length) return y;
       y = d3.functor(_);
       return layout;
     };
@@ -86,19 +86,19 @@ define(function (require) {
     };
 
     layout.xScale = function (_) {
-      if (!arguments.length) { return xScale; }
+      if (!arguments.length) return xScale;
       xScale = typeof _ === 'function' ? _ : xScale;
       return layout;
     };
 
     layout.yScale = function (_) {
-      if (!arguments.length) { return yScale; }
+      if (!arguments.length) return yScale;
       yScale = typeof _ === 'function' ? _ : yScale;
       return layout;
     };
 
     layout.stack = function (_) {
-      if (!arguments.length) { return stackOpts; }
+      if (!arguments.length) return stackOpts;
       stackOpts.offset = typeof _.offset !== 'undefined' ? _.offset : stackOpts.offset;
       stackOpts.order = typeof _.order !== 'undefined' ? _.order : stackOpts.order;
       stackOpts.out = typeof _.out !== 'undefined' ? _.out : stackOpts.out;
@@ -106,19 +106,19 @@ define(function (require) {
     };
 
     layout.interpolate = function (_) {
-      if (!arguments.length) { return interpolate; }
+      if (!arguments.length) return interpolate;
       interpolate = _;
       return layout;
     };
 
     layout.tension = function (_) {
-      if (!arguments.length) { return tension; }
+      if (!arguments.length) return tension;
       tension = _;
       return layout;
     };
 
     layout.defined = function (_) {
-      if (!arguments.length) { return defined; }
+      if (!arguments.length) return defined;
       defined = _;
       return layout;
     };

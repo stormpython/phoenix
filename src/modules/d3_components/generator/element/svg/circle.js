@@ -43,49 +43,49 @@ define(function (require) {
 
     // Public API
     element.cx = function (_) {
-      if (!arguments.length) { return cx; }
+      if (!arguments.length) return cx;
       cx = d3.functor(_);
       return element;
     };
 
     element.cy = function (_) {
-      if (!arguments.length) { return cy; }
+      if (!arguments.length) return cy;
       cy = d3.functor(_);
       return element;
     };
 
     element.radius = function (_) {
-      if (!arguments.length) { return radius; }
+      if (!arguments.length) return radius;
       radius = d3.functor(_);
       return element;
     };
 
     element.class = function (_) {
-      if (!arguments.length) { return cssClass; }
+      if (!arguments.length) return cssClass;
       cssClass = _;
       return element;
     };
 
     element.fill = function (_) {
-      if (!arguments.length) { return fill; }
+      if (!arguments.length) return fill;
       fill = _;
       return element;
     };
 
     element.opacity = function (_) {
-      if (!arguments.length) { return opacity; }
+      if (!arguments.length) return opacity;
       opacity = _;
       return element;
     };
 
     element.stroke = function (_) {
-      if (!arguments.length) { return stroke; }
+      if (!arguments.length) return stroke;
       stroke = _;
       return element;
     };
 
     element.strokeWidth = function (_) {
-      if (!arguments.length) { return strokeWidth; }
+      if (!arguments.length) return strokeWidth;
       strokeWidth = _;
       return element;
     };

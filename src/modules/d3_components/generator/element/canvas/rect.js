@@ -90,55 +90,55 @@ define(function (require) {
 
     // Public API
     element.class = function (_) {
-      if (!arguments.length) { return cssClass; }
+      if (!arguments.length) return cssClass;
       cssClass = _;
       return element;
     };
 
     element.x = function (_) {
-      if (!arguments.length) { return x; }
+      if (!arguments.length) return x;
       x = _;
       return element;
     };
 
     element.y = function (_) {
-      if (!arguments.length) { return y; }
+      if (!arguments.length) return y;
       y = _;
       return element;
     };
 
     element.width = function (_) {
-      if (!arguments.length) { return width; }
+      if (!arguments.length) return width;
       width = _;
       return element;
     };
 
     element.height = function (_) {
-      if (!arguments.length) { return height; }
+      if (!arguments.length) return height;
       height = _;
       return element;
     };
 
     element.fillStyle = function (_) {
-      if (!arguments.length) { return fillStyle; }
+      if (!arguments.length) return fillStyle;
       fillStyle = _;
       return element;
     };
 
     element.opacity = function (_) {
-      if (!arguments.length) { return globalAlpha; }
+      if (!arguments.length) return globalAlpha;
       globalAlpha = _;
       return element;
     };
 
     element.lineWidth = function (_) {
-      if (!arguments.length) { return lineWidth; }
+      if (!arguments.length) return lineWidth;
       lineWidth = _;
       return element;
     };
 
     element.strokeStyle = function (_) {
-      if (!arguments.length) { return strokeStyle; }
+      if (!arguments.length) return strokeStyle;
       strokeStyle = _;
       return element;
     };

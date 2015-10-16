@@ -1,9 +1,9 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
 
   return function format() {
     // Private variables
-    var type = "rows"; // available types: 'rows', 'columns', 'grid'
+    var type = 'rows'; // available types: 'rows', 'columns', 'grid'
     var size = [500, 500]; // [width, height]
     var rowScale = d3.scale.linear();
     var columnScale = d3.scale.linear();
@@ -13,13 +13,13 @@ define(function (require) {
       var output = {};
 
       switch (type) {
-        case "grid":
+        case 'grid':
           output.rows = cols ? Math.ceil(length / cols) :
             Math.round(Math.sqrt(length));
           output.columns = cols ? cols : Math.ceil(Math.sqrt(length));
           break;
 
-        case "columns":
+        case 'columns':
           output.rows = 1;
           output.columns = length;
           break;
@@ -61,20 +61,20 @@ define(function (require) {
 
     // Public API
     layout.type = function (_) {
-      if (!arguments.length) { return type; }
-      type = _;
+      if (!arguments.length) return type;
+      type = typeof _ === 'string' ? _ : type;
       return layout;
     };
 
     layout.columns = function (_) {
-      if (!arguments.length) { return numOfCols; }
-      numOfCols = _;
+      if (!arguments.length) return numOfCols;
+      numOfCols = typeof _ === 'number' ? _ : numOfCols;
       return layout;
     };
 
     layout.size = function (_) {
-      if (!arguments.length) { return size; }
-      size = _;
+      if (!arguments.length) return size;
+      size = Array.isArray(_) && _.length === 2 ? _ : size;
       return layout;
     };
 

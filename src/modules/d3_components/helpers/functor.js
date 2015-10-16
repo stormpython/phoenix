@@ -17,13 +17,13 @@ define(function (require) {
     }
 
     constructor.function = function (_) {
-      if (!arguments.length) { return func; }
+      if (!arguments.length) return func;
       func = typeof _ !== 'function' ? func : _;
       return constructor;
     };
 
     constructor.options = function (_) {
-      if (!arguments.length) { return opts; }
+      if (!arguments.length) return opts;
       opts = typeof _ !== 'object' ? opts : _;
       return constructor;
     };
