@@ -1,5 +1,5 @@
 define(function (require) {
-  var charts = require('d3_generators').chart;
+  var charts = require('d3_components').chart;
 
   return function chart() {
     var opts = {};
