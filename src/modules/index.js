@@ -128,7 +128,6 @@ define(function (require) {
     var size;
 
     evaluate(this);
-    this.remove(); // Remove previous charts if any
 
     layout = this._layout.layout(this._opts.layout || 'rows');
     chart = this._chart.options(this._opts);
@@ -149,16 +148,6 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.resize = Phx.prototype.draw;
-
-  /**
-   * Removes (erases) chart(s) from the selected DOM element.
-   *
-   * @returns {Phx}
-   */
-  Phx.prototype.remove = function () {
-    if (this._selection) this._selection.selectAll('*').remove();
-    return this;
-  };
 
   /**
    * Removes chart(s) from the selected DOM element,
