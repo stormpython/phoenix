@@ -3,8 +3,8 @@ define(function (require) {
 
   return function ellipse() {
     var color = d3.scale.category10();
-    var cx = function (d) { return d.dx; };
-    var cy = function (d) { return d.dy; };
+    var cx = function (d) { return d.cx; };
+    var cy = function (d) { return d.cy; };
     var rx = function (d) { return d.rx || 20; };
     var ry = function (d) { return d.ry || 20; };
     var cssClass = 'ellipses';

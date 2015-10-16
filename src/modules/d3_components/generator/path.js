@@ -18,11 +18,16 @@ define(function (require) {
         paths = builder(attr, paths);
 
         if (!g) {
-          g = d3.select(this).append('g');
+          g = d3.select(this).append('g')
+            .attr('class', 'path-layers')
         }
 
-        g.datum(pathLayout(data))
-          .call(paths);
+        var layers = g.selectAll('g')
+          .data(pathLayout(data));
+
+        layers.exit().remove();
+        layers.enter().append('g');
+        layers.call(paths);
       });
     }
 

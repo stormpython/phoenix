@@ -1,6 +1,6 @@
 define(function (require) {
   var d3 = require("d3");
-  var layout = require('src/modules/d3_generators/layout/scatter');
+  var layout = require('src/modules/d3_generators/layout/points');
   var circle = require("src/modules/element/svg/circle");
   var builder = require("builder");
 

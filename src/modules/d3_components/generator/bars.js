@@ -1,8 +1,8 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
   var layout = require('src/modules/d3_generators/layout/bars');
-  var rect = require("src/modules/element/svg/rect");
-  var builder = require("builder");
+  var rect = require('src/modules/element/svg/rect');
+  var builder = require('builder');
 
   return function bars() {
     var barLayout = layout();
@@ -17,13 +17,16 @@ define(function (require) {
         rects = builder(attr, rects);
 
         if (!g) {
-          g = d3.select(this).append("g");
+          g = d3.select(this).append('g')
+            .attr('class', 'bar-layers');
         }
 
-        g.selectAll("g")
-          .data(barLayout(data))
-          .enter().append("g")
-          .call(rects);
+        var layers = g.selectAll('g')
+          .data(barLayout(data));
+
+        layers.exit().remove();
+        layers.enter().append('g');
+        layers.call(rects);
       });
     }
 

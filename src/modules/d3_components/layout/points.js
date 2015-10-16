@@ -9,9 +9,14 @@ define(function (require) {
     var radius = d3.functor(5);
 
     function layout(data) {
-      data.forEach(function (d) {
-        d.dx = xScale(x.call(this, d, i));
-        d.dy = yScale(y.call(this, d, i));
+      // Merge inner arrays => [[]] to []
+      data = data.reduce(function (a, b) {
+        return a.concat(b);
+      }, []);
+
+      data.forEach(function (d, i) {
+        d.cx = xScale(x.call(this, d, i));
+        d.cy = yScale(y.call(this, d, i));
         d.radius = radius.call(this, d, i);
       });
 

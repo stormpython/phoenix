@@ -3,7 +3,6 @@ define(function (require) {
 
   return function path() {
     var color = d3.scale.category10();
-    var accessor = function (d) { return d.values; };
     var path = function (d) { return d.d; };
     var cssClass = 'path';
     var transform = 'translate(0,0)';
@@ -33,12 +32,6 @@ define(function (require) {
     }
 
     // Public API
-    element.accessor = function (_) {
-      if (!arguments.length) return accessor;
-      accessor = d3.functor(_);
-      return element;
-    };
-
     element.path = function (_) {
       if (!arguments.length) return path;
       path = d3.functor(_);

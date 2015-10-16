@@ -4,7 +4,6 @@ define(function (require) {
   return function path() {
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
-    var key = function (d) { return d.key; };
     var type = 'area';
     var xScale = d3.time.scale.utc();
     var yScale = d3.scale.linear();
@@ -15,7 +14,8 @@ define(function (require) {
 
     function layout(data) {
       var stack = d3.layout.stack()
-        .values(function (d) { return d.values; })
+        .x(x)
+        .y(y)
         .offset(stackOpts.offset)
         .order(stackOpts.order)
         .out(stackOpts.out);
@@ -30,13 +30,21 @@ define(function (require) {
         pathFunction.x(X).y(Y)
       }
 
-      data = stack(d3.nest().key(key).entries(data));
+      data = stack(data);
 
-      data.forEach(function (d) {
-        d.d = pathFunction(d.values);
+      data.map(function (d) {
+        return {
+          d: pathFunction(d),
+          values: d
+        };
       });
 
       return data;
+    }
+
+    function out(d, y0, y) {
+      d.y0 = y0;
+      d.y = y;
     }
 
     function X(d, i) {

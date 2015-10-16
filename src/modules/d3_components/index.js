@@ -38,7 +38,7 @@ define(function (require) {
       box: require('src/modules/d3_components/layout/box'),
       grid: require('src/modules/d3_components/layout/grid'),
       path: require('src/modules/d3_components/layout/path'),
-      scatter: require('src/modules/d3_components/layout/scatter')
+      points: require('src/modules/d3_components/layout/points')
     },
     mixed: {
       chart: require('src/modules/d3_components/mixed/chart')

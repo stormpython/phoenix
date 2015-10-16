@@ -3,7 +3,6 @@ define(function (require) {
 
   return function rect() {
     var color = d3.scale.category10();
-    var accessor = function (d) { return d.values; };
     var x = function (d) { return d.dx; };
     var y = function (d) { return d.dy; };
     var rx = function (d) { return d.rx || 0; };
@@ -18,10 +17,6 @@ define(function (require) {
 
     function element(selection) {
       selection.each(function (data) {
-        data = data.map(function (d, i) {
-          return accessor.call(this, d, i);
-        });
-
         var bars = d3.select(this).selectAll('rect')
           .data(data);
 
@@ -49,12 +44,6 @@ define(function (require) {
     }
 
     // Public API
-    element.accessor = function (_) {
-      if (!arguments.length) return accessor;
-      accessor = d3.functor(_);
-      return element;
-    };
-
     element.x = function (_) {
       if (!arguments.length) return x;
       x = d3.functor(_);
