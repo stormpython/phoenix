@@ -25,14 +25,12 @@ define(function (require) {
         .defined(defined);
 
       if (type === 'area') {
-        pathFunction.x(X).y0(Y0).y1(Y1)
+        pathFunction.x(X).y0(Y0).y1(Y1);
       } else {
-        pathFunction.x(X).y(Y)
+        pathFunction.x(X).y(Y);
       }
 
-      data = stack(data);
-
-      data.map(function (d) {
+      data = stack(data).map(function (d) {
         return {
           d: pathFunction(d),
           values: d
@@ -58,14 +56,14 @@ define(function (require) {
     function Y0(d) {
       var min = Math.max(0, yScale.domain()[0]);
 
-      if (offset === 'overlap') {
+      if (stackOpts.offset === 'overlap') {
         return yScale(min);
       }
       return yScale(d.y0);
     }
 
     function Y1(d, i) {
-      if (offset === 'overlap') {
+      if (stackOpts.offset === 'overlap') {
         return yScale(y.call(this, d, i));
       }
       return yScale(d.y0 + y.call(this, d, i));
