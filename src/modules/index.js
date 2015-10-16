@@ -128,7 +128,6 @@ define(function (require) {
     var size;
 
     evaluate(this);
-
     layout = this._layout.layout(this._opts.layout || 'rows');
     chart = this._chart.options(this._opts);
     size = sizeFunc(this._selection, width, height);
