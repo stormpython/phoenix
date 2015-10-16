@@ -7,7 +7,7 @@ define(function (require) {
 
   return function events() {
     var listeners = {};
-    var eventProcessor = function (e) { return e; };
+    var processor = function (e) { return e; };
     var element;
 
     function control(selection) {
@@ -27,7 +27,7 @@ define(function (require) {
             d3.event.stopPropagation(); // => event.stopPropagation()
 
             e.value.forEach(function (listener) {
-              listener.call(this, eventProcessor(d3.event));
+              listener.call(this, processor(d3.event));
             });
           });
         });
@@ -41,9 +41,9 @@ define(function (require) {
       return control;
     };
 
-    control.eventProcessor = function (_) {
-      if (!arguments.length) return eventProcessor;
-      eventProcessor = typeof _ === 'function' ? _ : eventProcessor;
+    control.processor = function (_) {
+      if (!arguments.length) return processor;
+      processor = typeof _ === 'function' ? _ : processor;
       return control;
     };
 

@@ -149,6 +149,20 @@ define(function (require) {
   Phx.prototype.resize = Phx.prototype.draw;
 
   /**
+   * Detaches nodes from DOM, effectively removing
+   * the chart(s). However this does not destroy charts.
+   * It is only meant to clear the nodes from the screen.
+   * They still exist in memory. Use `destroy` to prepare
+   * the chart object for GC.
+   *
+   * @returns {Phx}
+   */
+  Phx.prototype.remove = function () {
+    this._selection.remove();
+    return this;
+  };
+
+  /**
    * Removes chart(s) from the selected DOM element,
    * and prepares the chart object for garbage collection.
    *
@@ -156,7 +170,8 @@ define(function (require) {
    */
   Phx.prototype.destroy = function () {
     this.removeAllListeners();
-    this.remove();
+    this._selection.remove();
+    this._selection.datum(null);
     this._selection = null;
     this._chart = null;
     this._chartClass = null;
@@ -209,8 +224,14 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.removeAllListeners = function () {
-    var listeners = this._listeners = {};
-    this._chart.listeners(listeners);
+    var chart = this._chart;
+
+    Object.keys(this._listeners).forEach(function (key) {
+      chart.off(key);
+    });
+
+    this.draw(); // Remove listeners from the DOM
+    this._chart.listeners(this._listeners = {});
     return this;
   };
 
