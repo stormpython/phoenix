@@ -16,13 +16,10 @@ define(function (require) {
         if (!g) {
           g = d3.select(this).append('clipPath')
             .attr('id', id);
+          rect = g.append('rect');
         }
 
         g.attr('transform', transform);
-
-        if (!rect) {
-          rect = g.append('rect');
-        }
 
         rect.attr('x', x)
           .attr('y', y)
