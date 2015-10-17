@@ -22,15 +22,9 @@ define(function (require) {
         div = d3.select(this).selectAll('div')
           .data(layout(data));
 
-        // Exit
         div.exit().remove();
-
-        // Enter
         div.enter().append('div');
-
-        // Update
-        div
-          .attr('class', cssClass)
+        div.attr('class', cssClass)
           .style('position', 'absolute')
           .style('left', function (d) { return d.dx + 'px'; })
           .style('top', function (d) { return d.dy + 'px'; })
