@@ -15,9 +15,11 @@ define(function (require) {
       }, []);
 
       data.forEach(function (d, i) {
-        d.cx = xScale(x.call(this, d, i));
-        d.cy = yScale(y.call(this, d, i));
-        d.radius = radius.call(this, d, i);
+        if (!d.coords) d.coords = {};
+
+        d.coords.cx = xScale(x.call(this, d, i));
+        d.coords.cy = yScale(y.call(this, d, i));
+        d.coords.radius = radius.call(this, d, i);
       });
 
       return data;

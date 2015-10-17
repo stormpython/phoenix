@@ -3,9 +3,9 @@ define(function (require) {
 
   return function circle() {
     var color = d3.scale.category10();
-    var cx = function (d) { return d.cx; };
-    var cy = function (d) { return d.cy; };
-    var radius = function (d) { return d.radius || 5; };
+    var cx = function (d) { return d.coords.cx; };
+    var cy = function (d) { return d.coords.cy; };
+    var radius = function (d) { return d.coords.radius || 5; };
     var cssClass = 'circle';
     var fill = colorFill;
     var stroke = colorFill;

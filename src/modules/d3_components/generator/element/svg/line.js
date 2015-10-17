@@ -3,10 +3,10 @@ define(function (require) {
 
   return function line() {
     var color = d3.scale.category10();
-    var x1 = function (d) { return d.x1 || 0; };
-    var x2 = function (d) { return d.x2 || 0; };
-    var y1 = function (d) { return d.y1 || 0; };
-    var y2 = function (d) { return d.y2 || 0; };
+    var x1 = function (d) { return d.coords.x1 || 0; };
+    var x2 = function (d) { return d.coords.x2 || 0; };
+    var y1 = function (d) { return d.coords.y1 || 0; };
+    var y2 = function (d) { return d.coords.y2 || 0; };
     var cssClass = 'line';
     var stroke = colorFill;
     var strokeWidth = 2;

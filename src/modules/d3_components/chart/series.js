@@ -3,110 +3,87 @@ define(function (require) {
   var d3Components = require('d3_components');
   var builder = require('src/modules/d3_components/helpers/builder');
   var valuator = require('src/modules/d3_components/helpers/valuator');
-  var addEventListener = require('src/modules/d3_components/helpers/add_event_listener');
-  var removeEventListener = require('src/modules/d3_components/helpers/remove_event_listener');
-  var clip = d3Components.generator.clipPath;
-  var axis = d3Components.generator.axis;
-  var brushComponent = d3Components.control.brush;
+  var clipPathGenerator = d3Components.generator.clipPath;
+  var axisGenerator = d3Components.generator.axis;
+  var brushControl = d3Components.control.brush;
   var events = d3Components.control.event;
-  var zeroAxisLine = d3Components.element.line;
-  var areas = d3Components.generator.path;
-  var bars = d3Components.generator.bars;
-  var circles = d3Components.generator.points;
-  var lines = d3Components.generator.path;
+  var lineElement = d3Components.element.line;
+  var areaGenerator = d3Components.generator.path;
+  var barGenerator = d3Components.generator.bars;
+  var lineGenerator = d3Components.generator.path;
+  var pointsGenerator = d3Components.generator.points;
 
   return function series() {
     var margin = {top: 20, right: 50, bottom: 50, left: 50};
     var width = 960;
     var height = 500;
-    var accessor = function (d) { return d; };
-    var xAxis = {
-      show: true,
-      gridlines: false,
-      class: 'x axis',
-      transform: null,
-      tick: {},
-      tickText: { anchor: 'middle', x: 0, y: 9, dx: '', dy: '.71em' },
-      rotateLabels: { allow: true },
-      title: { anchor: 'middle' }
-    };
-    var yAxis = {
-      show: true,
-      gridlines: false,
-      class: 'y axis',
-      transform: null,
-      tick: {},
-      tickText: { anchor: 'end', x: -9, y: 0, dy: '.32em' },
-      rotateLabels: {},
-      title: { x: 0, y: -40, anchor: 'middle' }
-    };
-    var zAxis = {
-      show: false,
-      gridlines: false,
-      class: 'z axis',
-      transform: null,
-      tick: {},
-      tickText: { anchor: 'start', x: 9, y: 0, dy: '.32em' },
-      rotateLabels: {},
-      title: {}
-    };
-    var brushOpts = {
-      class: 'brush',
-      x: true,
-      y: false,
-      opacity: 0.2,
-      extent: null,
-      clamp: false
-    };
-    var zeroLine = {
-      show: false,
-      class: 'zero-line',
-      stroke: '#000000',
-      strokeWidth: 1,
-      opacity: 0.5
-    };
-
-    var bar = {};
-    var line = {};
-    var area = {};
-    var points = {};
+    var x = function (d) { return d.x; };
+    var y = function (d) { return d.y; };
+    var y2 = function (d) { return d.z; };
+    var xScale = d3.scale.time.utc();
+    var yScale = d3.scale.linear();
+    var yScale2 = d3.scale.linear();
+    var area = areaGenerator();
+    var axis = axisGenerator();
+    var bar = barGenerator();
+    var brush = brushControl();
+    var clippath = clipPathGenerator();
+    var line = lineGenerator();
+    var points = pointsGenerator();
+    var svgEvents = events();
+    var zeroLine = lineElement();
+    var areaOpts = [];
+    var axisOpts = [];
+    var barOpts = [];
+    var brushOpts = {};
+    var lineOpts = [];
+    var pointsOpts = [];
     var listeners = {};
 
-    var svgEvents = events();
-    var brush = brushComponent();
-    var zLine = zeroAxisLine();
-    var clippath = clip();
     var svg;
     var g;
     var clippedG;
 
     function chart(selection)  {
       selection.each(function (data, index) {
-        data = accessor.call(this, data, index);
-
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
 
-        svgEvents.listeners(listeners);
+        xScale
+          .domain(d3.extent(d3.merge(data), x))
+          .range([0, adjustedWidth]).nice();
 
-        /* Canvas ******************************** */
-        if (!svg) {
+        yScale
+          .domain([
+            Math.min(0, d3.min(d3.merge(data), function (d) {
+              return d.y0
+            })),
+            Math.max(0, d3.max())
+          ])
+          .range([adjustedHeight, 0]);
+
+        yScale2
+          .domain([
+            Math.min(0, d3.min(d3.merge(data), function (d) {
+
+            })),
+            Math.max(0, d3.max())
+          ])
+          .range([adjustedHeight, 0]);
+
+        // SVG - create/update the svg
+        if (!svg && !g) {
           svg = d3.select(this).append('svg');
+          g = svg.append('g')
         }
 
         svg.attr('width', width)
           .attr('height', height)
-          .call(svgEvents);
-
-        if (!g) {
-          g = svg.append('g')
-        }
-
+          .call(svgEvents.listeners(listeners));
         g.attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
-        /* ******************************** */
 
-        /* Brush ******************************** */
-        brush.class(brushOpts.class)
+        // Brush
+        brush
           .xScale(brushOpts.x ? x : null)
           .yScale(brushOpts.y ? y : null)
           .opacity(brushOpts.opacity)
@@ -117,35 +94,30 @@ define(function (require) {
           .brush(listeners.brush)
           .brushend(listeners.brushend);
 
+        // Zero-line
+        zLine
+          .x1(function () { return x.range()[0]; })
+          .x2(function () { return x.range()[1]; })
+          .y1(function () { return y(0); })
+          .y2(function () { return y(0); });
+
+        // ClipPath
+        clippath.width(adjustedWidth).height(adjustedHeight);
+
+        /* ************************************************** */
         g.call(brush);
-        /* ******************************** */
 
-        /* Zero-line ******************************** */
         if (zeroLine.show) {
-          zLine
-            .x1(function () { return x.range()[0]; })
-            .x2(function () { return x.range()[1]; })
-            .y1(function () { return y(0); })
-            .y2(function () { return y(0); });
-
           g.append('g')
             .call(builder(zeroLine, zLine));
         }
-        /* ******************************** */
-
-
-        /* ClipPath ******************************** */
-        clippath.width(adjustedWidth).height(adjustedHeight);
 
         if (!clippedG) {
           clippedG = g.call(clippath).append('g');
         }
 
         clippedG.attr('clip-path', 'url(#' + clippath.id() + ')');
-        /* ******************************** */
 
-        /* SVG Elements ******************************** */
-        /* ******************************** */
       });
     }
 
@@ -173,18 +145,6 @@ define(function (require) {
 
     chart.brush = function (_) {
       if (!arguments.length) return brushOpts;
-      brushOpts.class = typeof _.clamp !== 'undefined' ? _.clamp : brushOpts.clamp;
-      brushOpts.x = typeof _.x !== 'undefined' ? _.x : brushOpts.x;
-      brushOpts.y = typeof _.y !== 'undefined' ? _.y : brushOpts.y;
-      brushOpts.opacity = typeof _.opacity !== 'undefined' ? _.opacity : brushOpts.opacity;
-      brushOpts.clamp = typeof _.clamp !== 'undefined' ? _.clamp : brushOpts.clamp;
-      brushOpts.extent = typeof _.extent !== 'undefined' ? _.extent : brushOpts.extent;
-      return chart;
-    };
-
-    chart.accessor = function (_) {
-      if (!arguments.length) return accessor;
-      accessor = valuator(_);
       return chart;
     };
 
@@ -196,11 +156,6 @@ define(function (require) {
 
     chart.zeroLine = function (_) {
       if (!arguments.length) return zeroLine;
-      zeroLine.show = typeof _.show !== 'undefined' ? _.show : zeroLine.show;
-      zeroLine.class = typeof _.class !== 'undefined' ? _.class : zeroLine.class;
-      zeroLine.stroke = typeof _.stroke !== 'undefined' ? _.stroke : zeroLine.stroke;
-      zeroLine.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : zeroLine.strokeWidth;
-      zeroLine.opacity = typeof _.opacity !== 'undefined' ? _.opacity : zeroLine.opacity;
       return chart;
     };
 
@@ -233,10 +188,6 @@ define(function (require) {
       listeners = typeof _ !== 'object' ? listeners : _;
       return chart;
     };
-
-    chart.on = addEventListener(chart);
-
-    chart.off = removeEventListener(chart);
 
     return chart;
   };

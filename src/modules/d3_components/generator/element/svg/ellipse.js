@@ -3,10 +3,10 @@ define(function (require) {
 
   return function ellipse() {
     var color = d3.scale.category10();
-    var cx = function (d) { return d.cx; };
-    var cy = function (d) { return d.cy; };
-    var rx = function (d) { return d.rx || 20; };
-    var ry = function (d) { return d.ry || 20; };
+    var cx = function (d) { return d.coords.cx; };
+    var cy = function (d) { return d.coords.cy; };
+    var rx = function (d) { return d.coords.rx || 20; };
+    var ry = function (d) { return d.coords.ry || 20; };
     var cssClass = 'ellipses';
     var fill = colorFill;
     var stroke = colorFill;

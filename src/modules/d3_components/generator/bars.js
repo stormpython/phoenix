@@ -1,15 +1,20 @@
 define(function (require) {
   var d3 = require('d3');
-  var layout = require('src/modules/d3_generators/layout/bars');
-  var rect = require('src/modules/element/svg/rect');
-  var builder = require('builder');
+  var d3Components = require('d3_components');
+  var builder = require('src/modules/d3_components/helpers/builder');
+  var vertical = d3Components.layout.verticalBars;
+  var horizontal = d3Components.layout.horizontalBars;
+  var rect = d3Components.element.rect;
 
   return function bars() {
-    var barLayout = layout();
     var rects = rect();
     var property = {};
     var attr = {};
+    var barLayout;
     var g;
+
+    if (!property.orientation) property.orientation = 'vertical';
+    barLayout = property.orientation === 'vertical' ? vertical() : horizontal();
 
     function generator(selection) {
       selection.each(function (data) {

@@ -33,7 +33,8 @@ define(function (require) {
       points: require('src/modules/d3_components/generator/points')
     },
     layout: {
-      bars: require('src/modules/d3_components/layout/bars'),
+      verticalBars: require('src/modules/d3_components/layout/bars/vertical'),
+      horizontalBars: require('src/modules/d3_components/layout/bars/horizontal'),
       base: require('src/modules/d3_components/layout/base'),
       box: require('src/modules/d3_components/layout/box'),
       grid: require('src/modules/d3_components/layout/grid'),

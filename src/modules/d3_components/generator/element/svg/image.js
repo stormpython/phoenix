@@ -2,10 +2,10 @@ define(function (require) {
   var d3 = require('d3');
 
   return function image() {
-    var x = function (d) { return d.dx; };
-    var y = function (d) { return d.dy; };
-    var width = function (d) { return d.width || 10; };
-    var height = function (d) { return d.height || 10; };
+    var x = function (d) { return d.coords.x; };
+    var y = function (d) { return d.coords.y; };
+    var width = function (d) { return d.coords.width || 10; };
+    var height = function (d) { return d.coords.height || 10; };
     var xlink = null;
     var preserveAspectRatio = null;
     var cssClass = 'image';

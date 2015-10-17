@@ -3,12 +3,12 @@ define(function (require) {
 
   return function rect() {
     var color = d3.scale.category10();
-    var x = function (d) { return d.dx; };
-    var y = function (d) { return d.dy; };
-    var rx = function (d) { return d.rx || 0; };
-    var ry = function (d) { return d.ry || 0; };
-    var width = function (d) { return d.width; };
-    var height = function (d) { return d.height; };
+    var x = function (d) { return d.coords.x; };
+    var y = function (d) { return d.coords.y; };
+    var rx = function (d) { return d.coords.rx || 0; };
+    var ry = function (d) { return d.coords.ry || 0; };
+    var width = function (d) { return d.coords.width; };
+    var height = function (d) { return d.coords.height; };
     var cssClass = 'bar';
     var fill = colorFill;
     var stroke = colorFill;
