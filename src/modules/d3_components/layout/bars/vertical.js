@@ -40,26 +40,18 @@ define(function (require) {
       var stop;
 
       function X(d, i) {
-        if (group) {
-          return xScale(x.call(this, d, i)) + groupScale(j);
-        }
+        if (group) return xScale(x.call(this, d, i)) + groupScale(j);
         return xScale(x.call(this, d, i));
       }
 
       function Y(d, i) {
-        if (group) {
-          return yScale(y.call(this, d, i));
-        }
+        if (group) return yScale(y.call(this, d, i));
         return yScale(d.y0 + Math.abs(y.call(this, d, i)));
       }
 
       function width() {
-        if (group) {
-          return groupScale.rangeBand();
-        }
-        if (timeInterval) {
-          return timeScale.rangeBand();
-        }
+        if (group) return groupScale.rangeBand();
+        if (timeInterval) return timeScale.rangeBand();
         return xScale.rangeBand() - padding;
       }
 

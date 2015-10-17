@@ -56,12 +56,8 @@ define(function (require) {
       }
 
       function height() {
-        if (group) {
-          return groupScale.rangeBand();
-        }
-        if (timeInterval) {
-          return timeScale.rangeBand();
-        }
+        if (group) return groupScale.rangeBand();
+        if (timeInterval) return timeScale.rangeBand();
         return yScale.rangeBand() - padding;
       }
 
