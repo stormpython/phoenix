@@ -46,7 +46,11 @@ define(function (require) {
 
       function Y(d, i) {
         if (group) {
+          if (timeInterval) return yScale(x.call(this, d, i)) + groupScale(j);
           return yScale(x.call(this, d, i)) + groupScale(j) + groupScale.rangeBand();
+        }
+        if (timeInterval) {
+          return yScale(x.call(this, d, i));
         }
         return yScale(x.call(this, d, i)) + yScale.rangeBand();
       }
@@ -72,7 +76,7 @@ define(function (require) {
         timeScale.domain(d3.time[timeNotation].range(start, stop, step));
       }
 
-      groupRange = timeInterval ? [timeScale.rangeBand(), 0] : [yScale.rangeBand(), 0];
+      groupRange = timeInterval ? [0, timeScale.rangeBand()] : [yScale.rangeBand(), 0];
       groupScale.domain(d3.range(data.length))
         .rangeRoundBands(groupRange, groupPadding, 0);
 
