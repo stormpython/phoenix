@@ -11,13 +11,15 @@ define(function (require) {
     var cssClass = 'chart';
     var type = 'rows';
     var size = [500, 500];
+    var layout = base();
 
     function generator(selection) {
       selection.each(function (data) {
-        // Appends divs based on the data array
-        var layout = base().type(type).size(size);
+        var div;
 
-        var div = d3.select(this).selectAll('div')
+        layout.type(type).size(size); // Appends divs based on the data array
+
+        div = d3.select(this).selectAll('div')
           .data(layout(data));
 
         // Exit
