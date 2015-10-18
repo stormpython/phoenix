@@ -1,14 +1,5 @@
 define(function (require) {
   return {
-    chart: {
-      boxplot: require('src/modules/d3_components/chart/boxplot'),
-      dendrogram: require('src/modules/d3_components/chart/dendrogram'),
-      heatmap: require('src/modules/d3_components/chart/heatmap'),
-      pie: require('src/modules/d3_components/chart/pie'),
-      series: require('src/modules/d3_components/chart/series'),
-      sunburst: require('src/modules/d3_components/chart/sunburst'),
-      treemap: require('src/modules/d3_components/chart/treemap')
-    },
     control: {
       brush: require('src/modules/d3_components/control/brush'),
       events: require('src/modules/d3_components/control/events')
@@ -31,6 +22,13 @@ define(function (require) {
       legend: require('src/modules/d3_components/generator/legend'),
       path: require('src/modules/d3_components/generator/path'),
       points: require('src/modules/d3_components/generator/points')
+    },
+    helpers: {
+      builder: require('src/modules/d3_components/helpers/builder'),
+      functor: require('src/modules/d3_components/helpers/functor'),
+      scaletor: require('src/modules/d3_components/helpers/scaletor'),
+      timeparser: require('src/modules/d3_components/helpers/timeparser'),
+      valuator: require('src/modules/d3_components/helpers/valuator')
     },
     layout: {
       verticalBars: require('src/modules/d3_components/layout/bars/vertical'),
