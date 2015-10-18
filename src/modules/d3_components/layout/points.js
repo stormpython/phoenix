@@ -10,17 +10,19 @@ define(function (require) {
 
     function layout(data) {
       // Merge inner arrays => [[]] to []
-      data = data.reduce(function (a, b) {
-        return a.concat(b);
-      }, []);
+      data = data
+        .reduce(function (a, b) {
+          return a.concat(b);
+        }, [])
+        .map(function (d, i) {
+          if (!d.coords) d.coords = {};
 
-      data.forEach(function (d, i) {
-        if (!d.coords) d.coords = {};
+          d.coords.cx = xScale(x.call(this, d, i));
+          d.coords.cy = yScale(y.call(this, d, i));
+          d.coords.radius = radius.call(this, d, i);
 
-        d.coords.cx = xScale(x.call(this, d, i));
-        d.coords.cy = yScale(y.call(this, d, i));
-        d.coords.radius = radius.call(this, d, i);
-      });
+          return d;
+        });
 
       return data;
     }

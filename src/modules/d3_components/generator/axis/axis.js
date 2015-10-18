@@ -3,63 +3,57 @@ define(function (require) {
   var builder = require('src/modules/d3_components/helpers/builder');
   var rotate = require('src/modules/d3_components/generator/axis/rotate');
 
+  function getTransform(position, size) {
+    var width = size[0];
+    var height = size[1];
+
+    if (position === 'bottom') return 'translate(0,' + height + ')';
+    if (position === 'right') return 'translate(' + width + ',0)';
+    if (position === 'left' || position === 'top') return 'translate(0,0)';
+  }
+
+  function getAxisClass(position) {
+    if (position === 'bottom') return 'x axis';
+    if (position === 'left') return 'y axis';
+    if (position === 'right') return 'y2 axis';
+    if (position === 'top') return 'x2 axis';
+  }
+
+  function getAxisPosition(position, axis) {
+    return axis.orient(position);
+  }
+
   return function axes() {
     var scale = d3.scale.linear();
-    var orient = 'bottom';
-    var tick = {
-      number: 10,
-      values: null,
-      size: 6,
-      innerTickSize: 6,
-      outerTickSize: 6,
-      padding: 3,
-      format: null
-    };
-    var tickText = {
-      transform: null,
-      anchor: 'middle',
-      x: 0,
-      y: 9,
-      dx: '',
-      dy: '.71em'
-    };
-    var rotateLabels = { allow: false };
-    var transform = 'translate(0,0)';
-    var gClass = 'axis';
-    var title = {
-      class: 'axis title',
-      x: 6,
-      y: 6,
-      dx: '',
-      dy: '.71em',
-      anchor: 'end',
-      transform: 'translate(0,0)',
-      text: ''
-    };
+    var position = 'bottom';
+    var size = [0, 1];
+    var tick = {};
+    var rotateLabels = {};
+    var title = {};
+    var axis = d3.svg.axis();
     var g;
-    var text;
     var rotation;
+    var text;
 
     function generator(selection) {
       selection.each(function () {
-        var axis = d3.svg.axis()
+        axis = getAxisPosition(position, axis)
           .scale(scale)
-          .orient(orient)
-          .ticks(tick.number)
-          .tickValues(tick.values)
-          .tickSize(tick.size)
-          .innerTickSize(tick.innerTickSize)
-          .outerTickSize(tick.outerTickSize)
-          .tickPadding(tick.padding)
-          .tickFormat(tick.format);
+          .ticks(tick.number || 10)
+          .tickValues(tick.values || null)
+          .tickSize(tick.size || 6)
+          .innerTickSize(tick.innerTickSize || 6)
+          .outerTickSize(tick.outerTickSize || 6)
+          .tickPadding(tick.padding || 3)
+          .tickFormat(tick.format || null);
 
         if (!g) {
           g = d3.select(this).append('g');
         }
 
         // Attach axis
-        g.attr('class', gClass)
-          .attr('transform', transform)
+        g.attr('class', getAxisClass(position))
+          .attr('transform', getTransform(position, size))
           .call(axis);
 
         if (rotateLabels.allow) {
@@ -75,39 +69,33 @@ define(function (require) {
           text = g.append('text');
         }
 
-        g.attr('class', title.class)
-          .attr('x', title.x)
-          .attr('y', title.y)
-          .attr('dx', title.dx)
-          .attr('dy', title.dy)
-          .attr('transform', title.transform)
-          .style('title-anchor', title.anchor)
-          .text(title.text);
+        g.attr('class', title.class || 'axis title')
+          .attr('x', title.x || 6)
+          .attr('y', title.y || 6)
+          .attr('dx', title.dx || '')
+          .attr('dy', title.dy || '.71em')
+          .attr('transform', title.transform || 'translate(0,0)')
+          .style('title-anchor', title.anchor || 'end')
+          .text(title.text || '');
       });
     }
 
     // Public API
-    generator.class = function (_) {
-      if (!arguments.length) return gClass;
-      gClass = _;
-      return generator;
-    };
-
-    generator.transform = function (_) {
-      if (!arguments.length) return transform;
-      transform = _;
-      return generator;
-    };
-
     generator.scale = function (_) {
       if (!arguments.length) return scale;
       scale = _;
       return generator;
     };
 
-    generator.orient = function (_) {
-      if (!arguments.length) return orient;
-      orient = _;
+    generator.position = function (_) {
+      if (!arguments.length) return position;
+      position = _;
+      return generator;
+    };
+
+    generator.size = function (_) {
+      if (!arguments.length) return size;
+      size = _;
       return generator;
     };
 
@@ -120,17 +108,6 @@ define(function (require) {
       tick.format = typeof _.format !== 'undefined' ? _.format : tick.format;
       tick.innerTickSize = typeof _.innerTickSize !== 'undefined' ? _.innerTickSize : tick.innerTickSize;
       tick.outerTickSize = typeof _.outerTickSize !== 'undefined' ? _.outerTickSize : tick.outerTickSize;
-      return generator;
-    };
-
-    generator.tickText = function (_) {
-      if (!arguments.length) return tickText;
-      tickText.transform = typeof _.transform !== 'undefined' ? _.transform : tickText.transform;
-      tickText.anchor = typeof _.anchor !== 'undefined' ? _.anchor : tickText.anchor;
-      tickText.x = typeof _.x !== 'undefined' ? _.x : tickText.x;
-      tickText.y = typeof _.y !== 'undefined' ? _.y : tickText.y;
-      tickText.dx = typeof _.dx !== 'undefined' ? _.dx : tickText.dx;
-      tickText.dy = typeof _.dy !== 'undefined' ? _.dy : tickText.dy;
       return generator;
     };
 

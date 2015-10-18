@@ -80,8 +80,8 @@ define(function (require) {
       groupScale.domain(d3.range(data.length))
         .rangeRoundBands(groupRange, groupPadding, 0);
 
-      data.forEach(function (arr) {
-        arr.forEach(function (d, i) {
+      data = data.map(function (arr) {
+        return arr.map(function (d, i) {
           if (!d.coords) d.coords = {};
 
           d.coords.x = X.call(this, d, i);
@@ -90,6 +90,8 @@ define(function (require) {
           d.coords.height = height.call(this, d, i);
           d.coords.rx = rx.call(this, d, i);
           d.coords.ry = ry.call(this, d, i);
+
+          return d;
         });
 
         j++; // increment thru stack layers
