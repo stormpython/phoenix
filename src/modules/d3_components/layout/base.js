@@ -50,8 +50,8 @@ define(function (require) {
 
           data[cell].dx = columnScale(col);
           data[cell].dy = rowScale(row);
-          data[cell].height = cellHeight;
           data[cell].width = cellWidth;
+          data[cell].height = cellHeight;
           cell++;
         });
       });

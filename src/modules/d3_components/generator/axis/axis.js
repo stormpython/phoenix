@@ -88,8 +88,11 @@ define(function (require) {
     };
 
     generator.position = function (_) {
+      var positions = ['bottom', 'left', 'right', 'top'];
+      var isValidPosition = positions.indexOf(_) !== -1;
+
       if (!arguments.length) return position;
-      position = _;
+      position = isValidPosition ? _ : position;
       return generator;
     };
 

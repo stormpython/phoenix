@@ -17,14 +17,11 @@ define(function (require) {
     var margin = {top: 20, right: 50, bottom: 50, left: 50};
     var width = 960;
     var height = 500;
+    var accessor = function (d) { return d.data; };
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
-    var y2 = function (d) { return d.z; };
-    var xScale = d3.scale.time.utc();
-    var yScale = d3.scale.linear();
-    var yScale2 = d3.scale.linear();
+
     var area = areaGenerator();
-    var axis = axisGenerator();
     var bar = barGenerator();
     var brush = brushControl();
     var clippath = clipPathGenerator();
@@ -32,55 +29,68 @@ define(function (require) {
     var points = pointsGenerator();
     var svgEvents = events();
     var zeroLine = lineElement();
-    var areaOpts = [];
-    var axisOpts = [];
-    var barOpts = [];
+
+    var axisFunctions = {
+      left: axisGenerator(),
+      bottom: axisGenerator(),
+      right: axisGenerator(),
+      top: axisGenerator()
+    };
+
+    var axes = {};
+    var scales = {};
     var brushOpts = {};
-    var lineOpts = [];
-    var pointsOpts = [];
+    var zeroLineOpts = {};
+    var areaOpts = {};
+    var barOpts = {};
+    var lineOpts = {};
+    var pointOpts = {};
     var listeners = {};
 
     var svg;
     var g;
     var clippedG;
 
+    function getAxesPositions(axes) {
+      var positions = {left: [], bottom: [], right: [], top: []};
+
+      d3.entries(axes).forEach(function (d) {
+        if (!d.values.position) {
+          if (d.key === 'x') positions['bottom'].push(d.values);
+          if (d.key === 'y') positions['left'].push(d.values);
+          if (d.key === 'y2') positions['right'].push(d.values);
+          if (d.key === 'x2') positions['top'].push(d.values);
+        } else {
+          positions[d.values.position].push(d.values);
+        }
+      });
+
+      return positions;
+    }
+
+    function getScale(scale) {
+
+    }
+
     function chart(selection)  {
-      selection.each(function (data, index) {
+      selection.each(function (data) {
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
 
-        xScale
-          .domain(d3.extent(d3.merge(data), x))
-          .range([0, adjustedWidth]).nice();
+        // Scales
 
-        yScale
-          .domain([
-            Math.min(0, d3.min(d3.merge(data), function (d) {
-              return d.y0
-            })),
-            Math.max(0, d3.max())
-          ])
-          .range([adjustedHeight, 0]);
+        // Axes
+        var axisPositions = getAxesPositions(axes);
 
-        yScale2
-          .domain([
-            Math.min(0, d3.min(d3.merge(data), function (d) {
+        d3.entries(axisPositions).forEach(function (d) {
+          d.values.forEach(function (opts) {
+            var axis = axisFunctions[d.key]
+              .scale(opts.scale ? getScale(opts.scale) : scales[d.key])
+              .size([adjustedWidth, adjustedHeight]);
 
-            })),
-            Math.max(0, d3.max())
-          ])
-          .range([adjustedHeight, 0]);
-
-        // SVG - create/update the svg
-        if (!svg && !g) {
-          svg = d3.select(this).append('svg');
-          g = svg.append('g')
-        }
-
-        svg.attr('width', width)
-          .attr('height', height)
-          .call(svgEvents.listeners(listeners));
-        g.attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+            g.call(builder(opts, axis));
+          });
+        });
 
         // Brush
         brush
@@ -95,7 +105,7 @@ define(function (require) {
           .brushend(listeners.brushend);
 
         // Zero-line
-        zLine
+        zeroLine
           .x1(function () { return x.range()[0]; })
           .x2(function () { return x.range()[1]; })
           .y1(function () { return y(0); })
@@ -105,6 +115,18 @@ define(function (require) {
         clippath.width(adjustedWidth).height(adjustedHeight);
 
         /* ************************************************** */
+        // SVG - create/update the svg
+        if (!svg && !g) {
+          svg = d3.select(this).append('svg');
+          g = svg.append('g')
+        }
+
+        svg.attr('width', width)
+          .attr('height', height)
+          .call(svgEvents.listeners(listeners));
+
+        g.attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+
         g.call(brush);
 
         if (zeroLine.show) {
@@ -117,7 +139,6 @@ define(function (require) {
         }
 
         clippedG.attr('clip-path', 'url(#' + clippath.id() + ')');
-
       });
     }
 
@@ -133,13 +154,31 @@ define(function (require) {
 
     chart.width = function (_) {
       if (!arguments.length) return width;
-      width = _;
+      width = typeof _ === 'number' ? _ : width;
       return chart;
     };
 
     chart.height = function (_) {
       if (!arguments.length) return height;
-      height = _;
+      height = typeof _ === 'number' ? _ : height;
+      return chart;
+    };
+
+    chart.accessor = function (_) {
+      if (!arguments.length) return accessor;
+      accessor = valuator(_);
+      return chart;
+    };
+
+    chart.scales = function (_) {
+      if (!arguments.length) return scales;
+      scales = _;
+      return chart;
+    };
+
+    chart.axes = function (_) {
+      if (!arguments.length) return axes;
+      axes = _;
       return chart;
     };
 
@@ -148,14 +187,14 @@ define(function (require) {
       return chart;
     };
 
-    chart.axis = function (_) {
-      if (!arguments.length) return axis;
-      axis = _;
+    chart.zeroLine = function (_) {
+      if (!arguments.length) return zeroLine;
       return chart;
     };
 
-    chart.zeroLine = function (_) {
-      if (!arguments.length) return zeroLine;
+    chart.area = function (_) {
+      if (!arguments.length) return area;
+      area = typeof _ === 'object' ? _ : area;
       return chart;
     };
 
@@ -168,12 +207,6 @@ define(function (require) {
     chart.line = function (_) {
       if (!arguments.length) return line;
       line = typeof _ === 'object' ? _ : line;
-      return chart;
-    };
-
-    chart.area = function (_) {
-      if (!arguments.length) return area;
-      area = typeof _ === 'object' ? _ : area;
       return chart;
     };
 

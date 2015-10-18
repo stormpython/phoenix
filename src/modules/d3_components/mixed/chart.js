@@ -23,9 +23,7 @@ define(function (require) {
           });
         });
 
-        if (typeof chart.accessor) {
-          chart.accessor(accessor);
-        }
+        if (typeof chart.accessor) chart.accessor(accessor);
 
         d3.select(this).call(chart); // Draw Chart
       });
