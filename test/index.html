@@ -27,11 +27,11 @@
       });
       <!-- Tests -->
       require([
-        "specs/index",
-        "specs/components/layout",
-        "specs/components/main",
-        "specs/components/size",
-        "specs/components/sum_listeners"
+        "../src/__tests__/index",
+        "../../src/modules/d3_components/generator/element/html/__tests__/div",
+        "../../src/modules/__tests__/index",
+        "../../src/modules/helpers/__tests__/size",
+        "../../src/modules/helpers/__tests__/sum_listeners"
       ], function () {
         mocha.run();
       });
