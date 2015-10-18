@@ -49,9 +49,7 @@ define(function (require) {
           if (timeInterval) return yScale(x.call(this, d, i)) + groupScale(j);
           return yScale(x.call(this, d, i)) + groupScale(j) + groupScale.rangeBand();
         }
-        if (timeInterval) {
-          return yScale(x.call(this, d, i));
-        }
+        if (timeInterval) return yScale(x.call(this, d, i));
         return yScale(x.call(this, d, i)) + yScale.rangeBand();
       }
 
