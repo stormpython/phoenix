@@ -19,7 +19,7 @@ define(function (require) {
     if (position === 'top') return 'x2 axis';
   }
 
-  function getAxisPosition(position, axis) {
+  function getAxisOrientation(position, axis) {
     return axis.orient(position);
   }
 
@@ -37,7 +37,7 @@ define(function (require) {
 
     function generator(selection) {
       selection.each(function () {
-        axis = getAxisPosition(position, axis)
+        axis = getAxisOrientation(position, axis)
           .scale(scale)
           .ticks(tick.number || 10)
           .tickValues(tick.values || null)
