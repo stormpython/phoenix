@@ -69,7 +69,7 @@ define(function (require) {
           text = g.append('text');
         }
 
-        g.attr('class', title.class || 'axis title')
+        text.attr('class', title.class || 'axis title')
           .attr('x', title.x || 6)
           .attr('y', title.y || 6)
           .attr('dx', title.dx || '')
