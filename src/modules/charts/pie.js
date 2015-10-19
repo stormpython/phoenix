@@ -1,14 +1,12 @@
 define(function (require) {
-  var d3 = require("d3");
-  var path = require("src/modules/element/svg/path");
-  var textElement = require("src/modules/element/svg/text");
-  var events = require("src/modules/component/events/events");
-  var valuator = require("valuator");
-  var addEventListener = require("src/modules/helpers/add_event_listener");
-  var removeEventListener = require("src/modules/helpers/remove_event_listener");
+  var d3 = require('d3');
+  var d3Components = require('d3_components');
+  var path = d3Components.element.path;
+  var textElement = d3Components.element.text;
+  var events = d3Components.control.events;
+  var valuator = d3Components.helpers.valuator;
 
   return function pieChart() {
-    // Private variables
     var width = 300;
     var height = 300;
     var color = d3.scale.category10();
@@ -18,17 +16,17 @@ define(function (require) {
     var value = function (d) { return d.x; };
     var label = function (d) { return d.name; };
 
-    var pieClass = "pie";
+    var pieClass = 'pie';
     var fill = function (d, i) {
       return color(label.call(this, d.data, i));
     };
-    var stroke = "#ffffff";
+    var stroke = '#ffffff';
 
     // Text options
     var text = {
-      fill: "#ffffff",
-      dy: ".35em",
-      anchor: "middle",
+      fill: '#ffffff',
+      dy: '.35em',
+      anchor: 'middle',
       transform: null
     };
 
@@ -48,13 +46,13 @@ define(function (require) {
 
         var svgEvents = events().listeners(listeners);
 
-        var svg = d3.select(this).append("svg")
-          .attr("width", width)
-          .attr("height", height)
+        var svg = d3.select(this).append('svg')
+          .attr('width', width)
+          .attr('height', height)
           .call(svgEvents);
 
-        var g = svg.append("g")
-          .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+        var g = svg.append('g')
+          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
 
         var arc = d3.svg.arc()
           .outerRadius(outerRadius || radius)
@@ -68,7 +66,7 @@ define(function (require) {
 
         var pieText = textElement()
           .transform(text.transform || function (d) {
-            return "translate(" + arc.centroid(d) + ")";
+            return 'translate(' + arc.centroid(d) + ')';
           })
           .dy(text.dy)
           .anchor(text.anchor)
@@ -77,9 +75,9 @@ define(function (require) {
             return label.call(this, d.data, i);
           });
 
-        g.selectAll("groups")
+        g.selectAll('groups')
           .data(data)
-          .enter().append("g")
+          .enter().append('g')
           .call(piePath)
           .call(pieText);
       });
@@ -154,22 +152,18 @@ define(function (require) {
 
     chart.text = function (_) {
       if (!arguments.length) { return text; }
-      text.fill = typeof _.fill !== "undefined" ? _.fill : text.fill;
-      text.anchor = typeof _.anchor !== "undefined" ? _.anchor: text.anchor;
-      text.dy = typeof _.dy !== "undefined" ? _.dy : text.dy;
-      text.transform = typeof _.transform !== "undefined" ? _.transform : text.transform;
+      text.fill = typeof _.fill !== 'undefined' ? _.fill : text.fill;
+      text.anchor = typeof _.anchor !== 'undefined' ? _.anchor: text.anchor;
+      text.dy = typeof _.dy !== 'undefined' ? _.dy : text.dy;
+      text.transform = typeof _.transform !== 'undefined' ? _.transform : text.transform;
       return chart;
     };
 
     chart.listeners = function (_) {
       if (!arguments.length) { return listeners; }
-      listeners = typeof _ !== "object" ? listeners : _;
+      listeners = typeof _ !== 'object' ? listeners : _;
       return chart;
     };
-
-    chart.on = addEventListener(chart);
-
-    chart.off = removeEventListener(chart);
 
     return chart;
   };

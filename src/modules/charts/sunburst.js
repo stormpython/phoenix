@@ -1,10 +1,9 @@
 define(function (require) {
-  var d3 = require("d3");
-  var path = require("src/modules/element/svg/path");
-  var events = require("src/modules/component/events/events");
-  var valuator = require("valuator");
-  var addEventListener = require("src/modules/helpers/add_event_listener");
-  var removeEventListener = require("src/modules/helpers/remove_event_listener");
+  var d3 = require('d3');
+  var d3Components = require('d3_components');
+  var path = d3Components.element.path;
+  var events = d3Components.control.events;
+  var valuator = d3Components.helpers.valuator;
 
   return function sunburst() {
     // Private variables
@@ -29,10 +28,10 @@ define(function (require) {
     };
 
     // Pie options
-    var pieClass = "slice";
-    var stroke = "#ffffff";
+    var pieClass = 'slice';
+    var stroke = '#ffffff';
     var fill = function (d, i) {
-      if (d.depth === 0) { return "none"; }
+      if (d.depth === 0) { return 'none'; }
       return color(i);
     };
 
@@ -48,11 +47,11 @@ define(function (require) {
 
         var svgEvents = events().listeners(listeners);
 
-        var svg = d3.select(this).append("svg")
-          .attr("width", width)
-          .attr("height", height)
-          .append("g")
-          .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+        var svg = d3.select(this).append('svg')
+          .attr('width', width)
+          .attr('height', height)
+          .append('g')
+          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
           .call(svgEvents);
 
         yScale.range([0, radius]);
@@ -89,7 +88,7 @@ define(function (require) {
 
     chart.color = function (_) {
       if (!arguments.length) { return color; }
-      color = typeof _ !== "function" ? color : _;
+      color = typeof _ !== 'function' ? color : _;
       return chart;
     };
 
@@ -143,7 +142,7 @@ define(function (require) {
 
     chart.class = function (_) {
       if (!arguments.length) { return pieClass; }
-      pieClass = typeof _ !== "string" ? pieClass : _;
+      pieClass = typeof _ !== 'string' ? pieClass : _;
       return chart;
     };
 
@@ -161,13 +160,9 @@ define(function (require) {
 
     chart.listeners = function (_) {
       if (!arguments.length) { return listeners; }
-      listeners = typeof _ !== "object" ? listeners : _;
+      listeners = typeof _ !== 'object' ? listeners : _;
       return chart;
     };
-
-    chart.on = addEventListener(chart);
-
-    chart.off = removeEventListener(chart);
 
     return chart;
   };

@@ -1,12 +1,11 @@
 define(function (require) {
   var d3 = require("d3");
-  var svgRect = require("src/modules/element/svg/rect");
-  var canvasRect = require("src/modules/element/canvas/rect");
-  var axis = require("src/modules/component/axis/axis");
-  var events = require("src/modules/component/events/events");
-  var valuator = require("valuator");
-  var addEventListener = require("src/modules/helpers/add_event_listener");
-  var removeEventListener = require("src/modules/helpers/remove_event_listener");
+  var d3Components = require('d3_components');
+  var svgRect = d3Components.element.rect;
+  var canvasRect = d3Components.canvas.rect;
+  var axis = d3Components.generator.axis;
+  var events = d3Components.control.events;
+  var valuator = d3Components.helpers.valuator;
 
   return function heatmap() {
     // Private variables
@@ -318,10 +317,6 @@ define(function (require) {
       listeners = typeof _ !== "object" ? listeners : _;
       return chart;
     };
-
-    chart.on = addEventListener(chart);
-
-    chart.off = removeEventListener(chart);
 
     return chart;
   };

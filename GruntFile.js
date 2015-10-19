@@ -31,6 +31,10 @@ module.exports = function(grunt) {
           include: ['src/require.config', 'phx'],
           optimize: 'none',
           out: 'build/phoenix.js',
+          wrap: {
+            startFile: "src/start.js",
+            endFile: "src/end.js"
+          }
         }
       }
     },

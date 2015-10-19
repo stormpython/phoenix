@@ -1,37 +1,36 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset='utf-8'>
     <title>Unit tests</title>
-    <link rel="stylesheet" media="all" href="../../node_modules/mocha/mocha.css">
+    <link rel='stylesheet' media='all' href='../../node_modules/mocha/mocha.css'>
   </head>
   <body>
-    <div id="mocha"></div>
+    <div id='mocha'></div>
 
-    <script src="../../node_modules/mocha/mocha.js"></script>
-    <script src="../../node_modules/chai/chai.js"></script>
-    <script src="../../node_modules/requirejs/require.js"></script>
+    <script src='../../node_modules/mocha/mocha.js'></script>
+    <script src='../../node_modules/chai/chai.js'></script>
+    <script src='../../node_modules/requirejs/require.js'></script>
     <script>
       mocha.setup({
-        ui: "bdd",
-        reporter: "html"
+        ui: 'bdd',
+        reporter: 'html'
       });
       require.config({
         baseUrl: '/',
         paths: {
-          specs: "test/unit/specs",
-          fixtures: "test/unit/fixtures",
-          jubilee: "node_modules/jubilee/build/jubilee",
-          phx: "src/components/main"
+          fixtures: 'test/fixtures',
+          jubilee: 'src/modules/d3_components/index',
+          phx: 'src/components/main'
         }
       });
       <!-- Tests -->
       require([
-        "../src/__tests__/index",
-        "../../src/modules/d3_components/generator/element/html/__tests__/div",
-        "../../src/modules/__tests__/index",
-        "../../src/modules/helpers/__tests__/size",
-        "../../src/modules/helpers/__tests__/sum_listeners"
+        '../src/__tests__/index',
+        '../../src/modules/d3_components/generator/element/html/__tests__/div',
+        '../../src/modules/__tests__/index',
+        '../../src/modules/helpers/__tests__/size',
+        '../../src/modules/helpers/__tests__/sum_listeners'
       ], function () {
         mocha.run();
       });

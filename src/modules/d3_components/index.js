@@ -4,6 +4,9 @@ define(function (require) {
       brush: require('src/modules/d3_components/control/brush'),
       events: require('src/modules/d3_components/control/events')
     },
+    canvas: {
+      rect: require('src/modules/d3_components/generator/element/canvas/rect')
+    },
     element: {
       circle: require('src/modules/d3_components/generator/element/svg/circle'),
       div: require('src/modules/d3_components/generator/element/html/div'),
