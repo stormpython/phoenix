@@ -1,10 +1,9 @@
 define(function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
   var builder = require('src/modules/d3_components/helpers/builder');
-  var vertical = d3Components.layout.verticalBars;
-  var horizontal = d3Components.layout.horizontalBars;
-  var rect = d3Components.element.rect;
+  var vertical = require('src/modules/d3_components/layout/bars/vertical');
+  var horizontal = require('src/modules/d3_components/layout/bars/horizontal');
+  var rect = require('src/modules/d3_components/generator/element/svg/rect');
 
   return function bars() {
     var rects = rect();

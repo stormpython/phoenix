@@ -1,5 +1,5 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
 
   return function treemap() {
     var margin = {top: 40, right: 10, bottom: 10, left: 10};
@@ -9,9 +9,8 @@ define(function (require) {
     var sticky = true;
     var value = function (d) { return d.size; };
     var children = function (d) { return d.children; };
-    var dispatch = d3.dispatch("hover", "mouseover", "mouseout");
 
-    var nodeClass = "node";
+    var nodeClass = 'node';
     var nodeColor = function (d, i) { return d.children ? color(i) : null; };
     var label = function (d) { return d.children ? null : d.name; };
 
@@ -23,36 +22,36 @@ define(function (require) {
           .children(children)
           .value(value);
 
-        var div = d3.select(this).append("div")
-          .style("position", "relative")
-          .style("width", (width + margin.left + margin.right) + "px")
-          .style("height", (height + margin.top + margin.bottom) + "px")
-          .style("left", margin.left + "px")
-          .style("top", margin.top + "px");
+        var div = d3.select(this).append('div')
+          .style('position', 'relative')
+          .style('width', (width + margin.left + margin.right) + 'px')
+          .style('height', (height + margin.top + margin.bottom) + 'px')
+          .style('left', margin.left + 'px')
+          .style('top', margin.top + 'px');
 
-        div.datum(data).selectAll(".node")
+        div.datum(data).selectAll('.node')
           .data(treemap.nodes)
-          .enter().append("div")
-          .attr("class", nodeClass)
+          .enter().append('div')
+          .attr('class', nodeClass)
           .call(position)
-          .style("background", nodeColor)
+          .style('background', nodeColor)
           .text(label);
       });
     }
 
     function position() {
-      this.style("left", function(d) { return d.x + "px"; })
-        .style("top", function(d) { return d.y + "px"; })
-        .style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
-        .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
+      this.style('left', function(d) { return d.x + 'px'; })
+        .style('top', function(d) { return d.y + 'px'; })
+        .style('width', function(d) { return Math.max(0, d.dx - 1) + 'px'; })
+        .style('height', function(d) { return Math.max(0, d.dy - 1) + 'px'; });
     }
 
     chart.margin = function (_) {
       if (!arguments.length) { return margin; }
-      margin.top = typeof _.top !== "undefined" ? _.top : margin.top;
-      margin.right = typeof _.right !== "undefined" ? _.right : margin.right;
-      margin.bottom = typeof _.bottom !== "undefined" ? _.bottom : margin.bottom;
-      margin.left = typeof _.left !== "undefined" ? _.left : margin.left;
+      margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
+      margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
+      margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
+      margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
       return chart;
     };
 

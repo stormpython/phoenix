@@ -1,5 +1,5 @@
 define(function (require) {
-  var charts = require('charts');
+  var charts = require('src/modules/charts/index');
 
   return function chart() {
     var opts = {};
@@ -42,7 +42,7 @@ define(function (require) {
     };
 
     generator.on = function (event, listener) {
-      if (arguments.length === 2 && typeof listener === 'function') {
+      if (listener && typeof listener === 'function') {
         if (!listeners[event]) listeners[event] = [];
         listeners[event].push(listener);
       }
@@ -50,12 +50,14 @@ define(function (require) {
     };
 
     generator.off = function (event, listener) {
-      if (arguments.length === 1 && listeners[event]) {
-        listeners[event] = null;
+      var handlers = listeners[event];
+
+      if (!listener && handlers) {
+        handlers = null;
       }
-      if (arguments.length === 2 && typeof listener === 'function') {
-        if (listeners[event]) {
-          listeners[event] = listeners[event].filter(function (handler) {
+      if (listener && typeof listener === 'function') {
+        if (handlers) {
+          listeners[event] = handlers.filter(function (handler) {
             return handler !== listener;
           });
         }

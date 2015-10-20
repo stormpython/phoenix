@@ -1,17 +1,15 @@
 define(function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
   var builder = require('src/modules/d3_components/helpers/builder');
   var valuator = require('src/modules/d3_components/helpers/valuator');
-  var clipPathGenerator = d3Components.generator.clipPath;
-  var axisGenerator = d3Components.generator.axis;
-  var brushControl = d3Components.control.brush;
-  var events = d3Components.control.event;
-  var lineElement = d3Components.element.line;
-  var areaGenerator = d3Components.generator.path;
-  var barGenerator = d3Components.generator.bars;
-  var lineGenerator = d3Components.generator.path;
-  var pointsGenerator = d3Components.generator.points;
+  var clipPathGenerator = require('src/modules/d3_components/generator/clippath');
+  var axisGenerator = require('src/modules/d3_components/generator/axis/axis');
+  var brushControl = require('src/modules/d3_components/control/brush');
+  var events = require('src/modules/d3_components/control/events');
+  var lineElement = require('src/modules/d3_components/generator/element/svg/line');
+  var pathGenerator = require('src/modules/d3_components/generator/path');
+  var barGenerator = require('src/modules/d3_components/generator/bars');
+  var pointsGenerator = require('src/modules/d3_components/generator/points');
 
   return function series() {
     var margin = {top: 20, right: 50, bottom: 50, left: 50};
@@ -21,11 +19,11 @@ define(function (require) {
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
 
-    var area = areaGenerator();
+    var area = pathGenerator();
     var bar = barGenerator();
     var brush = brushControl();
     var clippath = clipPathGenerator();
-    var line = lineGenerator();
+    var line = pathGenerator();
     var points = pointsGenerator();
     var svgEvents = events();
     var zeroLine = lineElement();

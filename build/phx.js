@@ -2,7 +2,7 @@
   if (typeof define === "function" && define.amd) {
     define([], factory);
   } else {
-    root.phx = factory();
+    root.Phx = factory();
   }
 }(this, function () {/**
  * @license almond 0.3.1 Copyright (c) 2011-2014, The Dojo Foundation All Rights Reserved.
@@ -441,8 +441,6 @@ require.config({
   baseUrl: '/',
   paths: {
     d3: 'node_modules/d3/d3',
-    d3_components: 'src/modules/d3_components/index',
-    charts: 'src/modules/charts/index',
     phx: 'src/modules/index'
   },
   shim: {},
@@ -9955,1098 +9953,237 @@ define("src/require.config", function(){});
   if (typeof define === "function" && define.amd) define('d3',d3); else if (typeof module === "object" && module.exports) module.exports = d3;
   this.d3 = d3;
 }();
-define('src/modules/d3_components/control/brush',['require','d3'],function (require) {
+define('src/modules/d3_components/layout/box',['require','d3'],function (require) {
   var d3 = require('d3');
 
-  /**
-   * Creates a brush control and binds it to an <svg></svg>.
-   */
-  return function brush() {
-    var margin = { top: 0, right: 0, bottom: 0, left: 0 };
-    var cssClass = 'brush';
-    var opacity = 0.2;
-    var width = null;
-    var height = null;
-    var xScale = null;
-    var yScale = null;
-    var extent = null;
-    var clamp = false;
-    var brush = d3.svg.brush();
-    var brushStartCallback = [];
-    var brushCallback = [];
-    var brushEndCallback = [];
-    var brushG;
-
-    function control(selection) {
-      selection.each(function (data, index) {
-        width = width - margin.left - margin.right;
-        height = height - margin.top - margin.bottom;
-
-        function brushStart() {
-          brushStartCallback.forEach(function (listener) {
-            listener.call(this, brush, data, index);
-          });
-        }
-
-        function brushF() {
-          brushCallback.forEach(function (listener) {
-            listener.call(this, brush, data, index);
-          });
-        }
-
-        function brushEnd() {
-          brushEndCallback.forEach(function (listener) {
-            listener.call(this, brush, data, index);
-
-            // Clear brush
-            d3.selectAll('g.' + cssClass)
-              .call(brush.clear());
-          });
-        }
-
-        brush
-          .on('brushstart', brushStartCallback ? brushStart : null)
-          .on('brush', brushCallback ? brushF : null)
-          .on('brushend', brushEndCallback ? brushEnd : null);
-
-        if (xScale) { brush.x(xScale); }
-        if (yScale) { brush.y(yScale); }
-        if (extent) { brush.extent(extent); }
-        if (clamp) { brush.clamp(clamp); }
-
-        if (!brushG) {
-          brushG = d3.select(this).append('g');
-        }
-
-        // Attach new brush
-        brushG.attr('class', cssClass)
-          .attr('opacity', opacity)
-          .call(brush)
-          .selectAll('rect');
-
-        if (width) { brushG.attr('width', width); }
-        if (height) { brushG.attr('height', height); }
-      });
-    }
-
-    // Public API
-    control.margin = function (_) {
-      if (!arguments.length) return margin;
-      margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
-      margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
-      margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
-      margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
-      return control;
-    };
-
-    control.width = function (_) {
-      if (!arguments.length) return width;
-      width = _;
-      return control;
-    };
-
-    control.height = function (_) {
-      if (!arguments.length) return height;
-      height = _;
-      return control;
-    };
-
-    control.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
-      return control;
-    };
-
-    control.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
-      return control;
-    };
-
-    control.xScale = function (_) {
-      if (!arguments.length) return xScale;
-      xScale = _;
-      return control;
-    };
-
-    control.yScale = function (_) {
-      if (!arguments.length) return yScale;
-      yScale = _;
-      return control;
-    };
-
-    control.extent = function (_) {
-      if (!arguments.length) return extent;
-      extent = _;
-      return control;
-    };
-
-    control.clamp = function (_) {
-      if (!arguments.length) return clamp;
-      clamp = _;
-      return control;
-    };
-
-    control.brushstart = function (_) {
-      if (!arguments.length) return brushStartCallback;
-      if (typeof _ === 'function') brushStartCallback.push(_);
-      if (Array.isArray(_)) brushStartCallback = _;
-      if (_ === null) brushStartCallback = _;
-      return control;
-    };
-
-    control.brush = function (_) {
-      if (!arguments.length) return brushCallback;
-      if (typeof _ === 'function') brushCallback.push(_);
-      if (Array.isArray(_)) brushCallback = _;
-      if (_ === null) brushCallback = _;
-      return control;
-    };
-
-    control.brushend = function (_) {
-      if (!arguments.length) return brushEndCallback;
-      if (typeof _ === 'function') brushEndCallback.push(_);
-      if (Array.isArray(_)) brushEndCallback = _;
-      if (_ === null) brushEndCallback = _;
-      return control;
-    };
-
-    return control;
-  };
-});
-define('src/modules/d3_components/control/events',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  /**
-   * Adds event listeners to DOM elements
-   */
-
-  return function events() {
-    var listeners = {};
-    var processor = function (e) { return e; };
-    var element;
-
-    function control(selection) {
-      selection.each(function () {
-        if (!element) {
-          element = d3.select(this);
-        }
-
-        d3.entries(listeners).forEach(function (e) {
-          // Stop listening for event types that have
-          // an empty listeners array or that is set to null
-          if (!e.value || !e.value.length) {
-            return element.on(e.key, null);
-          }
-
-          element.on(e.key, function () {
-            d3.event.stopPropagation(); // => event.stopPropagation()
-
-            e.value.forEach(function (listener) {
-              listener.call(this, processor(d3.event));
-            });
-          });
-        });
-      });
-    }
-
-    // Public API
-    control.listeners = function (_) {
-      if (!arguments.length) return listeners;
-      listeners = typeof _ === 'object' ? _ : listeners;
-      return control;
-    };
-
-    control.processor = function (_) {
-      if (!arguments.length) return processor;
-      processor = typeof _ === 'function' ? _ : processor;
-      return control;
-    };
-
-    return control;
-  };
-});
-define('src/modules/d3_components/generator/element/canvas/rect',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function rect() {
+  return function box() {
     // Private variables
-    var x = function (d) { return d.x; };
-    var y = function (d) { return d.y; };
-    var width = 10;
-    var height = 10;
+    var values = function (d) { return d.values; };
+    var accessor = function (d) { return d; };
 
-    var cssClass = 'rect';
-    var fillStyle = 'blue';
-    var lineWidth = 3;
-    var strokeStyle = 'black';
-    var globalAlpha = 1;
+    function layout(data) {
+      data.forEach(function (d, i) {
+        var numbers = accessor.call(this, values.call(this, d, i));
 
-    function element(selection) {
-      selection.each(function (data, index) {
-        var canvas = d3.select(this);
-        var context = canvas.node().getContext('2d');
-        // var container = canvas.append('custom');
-
-        canvas.node().addEventListener('click', function (event) {
-          console.log(event);
-        });
-
-        // Clear Canvas
-        context.fillStyle = '#fff';
-        context.rect(0, 0, canvas.attr('width'), canvas.attr('height'));
-        context.fill();
-
-        data.forEach(function (d, i) {
-          d.fillStyle = (typeof fillStyle === 'function') ? fillStyle.call(data, d, i) : fillStyle;
-          d.strokeStyle = (typeof strokeStyle === 'function') ? strokeStyle.call(data, d, i) : strokeStyle;
-          d.globalAlpha = (typeof globalAlpha === 'function') ? globalAlpha.call(data, d, i) : globalAlpha;
-          d.lineWidth = (typeof lineWidth === 'function') ? lineWidth.call(data, d, i) : lineWidth;
-          d.width = (typeof width === 'function') ? width.call(data, d, i) : width;
-          d.height = (typeof height === 'function') ? height.call(data, d, i) : height;
-
-          context.beginPath();
-          context.fillStyle = d.fillStyle;
-          context.strokeStyle = d.strokeStyle;
-          context.lineWidth = d.lineWidth;
-          context.globalAlpha = d.globalAlpha;
-          context.rect(x.call(data, d, i), y.call(data, d, i), d.width, d.height);
-          context.fill();
-          context.closePath();
-        });
-
-        // var rects = container.selectAll('custom.rect')
-        //   .data(data);
-
-        // // Exit
-        // rects.exit().remove();
-
-        // // Enter
-        // rects.enter().append('custom');
-
-        // // Update
-        // rects
-        //   .attr('class', cssClass)
-        //   .attr('x', x)
-        //   .attr('y', y)
-        //   .attr('width', width)
-        //   .attr('height', height)
-        //   .attr('fillStyle', fillStyle)
-        //   .attr('lineWidth', lineWidth)
-        //   .attr('globalAlpha', globalAlpha)
-        //   .attr('strokeStyle', strokeStyle);
-
-        // // Clear Canvas
-        // context.fillStyle = '#fff';
-        // context.rect(0, 0, canvas.attr('width'), canvas.attr('height'));
-        // context.fill();
-
-        // var elements = container.selectAll('custom.rect');
-
-        // elements.each(function (d, i) {
-        //   var node = d3.select(this);
-
-        //   context.beginPath();
-        //   context.fillStyle = node.attr('fillstyle');
-        //   context.globalAlpha = node.attr('globalAlpha');
-        //   context.rect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-        //   context.fill();
-        //   context.closePath();
-        // });
+        d.median = d3.median(numbers);
+        d.q1 = d3.quantile(numbers, 0.25);
+        d.q3 = d3.quantile(numbers, 0.75);
+        d.max = d3.max(numbers);
+        d.min = d3.min(numbers);
       });
+
+      return data;
     }
 
     // Public API
-    element.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
-      return element;
+    layout.values = function (_) {
+      if (!arguments.length) return values;
+      values = _;
+      return layout;
     };
 
-    element.x = function (_) {
-      if (!arguments.length) return x;
-      x = _;
-      return element;
+    layout.accessor = function (_) {
+      if (!arguments.length) return accessor;
+      accessor = _;
+      return layout;
     };
 
-    element.y = function (_) {
-      if (!arguments.length) return y;
-      y = _;
-      return element;
-    };
-
-    element.width = function (_) {
-      if (!arguments.length) return width;
-      width = _;
-      return element;
-    };
-
-    element.height = function (_) {
-      if (!arguments.length) return height;
-      height = _;
-      return element;
-    };
-
-    element.fillStyle = function (_) {
-      if (!arguments.length) return fillStyle;
-      fillStyle = _;
-      return element;
-    };
-
-    element.opacity = function (_) {
-      if (!arguments.length) return globalAlpha;
-      globalAlpha = _;
-      return element;
-    };
-
-    element.lineWidth = function (_) {
-      if (!arguments.length) return lineWidth;
-      lineWidth = _;
-      return element;
-    };
-
-    element.strokeStyle = function (_) {
-      if (!arguments.length) return strokeStyle;
-      strokeStyle = _;
-      return element;
-    };
-
-    return element;
+    return layout;
   };
 });
-
-define('src/modules/d3_components/generator/element/svg/circle',['require','d3'],function (require) {
+define('src/modules/d3_components/generator/boxplot',['require','d3'],function (require) {
   var d3 = require('d3');
 
-  return function circle() {
-    var color = d3.scale.category10();
-    var cx = function (d) { return d.coords.cx; };
-    var cy = function (d) { return d.coords.cy; };
-    var radius = function (d) { return d.coords.radius || 5; };
-    var cssClass = 'circle';
-    var fill = colorFill;
-    var stroke = colorFill;
-    var strokeWidth = 0;
-    var opacity = null;
+  return function boxPlot() {
+    var gClass = 'box';
+    var transform = null;
 
-    function element(selection) {
-      selection.each(function (data) {
-        var circles = d3.select(this).selectAll('circle')
-          .data(data);
-
-        // Exit
-        circles.exit().remove();
-
-        // Enter
-        circles
-          .enter().append('circle');
-
-        // Update
-        circles
-          .attr('class', cssClass)
-          .attr('fill', fill)
-          .attr('stroke', stroke)
-          .attr('stroke-width', strokeWidth)
-          .attr('r', radius)
-          .attr('cx', cx)
-          .attr('cy', cy)
-          .style('opacity', opacity);
-      });
-    }
-
-    function colorFill (d, i) {
-      return color(i);
-    }
-
-    // Public API
-    element.cx = function (_) {
-      if (!arguments.length) return cx;
-      cx = d3.functor(_);
-      return element;
+    // Box
+    var box = {
+      width: 20,
+      height: null,
+      y: null,
+      class: 'range',
+      fill: 'white',
+      stroke: 'black',
+      strokeWidth: '2px'
     };
 
-    element.cy = function (_) {
-      if (!arguments.length) return cy;
-      cy = d3.functor(_);
-      return element;
+    // Range
+    var range = {
+      x1: 0,
+      x2: 0,
+      y1: null,
+      y2: null,
+      class: 'range',
+      stroke: 'black',
+      strokeWidth: '4px'
     };
 
-    element.radius = function (_) {
-      if (!arguments.length) return radius;
-      radius = d3.functor(_);
-      return element;
+    // Max
+    var max = {
+      y1: null,
+      y2: null,
+      class: 'max',
+      stroke: 'black',
+      strokeWidth: '4px'
     };
 
-    element.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
-      return element;
+    // Min
+    var min = {
+      y1: null,
+      y2: null,
+      class: 'min',
+      stroke: 'black',
+      strokeWidth: '4px'
     };
 
-    element.fill = function (_) {
-      if (!arguments.length) return fill;
-      fill = _;
-      return element;
+    // Median
+    var median = {
+      y1: 0,
+      y2: 0,
+      class: 'median',
+      stroke: 'darkgrey',
+      strokeWidth: '4px'
     };
-
-    element.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
-      return element;
-    };
-
-    element.stroke = function (_) {
-      if (!arguments.length) return stroke;
-      stroke = _;
-      return element;
-    };
-
-    element.strokeWidth = function (_) {
-      if (!arguments.length) return strokeWidth;
-      strokeWidth = _;
-      return element;
-    };
-
-    return element;
-  };
-});
-
-define('src/modules/d3_components/generator/element/html/div',['require','d3_components'],function (require) {
-  var base = require('d3_components').layout.base;
-
-  /**
-   * Returns a configurable function that sets attributes on
-   * data objects to create a layout for chart(s).
-   * Available layouts => 'rows', 'columns', 'grid'
-   */
-
-  return function div() {
-    var cssClass = 'chart';
-    var type = 'rows';
-    var size = [500, 500];
-    var layout = base();
 
     function generator(selection) {
-      selection.each(function (data) {
-        var div;
+      selection.each(function () {
+        var boxX = - (box.width / 2);
+        var maxX1 = - (box.width / 2);
+        var maxX2 = box.width / 2;
+        var minX1 = - (box.width / 2);
+        var minX2 = box.width / 2;
+        var medianX1 = - (box.width / 2);
+        var medianX2 = box.width / 2;
 
-        layout.type(type).size(size); // Appends divs based on the data array
+        var g = d3.select(this).selectAll('g.box')
+          .data(function (d) { return d; })
+          .enter().append('g')
+          .attr('class', gClass);
 
-        div = d3.select(this).selectAll('div')
-          .data(layout(data));
+        g.attr('transform', transform)
+          .each(function (d, i) {
+            var g = d3.select(this);
 
-        div.exit().remove();
-        div.enter().append('div');
-        div.attr('class', cssClass)
-          .style('position', 'absolute')
-          .style('left', function (d) { return d.dx + 'px'; })
-          .style('top', function (d) { return d.dy + 'px'; })
-          .style('width', function (d) { return d.width + 'px'; })
-          .style('height', function (d) { return d.height + 'px'; });
+            g.append('line')
+              .attr('class', range.class)
+              .attr('x1', range.x1)
+              .attr('x2', range.x2)
+              .attr('y1', range.y1)
+              .attr('y2', range.y2)
+              .style('stroke', range.stroke)
+              .style('stroke-boxWidth', range.strokeWidth);
+
+            g.append('line')
+              .attr('class', max.class)
+              .attr('x1', maxX1)
+              .attr('x2', maxX2)
+              .attr('y1', max.y1)
+              .attr('y2', max.y2)
+              .style('stroke', max.stroke)
+              .style('stroke-boxWidth', max.strokeWidth);
+
+            g.append('line')
+              .attr('class', min.class)
+              .attr('x1', minX1)
+              .attr('x2', minX2)
+              .attr('y1', min.y1)
+              .attr('y2', min.y2)
+              .style('stroke', min.stroke)
+              .style('stroke-boxWidth', min.strokeWidth);
+
+            g.append('rect')
+              .attr('class', box.class)
+              .attr('x', boxX)
+              .attr('y', box.y)
+              .attr('width', box.width)
+              .attr('height', box.height)
+              .style('fill', box.fill)
+              .style('stroke', box.stroke)
+              .style('stroke-boxWidth', box.strokeWidth);
+
+            g.append('line')
+              .attr('class', median.class)
+              .attr('x1', medianX1)
+              .attr('x2', medianX2)
+              .attr('y1', median.y1)
+              .attr('y2', median.y2)
+              .style('stroke', median.stroke)
+              .style('stroke-boxWidth', median.strokeWidth);
+          });
       });
     }
 
-    // Sets css class on div(s)
     generator.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
+      if (!arguments.length) return gClass;
+      gClass = _;
       return generator;
     };
 
-    // Layout types => 'rows', 'columns', 'grid'
-    generator.layout = function (_) {
-      if (!arguments.length) return type;
-      type = typeof _ === 'string' ? _ : type;
+    generator.transform = function (_) {
+      if (!arguments.length) return transform;
+      transform = _;
       return generator;
     };
 
-    // Parent element size, [width, height]
-    generator.size = function (_) {
-      if (!arguments.length) return size;
-      size = _ instanceof Array && _.length === 2 ? _ : size;
+    generator.box = function (_) {
+      if (!arguments.length) return box;
+      box.width = typeof _.width !== 'undefined' ? _.width : box.width;
+      box.height = typeof _.height !== 'undefined' ? _.height : box.height;
+      box.y = typeof _.y !== 'undefined' ? _.y : box.y;
+      box.class = typeof _.class !== 'undefined' ? _.class : box.class;
+      box.fill = typeof _.fill !== 'undefined' ? _.fill : box.fill;
+      box.stroke = typeof _.stroke !== 'undefined' ? _.stroke : box.stroke;
+      box.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : box.strokeWidth;
+      return generator;
+    };
+
+    generator.range = function (_) {
+      if (!arguments.length) return range;
+      range.x1 = typeof _.x1!== 'undefined' ? _.x1: range.x1;
+      range.x2 = typeof _.x2!== 'undefined' ? _.x2 : range.x2;
+      range.y1 = typeof _.y1 !== 'undefined' ? _.y1 : range.y1;
+      range.y2 = typeof _.y2 !== 'undefined' ? _.y2 : range.y2;
+      range.class = typeof _.class !== 'undefined' ? _.class : range.class;
+      range.stroke = typeof _.stroke !== 'undefined' ? _.stroke : range.stroke;
+      range.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : range.strokeWidth;
+      return generator;
+    };
+
+    generator.max = function (_) {
+      if (!arguments.length) return max;
+      max.y1 = typeof _.y1 !== 'undefined' ? _.y1 : max.y1;
+      max.y2 = typeof _.y2 !== 'undefined' ? _.y2 : max.y2;
+      max.class = typeof _.class !== 'undefined' ? _.class : max.class;
+      max.stroke = typeof _.stroke !== 'undefined' ? _.stroke : max.stroke;
+      max.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : max.strokeWidth;
+      return generator;
+    };
+
+    generator.min = function (_) {
+      if (!arguments.length) return min;
+      min.y1 = typeof _.y1 !== 'undefined' ? _.y1 : min.y1;
+      min.y2 = typeof _.y2 !== 'undefined' ? _.y2 : min.y2;
+      min.class = typeof _.class !== 'undefined' ? _.class : min.class;
+      min.stroke = typeof _.stroke !== 'undefined' ? _.stroke : min.stroke;
+      min.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : min.strokeWidth;
+      return generator;
+    };
+
+    generator.median = function (_) {
+      if (!arguments.length) return median;
+      median.y1 = typeof _.y1 !== 'undefined' ? _.y1 : median.y1;
+      median.y2 = typeof _.y2 !== 'undefined' ? _.y2 : median.y2;
+      median.class = typeof _.class !== 'undefined' ? _.class : median.class;
+      median.stroke = typeof _.stroke !== 'undefined' ? _.stroke : median.stroke;
+      median.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : median.strokeWidth;
       return generator;
     };
 
     return generator;
   };
 });
-define('src/modules/d3_components/generator/element/svg/ellipse',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function ellipse() {
-    var color = d3.scale.category10();
-    var cx = function (d) { return d.coords.cx; };
-    var cy = function (d) { return d.coords.cy; };
-    var rx = function (d) { return d.coords.rx || 20; };
-    var ry = function (d) { return d.coords.ry || 20; };
-    var cssClass = 'ellipses';
-    var fill = colorFill;
-    var stroke = colorFill;
-    var strokeWidth = 0;
-    var opacity = 1;
-
-    function element(selection) {
-      selection.each(function (data) {
-        var ellipses = d3.select(this).selectAll('ellipse')
-          .data(data);
-
-        // Exit
-        ellipses.exit().remove();
-
-        // Enter
-        ellipses.enter().append('ellipse');
-
-        // Update
-        ellipses
-          .attr('class', cssClass)
-          .attr('fill', fill)
-          .attr('stroke', stroke)
-          .attr('stroke-width', strokeWidth)
-          .attr('cx', cx)
-          .attr('cy', cy)
-          .attr('rx', rx)
-          .attr('ry', ry)
-          .style('opacity', opacity);
-      });
-    }
-
-    function colorFill(d, i) {
-      return color(i);
-    }
-
-    // Public API
-    element.accessor = function (_) {
-      if (!arguments.length) { return accessor; }
-      accessor = _;
-      return element;
-    };
-
-    element.cx = function (_) {
-      if (!arguments.length) return cx;
-      cx = d3.functor(_);
-      return element;
-    };
-
-    element.cy = function (_) {
-      if (!arguments.length) return cy;
-      cy = d3.functor(_);
-      return element;
-    };
-
-    element.rx = function (_) {
-      if (!arguments.length) return rx;
-      rx = d3.functor(_);
-      return element;
-    };
-
-    element.ry = function (_) {
-      if (!arguments.length) return ry;
-      ry = d3.functor(_);
-      return element;
-    };
-
-    element.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
-      return element;
-    };
-
-    element.fill = function (_) {
-      if (!arguments.length) return fill;
-      fill = _;
-      return element;
-    };
-
-    element.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
-      return element;
-    };
-
-    element.stroke = function (_) {
-      if (!arguments.length) return stroke;
-      stroke = _;
-      return element;
-    };
-
-    element.strokeWidth = function (_) {
-      if (!arguments.length) return strokeWidth;
-      strokeWidth = _;
-      return element;
-    };
-
-    return element;
-  };
-});
-
-define('src/modules/d3_components/generator/element/svg/image',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function image() {
-    var x = function (d) { return d.coords.x; };
-    var y = function (d) { return d.coords.y; };
-    var width = function (d) { return d.coords.width || 10; };
-    var height = function (d) { return d.coords.height || 10; };
-    var xlink = null;
-    var preserveAspectRatio = null;
-    var cssClass = 'image';
-
-    function element(selection) {
-      selection.each(function (data) {
-        var images = d3.select(this).selectAll('image')
-          .data(data);
-
-        // Exit
-        images.exit().remove();
-
-        // Enter
-        images.enter().append('image');
-
-        // Update
-        images
-          .attr('class', cssClass)
-          .attr('x', x)
-          .attr('y', y)
-          .attr('width', width)
-          .attr('height', height)
-          .attr('xlink:href', xlink)
-          .attr('preserveAspectRatio', preserveAspectRatio);
-      });
-    }
-
-    // Public API
-    element.x = function (_) {
-      if (!arguments.length) return x;
-      x = d3.functor(_);
-      return element;
-    };
-
-    element.y = function (_) {
-      if (!arguments.length) return y;
-      y = d3.functor(_);
-      return element;
-    };
-
-    element.width = function (_) {
-      if (!arguments.length) return width;
-      width = d3.functor(_);
-      return element;
-    };
-
-    element.height = function (_) {
-      if (!arguments.length) return height;
-      height = d3.functor(_);
-      return element;
-    };
-
-    element.xlink = function (_) {
-      if (!arguments.length) return xlink;
-      xlink = _;
-      return element;
-    };
-
-    element.preserveAspectRatio = function (_) {
-      if (!arguments.length) return preserveAspectRatio;
-      preserveAspectRatio = _;
-      return element;
-    };
-
-    element.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
-      return element;
-    };
-
-    return element;
-  };
-});
-
-define('src/modules/d3_components/generator/element/svg/line',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function line() {
-    var color = d3.scale.category10();
-    var x1 = function (d) { return d.coords.x1 || 0; };
-    var x2 = function (d) { return d.coords.x2 || 0; };
-    var y1 = function (d) { return d.coords.y1 || 0; };
-    var y2 = function (d) { return d.coords.y2 || 0; };
-    var cssClass = 'line';
-    var stroke = colorFill;
-    var strokeWidth = 2;
-    var opacity = 1;
-
-    function element(selection) {
-      selection.each(function (data) {
-
-        var lines = d3.select(this).selectAll('line')
-          .data(data);
-
-        // Exit
-        lines.exit().remove();
-
-        // Enter
-        lines.enter().append('line');
-
-        // Update
-        lines
-          .attr('class', cssClass)
-          .attr('x1', x1)
-          .attr('x2', x2)
-          .attr('y1', y1)
-          .attr('y2', y2)
-          .attr('stroke', stroke)
-          .attr('stroke-width', strokeWidth)
-          .style('opacity', opacity);
-      });
-    }
-
-    function colorFill(d, i) {
-      return color(i);
-    }
-
-    // Public API
-    element.x1 = function (_) {
-      if (!arguments.length) return x1;
-      x1 = d3.functor(_);
-      return element;
-    };
-
-    element.x2 = function (_) {
-      if (!arguments.length) return x2;
-      x2 = d3.functor(_);
-      return element;
-    };
-
-    element.y1 = function (_) {
-      if (!arguments.length) return y1;
-      y1 = d3.functor(_);
-      return element;
-    };
-
-    element.y2 = function (_) {
-      if (!arguments.length) return y2;
-      y2 = d3.functor(_);
-      return element;
-    };
-
-    element.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
-      return element;
-    };
-
-    element.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
-      return element;
-    };
-
-    element.stroke = function (_) {
-      if (!arguments.length) return stroke;
-      stroke = _;
-      return element;
-    };
-
-    element.strokeWidth = function (_) {
-      if (!arguments.length) return strokeWidth;
-      strokeWidth = _;
-      return element;
-    };
-
-    return element;
-  };
-});
-define('src/modules/d3_components/generator/element/svg/path',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function path() {
-    var color = d3.scale.category10();
-    var path = function (d) { return d.d; };
-    var cssClass = 'path';
-    var transform = 'translate(0,0)';
-    var fill = 'none';
-    var stroke = function (d, i) { return color(i); };
-    var strokeWidth = 1;
-    var opacity = 1;
-
-    function element(selection) {
-      selection.each(function (data) {
-        var path = d3.select(this).selectAll('path')
-          .data(data);
-
-        path.exit().remove();
-
-        path.enter().append('path');
-
-        path
-          .attr('transform', transform)
-          .attr('class', cssClass)
-          .attr('fill', fill)
-          .attr('stroke', stroke)
-          .attr('stroke-width', strokeWidth)
-          .attr('d', path)
-          .style('opacity', opacity);
-      });
-    }
-
-    // Public API
-    element.path = function (_) {
-      if (!arguments.length) return path;
-      path = d3.functor(_);
-      return element;
-    };
-
-    element.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
-      return element;
-    };
-
-    element.transform = function (_) {
-      if (!arguments.length) return transform;
-      transform = _;
-      return element;
-    };
-
-    element.fill = function (_) {
-      if (!arguments.length) return fill;
-      fill = _;
-      return element;
-    };
-
-    element.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
-      return element;
-    };
-
-    element.stroke = function (_) {
-      if (!arguments.length) return stroke;
-      stroke = d3.functor(_);
-      return element;
-    };
-
-    element.strokeWidth = function (_) {
-      if (!arguments.length) return strokeWidth;
-      strokeWidth = _;
-      return element;
-    };
-
-    return element;
-  };
-});
-
-define('src/modules/d3_components/generator/element/svg/rect',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function rect() {
-    var color = d3.scale.category10();
-    var x = function (d) { return d.coords.x; };
-    var y = function (d) { return d.coords.y; };
-    var rx = function (d) { return d.coords.rx || 0; };
-    var ry = function (d) { return d.coords.ry || 0; };
-    var width = function (d) { return d.coords.width; };
-    var height = function (d) { return d.coords.height; };
-    var cssClass = 'bar';
-    var fill = colorFill;
-    var stroke = colorFill;
-    var strokeWidth = 0;
-    var opacity = 1;
-
-    function element(selection) {
-      selection.each(function (data) {
-        var bars = d3.select(this).selectAll('rect')
-          .data(data);
-
-        bars.exit().remove();
-
-        bars.enter().append('rect');
-
-        bars
-          .attr('class', cssClass)
-          .attr('fill', fill)
-          .attr('stroke', stroke)
-          .attr('stroke-width', strokeWidth)
-          .attr('x', x)
-          .attr('y', y)
-          .attr('rx', rx)
-          .attr('ry', ry)
-          .attr('width', width)
-          .attr('height', height)
-          .style('opacity', opacity);
-      });
-    }
-
-    function colorFill(d, i) {
-      return color(i);
-    }
-
-    // Public API
-    element.x = function (_) {
-      if (!arguments.length) return x;
-      x = d3.functor(_);
-      return element;
-    };
-
-    element.y = function (_) {
-      if (!arguments.length) return y;
-      y = d3.functor(_);
-      return element;
-    };
-
-    element.rx = function (_) {
-      if (!arguments.length) return rx;
-      rx = d3.functor(_);
-      return element;
-    };
-
-    element.ry = function (_) {
-      if (!arguments.length) return ry;
-      ry = d3.functor(_);
-      return element;
-    };
-
-    element.width = function (_) {
-      if (!arguments.length) return width;
-      width = d3.functor(_);
-      return element;
-    };
-
-    element.height = function (_) {
-      if (!arguments.length) return height;
-      height = d3.functor(_);
-      return element;
-    };
-
-    element.class= function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
-      return element;
-    };
-
-    element.fill = function (_) {
-      if (!arguments.length) return fill;
-      fill = _;
-      return element;
-    };
-
-    element.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
-      return element;
-    };
-
-    element.stroke = function (_) {
-      if (!arguments.length) return stroke;
-      stroke = _;
-      return element;
-    };
-
-    element.strokeWidth = function (_) {
-      if (!arguments.length) return strokeWidth;
-      strokeWidth = _;
-      return element;
-    };
-
-    return element;
-  };
-});
-
-define('src/modules/d3_components/generator/element/svg/text',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function text() {
-    var x = function (d) { return d.x; };
-    var y = function (d) { return d.y; };
-    var dx = function (d) { return d.dx || 0; };
-    var dy = function (d) { return d.dy || 0; };
-    var transform = null;
-    var cssClass = 'text';
-    var fill = '#ffffff';
-    var anchor = 'middle';
-    var texts = '';
-
-    function element(selection) {
-      selection.each(function (data) {
-        var text = d3.select(this).selectAll('text')
-          .data(data);
-
-        text.exit().remove();
-
-        text.enter().append('text');
-
-        text
-          .attr('class', cssClass)
-          .attr('transform', transform)
-          .attr('x', x)
-          .attr('y', y)
-          .attr('dx', dx)
-          .attr('dy', dy)
-          .attr('fill', fill)
-          .style('text-anchor', anchor)
-          .text(texts);
-      });
-    }
-
-    // Public API
-    element.x = function (_) {
-      if (!arguments.length) return x;
-      x = d3.functor(_);
-      return element;
-    };
-
-    element.y = function (_) {
-      if (!arguments.length) return y;
-      y = d3.functor(_);
-      return element;
-    };
-
-    element.dx = function (_) {
-      if (!arguments.length) return dx;
-      dx = d3.functor(_);
-      return element;
-    };
-
-    element.dy = function (_) {
-      if (!arguments.length) return dy;
-      dy = d3.functor(_);
-      return element;
-    };
-
-    element.transform = function (_) {
-      if (!arguments.length) return transform;
-      transform = _;
-      return element;
-    };
-
-    element.class= function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
-      return element;
-    };
-
-    element.anchor = function (_) {
-      if (!arguments.length) return anchor;
-      anchor = _;
-      return element;
-    };
-
-    element.fill = function (_) {
-      if (!arguments.length) return fill;
-      fill = _;
-      return element;
-    };
-
-    element.text = function (_) {
-      if (!arguments.length) return texts;
-      texts = _;
-      return element;
-    };
-
-    return element;
-  };
-});
-
 define('src/modules/d3_components/helpers/builder',['require','d3'],function (require) {
   var d3 = require('d3');
 
@@ -11326,263 +10463,1567 @@ define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modu
   };
 });
 
-define('src/modules/d3_components/generator/bars',['require','d3','d3_components','src/modules/d3_components/helpers/builder'],function (require) {
+define('src/modules/charts/boxplot',['require','d3','src/modules/d3_components/layout/box','src/modules/d3_components/generator/boxplot','src/modules/d3_components/generator/axis/axis'],function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
-  var builder = require('src/modules/d3_components/helpers/builder');
-  var vertical = d3Components.layout.verticalBars;
-  var horizontal = d3Components.layout.horizontalBars;
-  var rect = d3Components.element.rect;
+  var box = require('src/modules/d3_components/layout/box');
+  var boxPlot = require('src/modules/d3_components/generator/boxplot');
+  var axis = require('src/modules/d3_components/generator/axis/axis');
 
-  return function bars() {
-    var rects = rect();
-    var property = {};
-    var attr = {};
-    var barLayout;
-    var g;
+  return function boxplot() {
+    var margin = { top:20, right: 20, bottom: 50, left: 50 };
+    var width = 760;
+    var height = 400;
+    var xValue = function (d) { return d.x; };
+    var values = function (d) { return d.values; };
+    var accessor = function (d) { return d; };
+    var xScale = null;
+    var yScale = null;
+    var transform = null;
+    var dispatch = d3.dispatch('hover', 'mouseover', 'mouseout');
 
-    if (!property.orientation) property.orientation = 'vertical';
-    barLayout = property.orientation === 'vertical' ? vertical() : horizontal();
+    // X Axis
+    var xAxis = {
+      show: true,
+      xAxisClass:  'x axis',
+      textX: function () { return width / 2; },
+      textY: 30,
+      textDY: '.71em',
+      textAnchor: 'middle',
+      title: ''
+    };
 
-    function generator(selection) {
+    // Y Axis
+    var yAxis = {
+      show: true,
+      yAxisClass: 'y axis',
+      textX: -height / 2,
+      textY: -60,
+      textDY: '.71em',
+      textAnchor: 'middle',
+      title: ''
+    };
+
+    // Box Options
+    var boxWidth = 20;
+
+    function chart(selection) {
       selection.each(function (data) {
-        barLayout = builder(property, barLayout);
-        rects = builder(attr, rects);
+        var boxData = box().values(values).accessor(accessor);
 
-        if (!g) {
-          g = d3.select(this).append('g')
-            .attr('class', 'bar-layers');
+        var svg = d3.select(this).append('svg')
+          .datum(boxData(data))
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', height + margin.top + margin.bottom);
+
+        var g = svg.append('g')
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+        xScale = xScale ? xScale : d3.time.scale()
+          .domain(d3.extent(data, xValue))
+          .range([0, width]);
+
+        yScale = yScale ? yScale : d3.scale.linear()
+          .domain([
+            Math.min(0, d3.min(d3.merge(data))),
+            Math.max(0, d3.max(d3.merge(data)))
+          ])
+          .range([height, 0]);
+
+        var boxPlotFunc = boxPlot()
+          .transform(transform ? transform : gTransform)
+          .box({ width: boxWidth, height: boxHeight, y: boxY })
+          .range({ y1: Y1, y2: Y2 })
+          .max({ y1: Y1, y2: Y1 })
+          .min({ y1: Y2, y2: Y2});
+
+        g.call(boxPlotFunc);
+
+        if (xAxis.show) {
+          var axisX = axis()
+            .scale(xScale)
+            .gClass(xAxis.xAxisClass)
+            .transform('translate(0,' + yScale.range()[0] + ')')
+            .titleX(xAxis.textX)
+            .titleY(xAxis.textY)
+            .titleDY(xAxis.textDY)
+            .titleAnchor(xAxis.textAnchor)
+            .title(xAxis.title);
+
+          g.call(axisX);
         }
 
-        var layers = g.selectAll('g')
-          .data(barLayout(data));
+        if (yAxis.show) {
+          var axisY = axis()
+            .scale(yScale)
+            .orient('left')
+            .gClass(yAxis.yAxisClass)
+            .titleX(yAxis.textX)
+            .titleY(yAxis.textY)
+            .titleDY(yAxis.textDY)
+            .titleAnchor(yAxis.textAnchor)
+            .title(yAxis.title);
 
-        layers.exit().remove();
-        layers.enter().append('g');
-        layers.call(rects);
+          g.call(axisY);
+        }
+      });
+    }
+
+    function boxHeight(d) {
+      return yScale(d.q1) - yScale(d.q3);
+    }
+
+    function boxY(d) {
+      return yScale(d.q3) - yScale(d.median);
+    }
+
+    function Y1(d) {
+      return yScale(d.max) - yScale(d.median);
+    }
+
+    function Y2(d) {
+      return yScale(d.min) - yScale(d.median);
+    }
+
+    function gTransform(d, i) {
+      return 'translate(' + xScale(xValue.call(this, d, i)) + ',' + yScale(d.median) + ')';
+    }
+
+    chart.margin = function (_) {
+      if (!arguments.length) { return margin; }
+      margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
+      margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
+      margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
+      margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
+      return chart;
+    };
+
+    chart.width = function (_) {
+      if (!arguments.length) { return width; }
+      width = _;
+      return chart;
+    };
+
+    chart.height = function (_) {
+      if (!arguments.length) { return height; }
+      height = _;
+      return chart;
+    };
+
+    chart.x = function (_) {
+      if (!arguments.length) { return xValue; }
+      xValue = _;
+      return chart;
+    };
+
+    chart.values = function (_) {
+      if (!arguments.length) { return values; }
+      values = _;
+      return chart;
+    };
+
+    chart.accessor = function (_) {
+      if (!arguments.length) { return accessor; }
+      accessor = _;
+      return chart;
+    };
+
+    chart.xScale = function (_) {
+      if (!arguments.length) { return xScale; }
+      xScale = _;
+      return chart;
+    };
+
+    chart.yScale = function (_) {
+      if (!arguments.length) { return yScale; }
+      yScale = _;
+      return chart;
+    };
+
+    chart.transform = function (_) {
+      if (!arguments.length) { return transform; }
+      transform = _;
+      return chart;
+    };
+
+    chart.dispatch = function (_) {
+      if (!arguments.length) { return dispatch; }
+      dispatch = _;
+      return chart;
+    };
+
+    chart.xAxis = function (_) {
+      if (!arguments.length) { return xAxis; }
+      xAxis.show = typeof _.show !== 'undefined' ? _.show: xAxis.show;
+      xAxis.xAxisClass = typeof _.xAxisClass !== 'undefined' ? _.xAxisClass : xAxis.xAxisClass;
+      xAxis.textX = typeof _.textX !== 'undefined' ? _.textX : xAxis.textX;
+      xAxis.textY = typeof _.textY !== 'undefined' ? _.textY : xAxis.textY;
+      xAxis.textDY = typeof _.textDY !== 'undefined' ? _.textDY : xAxis.textDY;
+      xAxis.textAnchor = typeof _.textAnchor !== 'undefined' ? _.textAnchor : xAxis.textAnchor;
+      xAxis.title = typeof _.title !== 'undefined' ? _.title : xAxis.title;
+      return chart;
+    };
+
+    chart.yAxis = function (_) {
+      if (!arguments.length) { return yAxis; }
+      yAxis.show = typeof _.show !== 'undefined' ? _.show: yAxis.show;
+      yAxis.yAxisClass = typeof _.yAxisClass !== 'undefined' ? _.yAxisClass : yAxis.yAxisClass;
+      yAxis.textX = typeof _.textX !== 'undefined' ? _.textX : yAxis.textX;
+      yAxis.textY = typeof _.textY !== 'undefined' ? _.textY : yAxis.textY;
+      yAxis.textDY = typeof _.textDY !== 'undefined' ? _.textDY : yAxis.textDY;
+      yAxis.textAnchor = typeof _.textAnchor !== 'undefined' ? _.textAnchor : yAxis.textAnchor;
+      yAxis.title = typeof _.title !== 'undefined' ? _.title : yAxis.title;
+      return chart;
+    };
+
+    chart.boxWidth = function (_) {
+      if (!arguments.length) { return boxWidth; }
+      boxWidth = _;
+      return chart;
+    };
+
+    return chart;
+  };
+});
+define('src/modules/charts/dendrogram',['require','d3'],function (require) {
+  var d3 = require('d3');
+
+  return function dendrogram() {
+    var marginFactor = 0.5;
+    var width = 300;
+    var height = 800;
+    var color = d3.scale.category20b();
+    var value = function (d) { return d.size; };
+    var projection = function (d) { return [d.y, d.x]; };
+    var transform = 'translate(20,0)';
+    var dispatch = d3.dispatch('hover', 'mouseover', 'mouseout');
+
+    // Node options
+    var nodeRadius = 4.5;
+    var nodeTransform = function (d) { return 'translate(' + d.y + ',' + d.x + ')'; };
+    var nodeFill = function (d, i) { return color(i); };
+    var nodeStroke = function (d, i) { return color(i); };
+    var nodeClass = 'node';
+
+    // Link options
+    var linkClass = 'link';
+
+    // Text options
+    var label = function (d) { return d.children ? d.name : d.name + ': ' + d.size; };
+    var textDX = function (d) { return d.children ? -8 : 8; };
+    var textDY = 3;
+    var textAnchor = function (d) { return d.children ? 'end' : 'start'; };
+
+    function chart(selection) {
+      selection.each(function (data) {
+        var cluster = d3.layout.cluster()
+          .size([height, width - (width * marginFactor)])
+          .value(value);
+
+        var diagonal = d3.svg.diagonal().projection(projection);
+        var nodes = cluster.nodes(data);
+        var links = cluster.links(nodes);
+
+        var svg = d3.select(this).append('svg')
+          .attr('width', width)
+          .attr('height', height)
+          .append('g')
+          .attr('transform', transform);
+
+
+        var link = svg.selectAll('.link')
+          .data(links)
+          .enter().append('path')
+          .attr('class', linkClass)
+          .attr('d', diagonal);
+
+        var node = svg.selectAll('.node')
+          .data(nodes)
+          .enter().append('g')
+          .attr('class', nodeClass)
+          .attr('transform', nodeTransform);
+
+        node.append('circle')
+          .attr('r', nodeRadius)
+          .style('fill', nodeFill)
+          .style('stroke', nodeStroke);
+
+        node.append('text')
+          .attr('dx', textDX)
+          .attr('dy', textDY)
+          .style('text-anchor', textAnchor)
+          .text(label);
+
+        d3.select(this.frameElement).style('height', height + 'px');
+      });
+    }
+
+    chart.marginFactor = function (_) {
+      if (!arguments.length) { return marginFactor; }
+      marginFactor = _;
+      return chart;
+    };
+
+    chart.width = function (_) {
+      if (!arguments.length) { return width; }
+      width = _;
+      return chart;
+    };
+
+    chart.height = function (_) {
+      if (!arguments.length) { return height; }
+      height = _;
+      return chart;
+    };
+
+    chart.color = function (_) {
+      if (!arguments.length) { return color; }
+      color = _;
+      return chart;
+    };
+
+    chart.value = function (_) {
+      if (!arguments.length) { return value; }
+      value = _;
+      return chart;
+    };
+
+    chart.projection = function (_) {
+      if (!arguments.length) { return projection; }
+      projection = _;
+      return chart;
+    };
+
+    chart.transform = function (_) {
+      if (!arguments.length) { return transform; }
+      transform = _;
+      return chart;
+    };
+
+    chart.dispatch = function (_) {
+      if (!arguments.length) { return dispatch;}
+      dispatch = _;
+      return chart;
+    };
+
+    chart.nodeRadius = function (_) {
+      if (!arguments.length) { return nodeRadius; }
+      nodeRadius = _;
+      return chart;
+    };
+
+    chart.nodeFill = function (_) {
+      if (!arguments.length) { return nodeFill; }
+      nodeFill = _;
+      return chart;
+    };
+
+    chart.nodeStroke = function (_) {
+      if (!arguments.length) { return nodeStroke; }
+      nodeStroke = _;
+      return chart;
+    };
+
+    chart.nodeClass = function (_) {
+      if (!arguments.length) { return nodeClass; }
+      nodeClass = _;
+      return chart;
+    };
+
+    chart.linkClass = function (_) {
+      if (!arguments.length) { return linkClass; }
+      linkClass = _;
+      return chart;
+    };
+
+    chart.label = function (_) {
+      if (!arguments.length) { return label; }
+      label = _;
+      return chart;
+    };
+
+    chart.textDX = function (_) {
+      if (!arguments.length) { return textDX; }
+      textDX = _;
+      return chart;
+    };
+
+    chart.textDY = function (_) {
+      if (!arguments.length) { return textDY; }
+      textDY = _;
+      return chart;
+    };
+
+    chart.textAnchor = function (_) {
+      if (!arguments.length) { return textAnchor; }
+      textAnchor = _;
+      return chart;
+    };
+
+    return chart;
+  };
+});
+
+define('src/modules/d3_components/generator/element/svg/rect',['require','d3'],function (require) {
+  var d3 = require('d3');
+
+  return function rect() {
+    var color = d3.scale.category10();
+    var x = function (d) { return d.coords.x; };
+    var y = function (d) { return d.coords.y; };
+    var rx = function (d) { return d.coords.rx || 0; };
+    var ry = function (d) { return d.coords.ry || 0; };
+    var width = function (d) { return d.coords.width; };
+    var height = function (d) { return d.coords.height; };
+    var cssClass = 'bar';
+    var fill = colorFill;
+    var stroke = colorFill;
+    var strokeWidth = 0;
+    var opacity = 1;
+
+    function element(selection) {
+      selection.each(function (data) {
+        var bars = d3.select(this).selectAll('rect')
+          .data(data);
+
+        bars.exit().remove();
+
+        bars.enter().append('rect');
+
+        bars
+          .attr('class', cssClass)
+          .attr('fill', fill)
+          .attr('stroke', stroke)
+          .attr('stroke-width', strokeWidth)
+          .attr('x', x)
+          .attr('y', y)
+          .attr('rx', rx)
+          .attr('ry', ry)
+          .attr('width', width)
+          .attr('height', height)
+          .style('opacity', opacity);
+      });
+    }
+
+    function colorFill(d, i) {
+      return color(i);
+    }
+
+    // Public API
+    element.x = function (_) {
+      if (!arguments.length) return x;
+      x = d3.functor(_);
+      return element;
+    };
+
+    element.y = function (_) {
+      if (!arguments.length) return y;
+      y = d3.functor(_);
+      return element;
+    };
+
+    element.rx = function (_) {
+      if (!arguments.length) return rx;
+      rx = d3.functor(_);
+      return element;
+    };
+
+    element.ry = function (_) {
+      if (!arguments.length) return ry;
+      ry = d3.functor(_);
+      return element;
+    };
+
+    element.width = function (_) {
+      if (!arguments.length) return width;
+      width = d3.functor(_);
+      return element;
+    };
+
+    element.height = function (_) {
+      if (!arguments.length) return height;
+      height = d3.functor(_);
+      return element;
+    };
+
+    element.class= function (_) {
+      if (!arguments.length) return cssClass;
+      cssClass = _;
+      return element;
+    };
+
+    element.fill = function (_) {
+      if (!arguments.length) return fill;
+      fill = _;
+      return element;
+    };
+
+    element.opacity = function (_) {
+      if (!arguments.length) return opacity;
+      opacity = _;
+      return element;
+    };
+
+    element.stroke = function (_) {
+      if (!arguments.length) return stroke;
+      stroke = _;
+      return element;
+    };
+
+    element.strokeWidth = function (_) {
+      if (!arguments.length) return strokeWidth;
+      strokeWidth = _;
+      return element;
+    };
+
+    return element;
+  };
+});
+
+define('src/modules/d3_components/generator/element/canvas/rect',['require','d3'],function (require) {
+  var d3 = require('d3');
+
+  return function rect() {
+    // Private variables
+    var x = function (d) { return d.x; };
+    var y = function (d) { return d.y; };
+    var width = 10;
+    var height = 10;
+
+    var cssClass = 'rect';
+    var fillStyle = 'blue';
+    var lineWidth = 3;
+    var strokeStyle = 'black';
+    var globalAlpha = 1;
+
+    function element(selection) {
+      selection.each(function (data, index) {
+        var canvas = d3.select(this);
+        var context = canvas.node().getContext('2d');
+        // var container = canvas.append('custom');
+
+        canvas.node().addEventListener('click', function (event) {
+          console.log(event);
+        });
+
+        // Clear Canvas
+        context.fillStyle = '#fff';
+        context.rect(0, 0, canvas.attr('width'), canvas.attr('height'));
+        context.fill();
+
+        data.forEach(function (d, i) {
+          d.fillStyle = (typeof fillStyle === 'function') ? fillStyle.call(data, d, i) : fillStyle;
+          d.strokeStyle = (typeof strokeStyle === 'function') ? strokeStyle.call(data, d, i) : strokeStyle;
+          d.globalAlpha = (typeof globalAlpha === 'function') ? globalAlpha.call(data, d, i) : globalAlpha;
+          d.lineWidth = (typeof lineWidth === 'function') ? lineWidth.call(data, d, i) : lineWidth;
+          d.width = (typeof width === 'function') ? width.call(data, d, i) : width;
+          d.height = (typeof height === 'function') ? height.call(data, d, i) : height;
+
+          context.beginPath();
+          context.fillStyle = d.fillStyle;
+          context.strokeStyle = d.strokeStyle;
+          context.lineWidth = d.lineWidth;
+          context.globalAlpha = d.globalAlpha;
+          context.rect(x.call(data, d, i), y.call(data, d, i), d.width, d.height);
+          context.fill();
+          context.closePath();
+        });
+
+        // var rects = container.selectAll('custom.rect')
+        //   .data(data);
+
+        // // Exit
+        // rects.exit().remove();
+
+        // // Enter
+        // rects.enter().append('custom');
+
+        // // Update
+        // rects
+        //   .attr('class', cssClass)
+        //   .attr('x', x)
+        //   .attr('y', y)
+        //   .attr('width', width)
+        //   .attr('height', height)
+        //   .attr('fillStyle', fillStyle)
+        //   .attr('lineWidth', lineWidth)
+        //   .attr('globalAlpha', globalAlpha)
+        //   .attr('strokeStyle', strokeStyle);
+
+        // // Clear Canvas
+        // context.fillStyle = '#fff';
+        // context.rect(0, 0, canvas.attr('width'), canvas.attr('height'));
+        // context.fill();
+
+        // var elements = container.selectAll('custom.rect');
+
+        // elements.each(function (d, i) {
+        //   var node = d3.select(this);
+
+        //   context.beginPath();
+        //   context.fillStyle = node.attr('fillstyle');
+        //   context.globalAlpha = node.attr('globalAlpha');
+        //   context.rect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+        //   context.fill();
+        //   context.closePath();
+        // });
       });
     }
 
     // Public API
-    generator.property = function (prop, val) {
-      if (!arguments.length) return property;
-      if (arguments.length === 1 && typeof prop === 'object') {
-        property = _;
-      }
-      if (arguments.length === 2) {
-        property[prop] = val;
-      }
-      return generator;
+    element.class = function (_) {
+      if (!arguments.length) return cssClass;
+      cssClass = _;
+      return element;
     };
 
-    generator.attr = function (prop, val) {
-      var validAttr = ['class', 'fill', 'stroke', 'strokeWidth', 'opacity'];
-      var isValidProp = validAttr.indexOf(prop) !== -1;
-
-      if (!arguments.length) return attr;
-      if (arguments.length === 1 && typeof prop === 'object') {
-        attr = _;
-      }
-      if (arguments.length === 2 && isValidProp) {
-        attr[prop] = val;
-      }
-      return generator;
+    element.x = function (_) {
+      if (!arguments.length) return x;
+      x = _;
+      return element;
     };
 
-    return generator;
+    element.y = function (_) {
+      if (!arguments.length) return y;
+      y = _;
+      return element;
+    };
+
+    element.width = function (_) {
+      if (!arguments.length) return width;
+      width = _;
+      return element;
+    };
+
+    element.height = function (_) {
+      if (!arguments.length) return height;
+      height = _;
+      return element;
+    };
+
+    element.fillStyle = function (_) {
+      if (!arguments.length) return fillStyle;
+      fillStyle = _;
+      return element;
+    };
+
+    element.opacity = function (_) {
+      if (!arguments.length) return globalAlpha;
+      globalAlpha = _;
+      return element;
+    };
+
+    element.lineWidth = function (_) {
+      if (!arguments.length) return lineWidth;
+      lineWidth = _;
+      return element;
+    };
+
+    element.strokeStyle = function (_) {
+      if (!arguments.length) return strokeStyle;
+      strokeStyle = _;
+      return element;
+    };
+
+    return element;
   };
 });
-define('src/modules/d3_components/generator/boxplot',['require','d3'],function (require) {
+
+define('src/modules/d3_components/control/events',['require','d3'],function (require) {
   var d3 = require('d3');
 
-  return function boxPlot() {
-    var gClass = 'box';
-    var transform = null;
+  /**
+   * Adds event listeners to DOM elements
+   */
 
-    // Box
-    var box = {
-      width: 20,
-      height: null,
-      y: null,
-      class: 'range',
-      fill: 'white',
-      stroke: 'black',
-      strokeWidth: '2px'
-    };
+  return function events() {
+    var listeners = {};
+    var processor = function (e) { return e; };
+    var element;
 
-    // Range
-    var range = {
-      x1: 0,
-      x2: 0,
-      y1: null,
-      y2: null,
-      class: 'range',
-      stroke: 'black',
-      strokeWidth: '4px'
-    };
-
-    // Max
-    var max = {
-      y1: null,
-      y2: null,
-      class: 'max',
-      stroke: 'black',
-      strokeWidth: '4px'
-    };
-
-    // Min
-    var min = {
-      y1: null,
-      y2: null,
-      class: 'min',
-      stroke: 'black',
-      strokeWidth: '4px'
-    };
-
-    // Median
-    var median = {
-      y1: 0,
-      y2: 0,
-      class: 'median',
-      stroke: 'darkgrey',
-      strokeWidth: '4px'
-    };
-
-    function generator(selection) {
+    function control(selection) {
       selection.each(function () {
-        var boxX = - (box.width / 2);
-        var maxX1 = - (box.width / 2);
-        var maxX2 = box.width / 2;
-        var minX1 = - (box.width / 2);
-        var minX2 = box.width / 2;
-        var medianX1 = - (box.width / 2);
-        var medianX2 = box.width / 2;
+        if (!element) {
+          element = d3.select(this);
+        }
 
-        var g = d3.select(this).selectAll('g.box')
-          .data(function (d) { return d; })
-          .enter().append('g')
-          .attr('class', gClass);
+        d3.entries(listeners).forEach(function (e) {
+          // Stop listening for event types that have
+          // an empty listeners array or that is set to null
+          if (!e.value || !e.value.length) {
+            return element.on(e.key, null);
+          }
 
-        g.attr('transform', transform)
-          .each(function (d, i) {
-            var g = d3.select(this);
+          element.on(e.key, function () {
+            d3.event.stopPropagation(); // => event.stopPropagation()
 
-            g.append('line')
-              .attr('class', range.class)
-              .attr('x1', range.x1)
-              .attr('x2', range.x2)
-              .attr('y1', range.y1)
-              .attr('y2', range.y2)
-              .style('stroke', range.stroke)
-              .style('stroke-boxWidth', range.strokeWidth);
-
-            g.append('line')
-              .attr('class', max.class)
-              .attr('x1', maxX1)
-              .attr('x2', maxX2)
-              .attr('y1', max.y1)
-              .attr('y2', max.y2)
-              .style('stroke', max.stroke)
-              .style('stroke-boxWidth', max.strokeWidth);
-
-            g.append('line')
-              .attr('class', min.class)
-              .attr('x1', minX1)
-              .attr('x2', minX2)
-              .attr('y1', min.y1)
-              .attr('y2', min.y2)
-              .style('stroke', min.stroke)
-              .style('stroke-boxWidth', min.strokeWidth);
-
-            g.append('rect')
-              .attr('class', box.class)
-              .attr('x', boxX)
-              .attr('y', box.y)
-              .attr('width', box.width)
-              .attr('height', box.height)
-              .style('fill', box.fill)
-              .style('stroke', box.stroke)
-              .style('stroke-boxWidth', box.strokeWidth);
-
-            g.append('line')
-              .attr('class', median.class)
-              .attr('x1', medianX1)
-              .attr('x2', medianX2)
-              .attr('y1', median.y1)
-              .attr('y2', median.y2)
-              .style('stroke', median.stroke)
-              .style('stroke-boxWidth', median.strokeWidth);
+            e.value.forEach(function (listener) {
+              listener.call(this, processor(d3.event));
+            });
           });
+        });
       });
     }
 
-    generator.class = function (_) {
-      if (!arguments.length) return gClass;
-      gClass = _;
-      return generator;
+    // Public API
+    control.listeners = function (_) {
+      if (!arguments.length) return listeners;
+      listeners = typeof _ === 'object' ? _ : listeners;
+      return control;
     };
 
-    generator.transform = function (_) {
+    control.processor = function (_) {
+      if (!arguments.length) return processor;
+      processor = typeof _ === 'function' ? _ : processor;
+      return control;
+    };
+
+    return control;
+  };
+});
+define('src/modules/d3_components/helpers/valuator',[],function () {
+  /**
+   * Wrapper function that returns a function
+   * that returns the argument or an object key.
+   * If argument is a function, returns the function.
+   */
+
+  return function (val) {
+    if (typeof val === 'function') { return val; }
+    if (typeof val === 'string') {
+      return function (d) { return d[val]; };
+    }
+    return function () { return val; };
+  };
+});
+define('src/modules/charts/heatmap',['require','d3','src/modules/d3_components/generator/element/svg/rect','src/modules/d3_components/generator/element/canvas/rect','src/modules/d3_components/generator/axis/axis','src/modules/d3_components/control/events','src/modules/d3_components/helpers/valuator'],function (require) {
+  var d3 = require('d3');
+  var svgRect = require('src/modules/d3_components/generator/element/svg/rect');
+  var canvasRect = require('src/modules/d3_components/generator/element/canvas/rect');
+  var axis = require('src/modules/d3_components/generator/axis/axis');
+  var events = require('src/modules/d3_components/control/events');
+  var valuator = require('src/modules/d3_components/helpers/valuator');
+
+  return function heatmap() {
+    // Private variables
+    var margin = { top: 20, right: 20, bottom: 20, left: 50 };
+    var width = 960;
+    var height = 500;
+    var xValue = function (d) { return d.x; };
+    var yValue = function (d) { return d.y; };
+    var rectPadding = 0.1;
+    var isCanvas = false;
+
+    var xScale = {
+      domain: null,
+      reverse: false,
+      sort: false
+    };
+
+    var yScale = {
+      domain: null,
+      reverse: false,
+      sort: false
+    };
+
+    var rect = {
+      class: 'rect',
+      fill: function (d) { return d.fill; },
+      opacity: function () { return 1; },
+      strokeWidth: 0
+    };
+
+    var xAxis = {
+      show: true,
+      class: 'x axis',
+      title: { class: 'x-label', text: '' },
+      tick: {},
+      tickText: {
+        x: 0,
+        y: 9,
+        dy: '.71em',
+        anchor: 'middle'
+      },
+      filterTicksBy: 1,
+      tickRotate: 270
+    };
+
+    var yAxis = {
+      show: true,
+      class: 'y axis',
+      title: { class: 'y-label', text: '' },
+      tick: {},
+      tickText: {
+        x: -9,
+        y: 0,
+        dy: '.35em',
+        anchor: 'end'
+      },
+      filterTicksBy: 1
+    };
+
+    var listeners = {};
+
+    function chart(selection) {
+      selection.each(function (data, index) {
+        var canvas;
+
+        width = width - margin.left - margin.right;
+        height = height - margin.top - margin.bottom;
+
+        var xDomain = xScale.domain || getDomain(data, xValue);
+        var yDomain = yScale.domain || getDomain(data, yValue);
+
+        if (xScale.sort) {
+          xDomain.sort(typeof xScale.sort === 'function' ? xScale.sort : ascending);
+        }
+        if (yScale.sort) {
+          yDomain.sort(typeof yScale.sort === 'function' ? yScale.sort : ascending);
+        }
+        if (xScale.reverse) { xDomain.reverse(); }
+        if (yScale.reverse) { yDomain.reverse(); }
+
+        var x = d3.scale.ordinal()
+          .domain(xDomain)
+          .rangeBands([0, width], rectPadding);
+
+        var y = d3.scale.ordinal()
+          .domain(yDomain)
+          .rangeBands([0, height], rectPadding);
+
+        data.forEach(function (d, i) {
+          d.dx = xValue.call(data, d, i);
+          d.dy = yValue.call(data, d, i);
+          d.fill = rect.fill.call(data, d, i);
+          d.opacity = rect.opacity.call(data, d, i);
+        });
+
+        var padding = Object.keys(margin)
+          .map(function (key) {
+            return margin[key];
+          }).join('px ') + 'px';
+
+        if (isCanvas) {
+          var canvasRects = canvasRect()
+            .class(rect.class)
+            .x(function (d) { return x(d.dx); })
+            .y(function (d) { return y(d.dy); })
+            .width(x.rangeBand())
+            .height(y.rangeBand())
+            .fillStyle(rect.fill)
+            .strokeStyle(rect.stroke)
+            .lineWidth(rect.strokeWidth)
+            .opacity(rect.opacity);
+
+          canvas = d3.select(this).append('canvas')
+            .attr('width', width)
+            .attr('height', height)
+            .style('padding', padding);
+
+          canvas.datum(data).call(canvasRects);
+        }
+
+        var svgEvents = events().listeners(listeners);
+
+        var svg = d3.select(this).append('svg')
+          .attr('width', width)
+          .attr('height', height)
+          .style('padding', padding)
+          .call(svgEvents);
+
+        var g = svg.append('g').attr('transform', 'translate(0,0)');
+
+        if (!isCanvas) {
+          var svgRects = svgRect()
+            .class(rect.class)
+            .x(function (d) { return x(d.dx); })
+            .y(function (d) { return y(d.dy); })
+            .width(x.rangeBand())
+            .height(y.rangeBand())
+            .fill(rect.fill)
+            .stroke(rect.stroke)
+            .strokeWidth(rect.strokeWidth)
+            .opacity(rect.opacity);
+
+          g.append('g')
+            .attr('class', 'heat-rect')
+            .datum(data).call(svgRects);
+        }
+
+        if (xAxis.show) {
+          var axisX = axis()
+            .scale(x)
+            .class(xAxis.class)
+            .transform(xAxis.transform || 'translate(0,' + height + ')')
+            .tick({
+              values: x.domain()
+                .filter(function (d, i) {
+                  return (i % xAxis.filterTicksBy) === 0;
+                })
+            })
+            .tickText(xAxis.tickText)
+            .title(xAxis.title);
+
+          g.call(axisX);
+
+          // Modifying the x axis tick labels
+          g.selectAll('.tick text')
+            .attr('x', -10)
+            .attr('y', -4)
+            .attr('transform', 'rotate(' + xAxis.tickRotate + ')')
+            .style('text-anchor', 'end');
+        }
+
+        if (yAxis.show) {
+          var axisY = axis()
+            .scale(y)
+            .class(yAxis.class)
+            .orient('left')
+            .tick({
+              values: y.domain()
+                .filter(function (d, i) {
+                  return (i % yAxis.filterTicksBy) === 0;
+                })
+            })
+            .tickText(yAxis.tickText)
+            .title(yAxis.title);
+
+          g.call(axisY);
+        }
+      });
+    }
+
+    // Sort ascending
+    function ascending(prev, cur) {
+      if (prev > cur) { return 1; }
+      if (prev < cur) { return -1; }
+      return 0;
+    }
+
+    // Creates a unique array of items
+    function getDomain(data, accessor) {
+      return data
+        .map(function (item) {
+          return accessor.call(this, item);
+        })
+        .filter(function (item, index, array) {
+          return array.indexOf(item) === index;
+        });
+    }
+
+    // Public API
+    chart.margin = function (_) {
+      if (!arguments.length) { return margin; }
+      margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
+      margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
+      margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
+      margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
+      return chart;
+    };
+
+    chart.width = function (_) {
+      if (!arguments.length) { return width; }
+      width = typeof _ !== 'number' ? width : _;
+      return chart;
+    };
+
+    chart.height = function (_) {
+      if (!arguments.length) { return height; }
+      height = typeof _ !== 'number' ? height : _;
+      return chart;
+    };
+
+    chart.x = function (_) {
+      if (!arguments.length) { return xValue; }
+      xValue = valuator(_);
+      return chart;
+    };
+
+    chart.y = function (_) {
+      if (!arguments.length) { return yValue; }
+      yValue = valuator(_);
+      return chart;
+    };
+
+    chart.xScale = function (_) {
+      if (!arguments.length) { return xScale; }
+      xScale.domain = typeof _.domain !== 'undefined' ? _.domain : xScale.domain;
+      xScale.reverse = typeof _.reverse !== 'undefined' ? _.reverse : xScale.reverse;
+      xScale.sort = typeof _.sort !== 'undefined' ? _.sort : xScale.sort;
+      return chart;
+    };
+
+    chart.yScale = function (_) {
+      if (!arguments.length) { return yScale; }
+      yScale.domain = typeof _.domain !== 'undefined' ? _.domain : yScale.domain;
+      yScale.reverse = typeof _.reverse !== 'undefined' ? _.reverse : yScale.reverse;
+      yScale.sort = typeof _.sort !== 'undefined' ? _.sort : yScale.sort;
+      return chart;
+    };
+
+    chart.padding = function (_) {
+      if (!arguments.length) { return rectPadding; }
+      rectPadding = typeof _ !== 'number' ? rectPadding : _;
+      return chart;
+    };
+
+    chart.canvas = function (_) {
+      if (!arguments.length) { return isCanvas; }
+      isCanvas = typeof _ === 'boolean' ? _ : false;
+      return chart;
+    };
+
+    chart.rect = function (_) {
+      if (!arguments.length) { return rect; }
+      rect.class = typeof _.class !== 'undefined' ? _.class : rect.class;
+      rect.stroke = typeof _.stroke !== 'undefined' ? _.stroke : rect.stroke;
+      rect.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : rect.strokeWidth;
+      rect.fill = typeof _.fill !== 'undefined' ? d3.functor(_.fill) : rect.fill;
+      rect.opacity = typeof _.opacity !== 'undefined' ? d3.functor(_.opacity) : rect.opacity;
+      return chart;
+    };
+
+    chart.xAxis = function (_) {
+      if (!arguments.length) { return xAxis; }
+      xAxis.show = typeof _.show !== 'undefined' ? _.show : xAxis.show;
+      xAxis.class = typeof _.class !== 'undefined' ? _.class : xAxis.class;
+      xAxis.transform = typeof _.transform !== 'undefined' ? _.transform : xAxis.transform;
+      xAxis.tick = typeof _.tick !== 'undefined' ? _.tick : xAxis.tick;
+      xAxis.tickText = typeof _.tickText!== 'undefined' ? _.tickText: xAxis.tickText;
+      xAxis.title = typeof _.title !== 'undefined' ? _.title : xAxis.title;
+      xAxis.filterTicksBy = typeof _.filterTicksBy !== 'undefined' ? _.filterTicksBy : xAxis.filterTicksBy;
+      xAxis.tickRotate = typeof _.tickRotate !== 'undefined' ? _.tickRotate : xAxis.tickRotate;
+      return chart;
+    };
+
+    chart.yAxis = function (_) {
+      if (!arguments.length) { return yAxis; }
+      yAxis.show = typeof _.show !== 'undefined' ? _.show : yAxis.show;
+      yAxis.gridlines = typeof _.gridlines !== 'undefined' ? _.gridlines : yAxis.gridlines;
+      yAxis.class = typeof _.class !== 'undefined' ? _.class : yAxis.class;
+      yAxis.transform = typeof _.transform !== 'undefined' ? _.transform : yAxis.transform;
+      yAxis.tick = typeof _.tick !== 'undefined' ? _.tick : yAxis.tick;
+      yAxis.tickText = typeof _.tickText!== 'undefined' ? _.tickText: yAxis.tickText;
+      yAxis.title = typeof _.title !== 'undefined' ? _.title : yAxis.title;
+      yAxis.filterTicksBy = typeof _.filterTicksBy !== 'undefined' ? _.filterTicksBy : yAxis.filterTicksBy;
+      return chart;
+    };
+
+    chart.listeners = function (_) {
+      if (!arguments.length) { return listeners; }
+      listeners = typeof _ !== 'object' ? listeners : _;
+      return chart;
+    };
+
+    return chart;
+  };
+});
+
+define('src/modules/charts/histogram',['require','d3','src/modules/d3_components/helpers/valuator'],function (require) {
+  var d3 = require('d3');
+  var valuator = require('src/modules/d3_components/helpers/valuator');
+
+  return function histogram() {
+    // Private variables
+    var margin = { top: 20, right: 20, bottom: 20, left: 50 };
+    var width = 900;
+    var height = 500;
+    var bins = null;
+    var range = null;
+    var frequency = 'frequency';
+    var value = function (d) { return d.y; };
+
+    var bars = {
+      class: 'rect',
+      fill: 'blue',
+      stroke: 'white',
+      strokeWidth: 1,
+      opacity: 1
+    };
+
+    var text = {
+      class: 'text',
+      dy: '0.71em',
+      textAnchor: 'middle',
+      fill: 'black'
+    };
+
+    function chart(selection) {
+      selection.each(function (data, index) {
+        width = width - margin.left - margin.right;
+        height = height - margin.top - margin.bottom;
+
+        var histogram = d3.layout.histogram()
+          .bins(bins)
+          .value(value)
+          .frequency(frequency)
+          .range(range || d3.extent(data, value));
+
+        data = histogram(data);
+
+        var xScale = d3.scale.linear()
+          .domain(d3.extent(bins))
+          .range([0, width]);
+
+        var yScale = d3.scale.linear()
+          .domain([0, d3.max(data, yValue)])
+          .range([height, 0]);
+
+        var svg = d3.select(this).append('svg')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', height + margin.top + margin.bottom)
+          .append('g')
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+        var xAxis = d3.svg.axis().scale(xScale).orient('bottom');
+        var yAxis = d3.svg.axis().scale(yScale).orient('left');
+
+        svg.append('g')
+          .attr('class', 'x axis')
+          .attr('transform', 'translate(0,' + yScale.range()[0] + ')')
+          .call(xAxis);
+
+        var group = svg.selectAll('groups')
+          .data(data);
+
+        // Exit
+        group.exit().remove();
+
+        // Enter
+        group.enter().append('g');
+
+        // Update
+        group.append('rect')
+          .attr('class', bars.class)
+          .attr('fill', bars.fill)
+          .attr('stroke', bars.stroke)
+          .attr('stroke-width', bars.strokeWidth)
+          .attr('x', function (d) { return xScale(d.x); })
+          .attr('y', function (d) { return yScale(d.y); })
+          .attr('width', function (d) { return xScale(d.dx); })
+          .attr('height', function (d) { return yScale.range()[0] - yScale(d.y); });
+
+        group.append('text')
+          .attr('class', text.class)
+          .attr('dy', text.dy)
+          .attr('y', function (d) { return yScale(d.y - 0.1); })
+          .attr('x', function (d) { return xScale(d.x) + (xScale(d.dx) / 2); })
+          .attr('text-anchor', text.textAnchor)
+          .attr('fill', text.fill)
+          .text(function (d) { return !d.y ? '' : d.y; });
+      });
+    }
+
+    // Public API
+    chart.margin = function (_) {
+      if (!arguments.length) { return margin; }
+      margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
+      margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
+      margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
+      margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
+      return chart;
+    };
+
+    chart.width = function (_) {
+      if (!arguments.length) { return width; }
+      width = typeof _ !== 'number' ? width : _;
+      return chart;
+    };
+
+    chart.height = function (_) {
+      if (!arguments.length) { return height; }
+      height = typeof _ !== 'number' ? height : _;
+      return chart;
+    };
+
+    chart.value = function (_) {
+      if (!arguments.length) { return value; }
+      value = valuator(_);
+      return chart;
+    };
+
+    chart.bins = function (_) {
+      if (!arguments.length) { return bins; }
+      bins = _;
+      return chart;
+    };
+
+    chart.frequency = function (_) {
+      if (!arguments.length) { return frequency; }
+      frequency = typeof _ !== 'string' ? frequency : _;
+      return chart;
+    };
+
+    chart.range = function (_) {
+      if (!arguments.length) return range;
+      range = d3.functor(_);
+      return chart;
+    };
+
+    chart.bars = function (_) {
+      if (!arguments.length) { return bars; }
+      bars.class = typeof _.class !== 'undefined' ? _.class : bars.class;
+      bars.fill = typeof _.fill !== 'undefined' ? _.fill : bars.fill;
+      bars.stroke = typeof _.stroke !== 'undefined' ? _.stroke : bars.stroke;
+      bars.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : bars.strokeWidth;
+      return chart;
+    };
+
+    chart.text = function (_) {
+      if (!arguments.length) { return text; }
+      text.class = typeof _.class !== 'undefined' ? _.class : text.class;
+      text.fill = typeof _.fill !== 'undefined' ? _.fill : text.fill;
+      text.dy = typeof _.dy !== 'undefined' ? _.dy : text.dy;
+      text.textAnchor = typeof _.textAnchor !== 'undefined' ? _.textAnchor : text.textAnchor;
+      return chart;
+    };
+
+    return chart;
+  };
+});
+define('src/modules/charts/horizon',['require'],function (require) {});
+
+define('src/modules/d3_components/generator/element/svg/path',['require','d3'],function (require) {
+  var d3 = require('d3');
+
+  return function path() {
+    var color = d3.scale.category10();
+    var path = function (d) { return d.d; };
+    var cssClass = 'path';
+    var transform = 'translate(0,0)';
+    var fill = 'none';
+    var stroke = function (d, i) { return color(i); };
+    var strokeWidth = 1;
+    var opacity = 1;
+
+    function element(selection) {
+      selection.each(function (data) {
+        var path = d3.select(this).selectAll('path')
+          .data(data);
+
+        path.exit().remove();
+
+        path.enter().append('path');
+
+        path
+          .attr('transform', transform)
+          .attr('class', cssClass)
+          .attr('fill', fill)
+          .attr('stroke', stroke)
+          .attr('stroke-width', strokeWidth)
+          .attr('d', path)
+          .style('opacity', opacity);
+      });
+    }
+
+    // Public API
+    element.path = function (_) {
+      if (!arguments.length) return path;
+      path = d3.functor(_);
+      return element;
+    };
+
+    element.class = function (_) {
+      if (!arguments.length) return cssClass;
+      cssClass = _;
+      return element;
+    };
+
+    element.transform = function (_) {
       if (!arguments.length) return transform;
       transform = _;
-      return generator;
+      return element;
     };
 
-    generator.box = function (_) {
-      if (!arguments.length) return box;
-      box.width = typeof _.width !== 'undefined' ? _.width : box.width;
-      box.height = typeof _.height !== 'undefined' ? _.height : box.height;
-      box.y = typeof _.y !== 'undefined' ? _.y : box.y;
-      box.class = typeof _.class !== 'undefined' ? _.class : box.class;
-      box.fill = typeof _.fill !== 'undefined' ? _.fill : box.fill;
-      box.stroke = typeof _.stroke !== 'undefined' ? _.stroke : box.stroke;
-      box.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : box.strokeWidth;
-      return generator;
+    element.fill = function (_) {
+      if (!arguments.length) return fill;
+      fill = _;
+      return element;
     };
 
-    generator.range = function (_) {
-      if (!arguments.length) return range;
-      range.x1 = typeof _.x1!== 'undefined' ? _.x1: range.x1;
-      range.x2 = typeof _.x2!== 'undefined' ? _.x2 : range.x2;
-      range.y1 = typeof _.y1 !== 'undefined' ? _.y1 : range.y1;
-      range.y2 = typeof _.y2 !== 'undefined' ? _.y2 : range.y2;
-      range.class = typeof _.class !== 'undefined' ? _.class : range.class;
-      range.stroke = typeof _.stroke !== 'undefined' ? _.stroke : range.stroke;
-      range.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : range.strokeWidth;
-      return generator;
+    element.opacity = function (_) {
+      if (!arguments.length) return opacity;
+      opacity = _;
+      return element;
     };
 
-    generator.max = function (_) {
-      if (!arguments.length) return max;
-      max.y1 = typeof _.y1 !== 'undefined' ? _.y1 : max.y1;
-      max.y2 = typeof _.y2 !== 'undefined' ? _.y2 : max.y2;
-      max.class = typeof _.class !== 'undefined' ? _.class : max.class;
-      max.stroke = typeof _.stroke !== 'undefined' ? _.stroke : max.stroke;
-      max.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : max.strokeWidth;
-      return generator;
+    element.stroke = function (_) {
+      if (!arguments.length) return stroke;
+      stroke = d3.functor(_);
+      return element;
     };
 
-    generator.min = function (_) {
-      if (!arguments.length) return min;
-      min.y1 = typeof _.y1 !== 'undefined' ? _.y1 : min.y1;
-      min.y2 = typeof _.y2 !== 'undefined' ? _.y2 : min.y2;
-      min.class = typeof _.class !== 'undefined' ? _.class : min.class;
-      min.stroke = typeof _.stroke !== 'undefined' ? _.stroke : min.stroke;
-      min.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : min.strokeWidth;
-      return generator;
+    element.strokeWidth = function (_) {
+      if (!arguments.length) return strokeWidth;
+      strokeWidth = _;
+      return element;
     };
 
-    generator.median = function (_) {
-      if (!arguments.length) return median;
-      median.y1 = typeof _.y1 !== 'undefined' ? _.y1 : median.y1;
-      median.y2 = typeof _.y2 !== 'undefined' ? _.y2 : median.y2;
-      median.class = typeof _.class !== 'undefined' ? _.class : median.class;
-      median.stroke = typeof _.stroke !== 'undefined' ? _.stroke : median.stroke;
-      median.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : median.strokeWidth;
-      return generator;
+    return element;
+  };
+});
+
+define('src/modules/d3_components/generator/element/svg/text',['require','d3'],function (require) {
+  var d3 = require('d3');
+
+  return function text() {
+    var x = function (d) { return d.x; };
+    var y = function (d) { return d.y; };
+    var dx = function (d) { return d.dx || 0; };
+    var dy = function (d) { return d.dy || 0; };
+    var transform = null;
+    var cssClass = 'text';
+    var fill = '#ffffff';
+    var anchor = 'middle';
+    var texts = '';
+
+    function element(selection) {
+      selection.each(function (data) {
+        var text = d3.select(this).selectAll('text')
+          .data(data);
+
+        text.exit().remove();
+
+        text.enter().append('text');
+
+        text
+          .attr('class', cssClass)
+          .attr('transform', transform)
+          .attr('x', x)
+          .attr('y', y)
+          .attr('dx', dx)
+          .attr('dy', dy)
+          .attr('fill', fill)
+          .style('text-anchor', anchor)
+          .text(texts);
+      });
+    }
+
+    // Public API
+    element.x = function (_) {
+      if (!arguments.length) return x;
+      x = d3.functor(_);
+      return element;
     };
 
-    return generator;
+    element.y = function (_) {
+      if (!arguments.length) return y;
+      y = d3.functor(_);
+      return element;
+    };
+
+    element.dx = function (_) {
+      if (!arguments.length) return dx;
+      dx = d3.functor(_);
+      return element;
+    };
+
+    element.dy = function (_) {
+      if (!arguments.length) return dy;
+      dy = d3.functor(_);
+      return element;
+    };
+
+    element.transform = function (_) {
+      if (!arguments.length) return transform;
+      transform = _;
+      return element;
+    };
+
+    element.class= function (_) {
+      if (!arguments.length) return cssClass;
+      cssClass = _;
+      return element;
+    };
+
+    element.anchor = function (_) {
+      if (!arguments.length) return anchor;
+      anchor = _;
+      return element;
+    };
+
+    element.fill = function (_) {
+      if (!arguments.length) return fill;
+      fill = _;
+      return element;
+    };
+
+    element.text = function (_) {
+      if (!arguments.length) return texts;
+      texts = _;
+      return element;
+    };
+
+    return element;
+  };
+});
+
+define('src/modules/charts/pie',['require','d3','src/modules/d3_components/generator/element/svg/path','src/modules/d3_components/generator/element/svg/text','src/modules/d3_components/control/events','src/modules/d3_components/helpers/valuator'],function (require) {
+  var d3 = require('d3');
+  var path = require('src/modules/d3_components/generator/element/svg/path');
+  var textElement = require('src/modules/d3_components/generator/element/svg/text');
+  var events = require('src/modules/d3_components/control/events');
+  var valuator = require('src/modules/d3_components/helpers/valuator');
+
+  return function pieChart() {
+    var width = 300;
+    var height = 300;
+    var color = d3.scale.category10();
+    var outerRadius = null;
+    var innerRadius = 0;
+    var sort = null;
+    var value = function (d) { return d.x; };
+    var label = function (d) { return d.name; };
+
+    var pieClass = 'pie';
+    var fill = function (d, i) {
+      return color(label.call(this, d.data, i));
+    };
+    var stroke = '#ffffff';
+
+    // Text options
+    var text = {
+      fill: '#ffffff',
+      dy: '.35em',
+      anchor: 'middle',
+      transform: null
+    };
+
+    var listeners = {};
+
+    function chart (selection) {
+      selection.each(function (data, index) {
+        var pie = d3.layout.pie()
+          .sort(sort)
+          .value(value);
+
+        data = pie(data).map(function (d) {
+          return [d];
+        });
+
+        var radius = Math.min(width, height) / 2;
+
+        var svgEvents = events().listeners(listeners);
+
+        var svg = d3.select(this).append('svg')
+          .attr('width', width)
+          .attr('height', height)
+          .call(svgEvents);
+
+        var g = svg.append('g')
+          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+
+        var arc = d3.svg.arc()
+          .outerRadius(outerRadius || radius)
+          .innerRadius(innerRadius);
+
+        var piePath = path()
+          .pathGenerator(arc)
+          .class(pieClass)
+          .fill(fill)
+          .stroke(stroke);
+
+        var pieText = textElement()
+          .transform(text.transform || function (d) {
+            return 'translate(' + arc.centroid(d) + ')';
+          })
+          .dy(text.dy)
+          .anchor(text.anchor)
+          .fill(text.fill)
+          .text(function (d, i) {
+            return label.call(this, d.data, i);
+          });
+
+        g.selectAll('groups')
+          .data(data)
+          .enter().append('g')
+          .call(piePath)
+          .call(pieText);
+      });
+    }
+
+    // Public API
+    chart.width = function (_) {
+      if (!arguments.length) { return width; }
+      width = _;
+      return chart;
+    };
+
+    chart.height = function (_) {
+      if (!arguments.length) { return height; }
+      height = _;
+      return chart;
+    };
+
+    chart.color = function (_) {
+      if (!arguments.length) { return color; }
+      color = _;
+      return chart;
+    };
+
+    chart.outerRadius = function (_) {
+      if (!arguments.length) { return outerRadius; }
+      outerRadius = _;
+      return chart;
+    };
+
+    chart.innerRadius = function (_) {
+      if (!arguments.length) { return innerRadius; }
+      innerRadius = _;
+      return chart;
+    };
+
+    chart.sort = function (_) {
+      if (!arguments.length) { return sort; }
+      sort = _;
+      return chart;
+    };
+
+    chart.value = function (_) {
+      if (!arguments.length) { return value; }
+      value = valuator(_);
+      return chart;
+    };
+
+    chart.label = function (_) {
+      if (!arguments.length) { return label; }
+      label = valuator(_);
+      return chart;
+    };
+
+    chart.class = function (_) {
+      if (!arguments.length) { return pieClass; }
+      pieClass = _;
+      return chart;
+    };
+
+    chart.fill = function (_) {
+      if (!arguments.length) { return fill; }
+      fill = _;
+      return chart;
+    };
+
+    chart.stroke = function (_) {
+      if (!arguments.length) { return stroke; }
+      stroke = _;
+      return chart;
+    };
+
+    chart.text = function (_) {
+      if (!arguments.length) { return text; }
+      text.fill = typeof _.fill !== 'undefined' ? _.fill : text.fill;
+      text.anchor = typeof _.anchor !== 'undefined' ? _.anchor: text.anchor;
+      text.dy = typeof _.dy !== 'undefined' ? _.dy : text.dy;
+      text.transform = typeof _.transform !== 'undefined' ? _.transform : text.transform;
+      return chart;
+    };
+
+    chart.listeners = function (_) {
+      if (!arguments.length) { return listeners; }
+      listeners = typeof _ !== 'object' ? listeners : _;
+      return chart;
+    };
+
+    return chart;
   };
 });
 define('src/modules/d3_components/generator/clippath',['require','d3'],function (require) {
@@ -11660,61 +12101,399 @@ define('src/modules/d3_components/generator/clippath',['require','d3'],function 
   };
 });
 
-define('src/modules/d3_components/generator/legend',['require','d3'],function (require) {
+define('src/modules/d3_components/control/brush',['require','d3'],function (require) {
   var d3 = require('d3');
 
-  return function legend() {
-    // Private variables
-    var color = d3.scale.category10();
-    var symbol = { type: 'circle', size: 3 };
-    var cell = { width: 50, padding: 5 };
-    var values = [];
-    var orientation = 'horizontal';
-    var position = 'nw';
-    var fill = function (d) { return color(d); };
-    var stroke = '#000000';
-    var strokeWidth = 1;
-    var text = '';
+  /**
+   * Creates a brush control and binds it to an <svg></svg>.
+   */
+  return function brush() {
+    var margin = { top: 0, right: 0, bottom: 0, left: 0 };
+    var cssClass = 'brush';
+    var opacity = 0.2;
+    var width = null;
+    var height = null;
+    var xScale = null;
+    var yScale = null;
+    var extent = null;
+    var clamp = false;
+    var brush = d3.svg.brush();
+    var brushStartCallback = [];
+    var brushCallback = [];
+    var brushEndCallback = [];
+    var brushG;
 
-    function component(g) {
-      g.each(function () {
-        var shape = d3.svg.symbol()
-          .type(symbol.type)
-          .size(symbol.size);
+    function control(selection) {
+      selection.each(function (data, index) {
+        width = width - margin.left - margin.right;
+        height = height - margin.top - margin.bottom;
 
-        g.selectAll('g.legend-cells')
-          .data(values)
-          .enter().append('g')
-          .attr('class', 'legend-cells')
-          .attr('transform', function (d, i) {
-            return 'translate(' + (i * (cell.width + cell.padding)) + ',0)';
+        function brushStart() {
+          brushStartCallback.forEach(function (listener) {
+            listener.call(this, brush, data, index);
           });
+        }
 
-        g.selectAll('g.legend-cells')
-          .append('path')
-          .attr('d', shape)
-          .style('fill', fill)
-          .style('stroke', stroke)
-          .style('stroke-width', strokeWidth);
+        function brushF() {
+          brushCallback.forEach(function (listener) {
+            listener.call(this, brush, data, index);
+          });
+        }
 
-        g.selectAll('g.legend-cells')
-          .append('text')
-          .attr('class', 'legend-labels')
-          .attr('y', -7)
-          .style('pointer-events', 'none')
-          .text(text);
+        function brushEnd() {
+          brushEndCallback.forEach(function (listener) {
+            listener.call(this, brush, data, index);
+
+            // Clear brush
+            d3.selectAll('g.' + cssClass)
+              .call(brush.clear());
+          });
+        }
+
+        brush
+          .on('brushstart', brushStartCallback ? brushStart : null)
+          .on('brush', brushCallback ? brushF : null)
+          .on('brushend', brushEndCallback ? brushEnd : null);
+
+        if (xScale) { brush.x(xScale); }
+        if (yScale) { brush.y(yScale); }
+        if (extent) { brush.extent(extent); }
+        if (clamp) { brush.clamp(clamp); }
+
+        if (!brushG) {
+          brushG = d3.select(this).append('g');
+        }
+
+        // Attach new brush
+        brushG.attr('class', cssClass)
+          .attr('opacity', opacity)
+          .call(brush)
+          .selectAll('rect');
+
+        if (width) { brushG.attr('width', width); }
+        if (height) { brushG.attr('height', height); }
       });
     }
 
-    return component;
+    // Public API
+    control.margin = function (_) {
+      if (!arguments.length) return margin;
+      margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
+      margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
+      margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
+      margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
+      return control;
+    };
+
+    control.width = function (_) {
+      if (!arguments.length) return width;
+      width = _;
+      return control;
+    };
+
+    control.height = function (_) {
+      if (!arguments.length) return height;
+      height = _;
+      return control;
+    };
+
+    control.opacity = function (_) {
+      if (!arguments.length) return opacity;
+      opacity = _;
+      return control;
+    };
+
+    control.class = function (_) {
+      if (!arguments.length) return cssClass;
+      cssClass = _;
+      return control;
+    };
+
+    control.xScale = function (_) {
+      if (!arguments.length) return xScale;
+      xScale = _;
+      return control;
+    };
+
+    control.yScale = function (_) {
+      if (!arguments.length) return yScale;
+      yScale = _;
+      return control;
+    };
+
+    control.extent = function (_) {
+      if (!arguments.length) return extent;
+      extent = _;
+      return control;
+    };
+
+    control.clamp = function (_) {
+      if (!arguments.length) return clamp;
+      clamp = _;
+      return control;
+    };
+
+    control.brushstart = function (_) {
+      if (!arguments.length) return brushStartCallback;
+      if (typeof _ === 'function') brushStartCallback.push(_);
+      if (Array.isArray(_)) brushStartCallback = _;
+      if (_ === null) brushStartCallback = _;
+      return control;
+    };
+
+    control.brush = function (_) {
+      if (!arguments.length) return brushCallback;
+      if (typeof _ === 'function') brushCallback.push(_);
+      if (Array.isArray(_)) brushCallback = _;
+      if (_ === null) brushCallback = _;
+      return control;
+    };
+
+    control.brushend = function (_) {
+      if (!arguments.length) return brushEndCallback;
+      if (typeof _ === 'function') brushEndCallback.push(_);
+      if (Array.isArray(_)) brushEndCallback = _;
+      if (_ === null) brushEndCallback = _;
+      return control;
+    };
+
+    return control;
   };
 });
-define('src/modules/d3_components/generator/path',['require','d3','d3_components'],function (require) {
+define('src/modules/d3_components/generator/element/svg/line',['require','d3'],function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
-  var layout = d3Components.layout.path;
-  var path = d3Components.element.path;
-  var builder = d3Components.builder;
+
+  return function line() {
+    var color = d3.scale.category10();
+    var x1 = function (d) { return d.coords.x1 || 0; };
+    var x2 = function (d) { return d.coords.x2 || 0; };
+    var y1 = function (d) { return d.coords.y1 || 0; };
+    var y2 = function (d) { return d.coords.y2 || 0; };
+    var cssClass = 'line';
+    var stroke = colorFill;
+    var strokeWidth = 2;
+    var opacity = 1;
+
+    function element(selection) {
+      selection.each(function (data) {
+
+        var lines = d3.select(this).selectAll('line')
+          .data(data);
+
+        // Exit
+        lines.exit().remove();
+
+        // Enter
+        lines.enter().append('line');
+
+        // Update
+        lines
+          .attr('class', cssClass)
+          .attr('x1', x1)
+          .attr('x2', x2)
+          .attr('y1', y1)
+          .attr('y2', y2)
+          .attr('stroke', stroke)
+          .attr('stroke-width', strokeWidth)
+          .style('opacity', opacity);
+      });
+    }
+
+    function colorFill(d, i) {
+      return color(i);
+    }
+
+    // Public API
+    element.x1 = function (_) {
+      if (!arguments.length) return x1;
+      x1 = d3.functor(_);
+      return element;
+    };
+
+    element.x2 = function (_) {
+      if (!arguments.length) return x2;
+      x2 = d3.functor(_);
+      return element;
+    };
+
+    element.y1 = function (_) {
+      if (!arguments.length) return y1;
+      y1 = d3.functor(_);
+      return element;
+    };
+
+    element.y2 = function (_) {
+      if (!arguments.length) return y2;
+      y2 = d3.functor(_);
+      return element;
+    };
+
+    element.class = function (_) {
+      if (!arguments.length) return cssClass;
+      cssClass = _;
+      return element;
+    };
+
+    element.opacity = function (_) {
+      if (!arguments.length) return opacity;
+      opacity = _;
+      return element;
+    };
+
+    element.stroke = function (_) {
+      if (!arguments.length) return stroke;
+      stroke = _;
+      return element;
+    };
+
+    element.strokeWidth = function (_) {
+      if (!arguments.length) return strokeWidth;
+      strokeWidth = _;
+      return element;
+    };
+
+    return element;
+  };
+});
+define('src/modules/d3_components/layout/path',['require','d3'],function (require) {
+  var d3 = require('d3');
+
+  return function path() {
+    var x = function (d) { return d.x; };
+    var y = function (d) { return d.y; };
+    var type = 'area';
+    var xScale = d3.time.scale.utc();
+    var yScale = d3.scale.linear();
+    var stackOpts = { offset: 'zero', order: 'default', out: out };
+    var interpolate = 'linear';
+    var tension = 0.7;
+    var defined = function (d) { return d.y !== null; };
+
+    function layout(data) {
+      var stack = d3.layout.stack()
+        .x(x)
+        .y(y)
+        .offset(stackOpts.offset)
+        .order(stackOpts.order)
+        .out(stackOpts.out);
+      var pathFunction = d3.svg[type]()
+        .interpolate(interpolate)
+        .tension(tension)
+        .defined(defined);
+
+      if (type === 'area') {
+        pathFunction.x(X).y0(Y0).y1(Y1);
+      } else {
+        pathFunction.x(X).y(Y);
+      }
+
+      data = stack(data).map(function (d) {
+        return {
+          d: pathFunction(d),
+          values: d
+        };
+      });
+
+      return data;
+    }
+
+    function out(d, y0, y) {
+      d.y0 = y0;
+      d.y = y;
+    }
+
+    function X(d, i) {
+      return xScale(x.call(this, d, i));
+    }
+
+    function Y(d, i) {
+      return yScale(y.call(this, d, i));
+    }
+
+    function Y0(d) {
+      var min = Math.max(0, yScale.domain()[0]);
+
+      if (stackOpts.offset === 'overlap') {
+        return yScale(min);
+      }
+      return yScale(d.y0);
+    }
+
+    function Y1(d, i) {
+      if (stackOpts.offset === 'overlap') {
+        return yScale(y.call(this, d, i));
+      }
+      return yScale(d.y0 + y.call(this, d, i));
+    }
+
+    // Public API
+    layout.x = function (_) {
+      if (!arguments.length) return x;
+      x = d3.functor(_);
+      return layout;
+    };
+
+    layout.y = function (_) {
+      if (!arguments.length) return y;
+      y = d3.functor(_);
+      return layout;
+    };
+
+    layout.type = function (_) {
+      var opts = ['area', 'line'];
+      var isValid = opts.indexOf(_) !== -1;
+
+      if (!arguments.length) return type;
+      type = isValid ? _ : type;
+      return layout;
+    };
+
+    layout.xScale = function (_) {
+      if (!arguments.length) return xScale;
+      xScale = typeof _ === 'function' ? _ : xScale;
+      return layout;
+    };
+
+    layout.yScale = function (_) {
+      if (!arguments.length) return yScale;
+      yScale = typeof _ === 'function' ? _ : yScale;
+      return layout;
+    };
+
+    layout.stack = function (_) {
+      if (!arguments.length) return stackOpts;
+      stackOpts.offset = typeof _.offset !== 'undefined' ? _.offset : stackOpts.offset;
+      stackOpts.order = typeof _.order !== 'undefined' ? _.order : stackOpts.order;
+      stackOpts.out = typeof _.out !== 'undefined' ? _.out : stackOpts.out;
+      return layout;
+    };
+
+    layout.interpolate = function (_) {
+      if (!arguments.length) return interpolate;
+      interpolate = _;
+      return layout;
+    };
+
+    layout.tension = function (_) {
+      if (!arguments.length) return tension;
+      tension = _;
+      return layout;
+    };
+
+    layout.defined = function (_) {
+      if (!arguments.length) return defined;
+      defined = _;
+      return layout;
+    };
+
+    return layout;
+  };
+});
+define('src/modules/d3_components/generator/path',['require','d3','src/modules/d3_components/layout/path','src/modules/d3_components/generator/element/svg/path','src/modules/d3_components/helpers/builder'],function (require) {
+  var d3 = require('d3');
+  var layout = require('src/modules/d3_components/layout/path');
+  var path = require('src/modules/d3_components/generator/element/svg/path');
+  var builder = require('src/modules/d3_components/helpers/builder');
 
   return function paths() {
     var pathLayout = layout();
@@ -11774,111 +12553,6 @@ define('src/modules/d3_components/generator/path',['require','d3','d3_components
   };
 });
 
-define('src/modules/d3_components/generator/points',['require','d3','d3_components'],function (require) {
-  var d3 = require("d3");
-  var d3Components = require('d3_components');
-  var layout = d3Components.layout.points;
-  var circle = d3Components.element.circle;
-  var builder = d3Components.helpers.builder;
-
-  return function points() {
-    var scatterLayout = layout();
-    var circles = circle();
-    var property = {};
-    var attr = {};
-    var g;
-
-    function generator(selection) {
-      selection.each(function (data) {
-        scatterLayout = builder(property, scatterLayout);
-        circles = builder(attr, circles);
-
-        if (!g) {
-          g = d3.select(this).append("g");
-        }
-
-        g.datum(scatterLayout(data))
-          .call(circles);
-      });
-    }
-
-    // Public API
-    generator.property = function (prop, val) {
-      if (!arguments.length) return property;
-      if (arguments.length === 1 && typeof prop === 'object') {
-        property = _;
-      }
-      if (arguments.length === 2) {
-        property[prop] = val;
-      }
-      return generator;
-    };
-
-    generator.attr = function (prop, val) {
-      var validAttr = ['class', 'fill', 'stroke', 'strokeWidth', 'opacity'];
-      var isValidProp = validAttr.indexOf(prop) !== -1;
-
-      if (!arguments.length) return attr;
-      if (arguments.length === 1 && typeof prop === 'object') {
-        attr = _;
-      }
-      if (arguments.length === 2 && isValidProp) {
-        attr[prop] = val;
-      }
-      return generator;
-    };
-
-    return generator;
-  };
-});
-
-define('src/modules/d3_components/helpers/functor',['require','d3','src/modules/d3_components/helpers/builder'],function (require) {
-  var d3 = require('d3');
-  var builder = require('src/modules/d3_components/helpers/builder');
-
-  /**
-   * Builds and return a function based on key value pairs
-   * and calls it on a d3 selection.
-   */
-  return function functor() {
-    var func = function () {};
-    var opts = {};
-
-    function constructor(selection) {
-      selection.each(function () {
-        d3.select(this).call(builder(opts, func));
-      });
-    }
-
-    constructor.function = function (_) {
-      if (!arguments.length) return func;
-      func = typeof _ !== 'function' ? func : _;
-      return constructor;
-    };
-
-    constructor.options = function (_) {
-      if (!arguments.length) return opts;
-      opts = typeof _ !== 'object' ? opts : _;
-      return constructor;
-    };
-
-    return constructor;
-  };
-});
-
-define('src/modules/d3_components/helpers/scaletor',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function (_) {
-    if (typeof _ === 'function') { return _; }
-    if (typeof _ === 'string') {
-      if (_ === 'time') { return d3[_].scale(); }
-      if (_ === 'time.utc') { return d3.time.scale.utc(); }
-      return typeof d3.scale[_] === 'function' ? d3.scale[_]() : d3.scale.linear();
-    }
-    return !_ || typeof _ !== 'function' ? d3.scale.linear() : _;
-  };
-});
 define('src/modules/d3_components/helpers/timeparser',[],function () {
   /**
    * Function that returns the proper time string
@@ -11907,25 +12581,9 @@ define('src/modules/d3_components/helpers/timeparser',[],function () {
     return timeNotation[abbr];
   };
 });
-define('src/modules/d3_components/helpers/valuator',[],function () {
-  /**
-   * Wrapper function that returns a function
-   * that returns the argument or an object key.
-   * If argument is a function, returns the function.
-   */
-
-  return function (val) {
-    if (typeof val === 'function') { return val; }
-    if (typeof val === 'string') {
-      return function (d) { return d[val]; };
-    }
-    return function () { return val; };
-  };
-});
-define('src/modules/d3_components/layout/bars/vertical',['require','d3','d3_components'],function (require) {
+define('src/modules/d3_components/layout/bars/vertical',['require','d3','src/modules/d3_components/helpers/timeparser'],function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
-  var parseTime = d3Components.helpers.timeparser;
+  var parseTime = require('src/modules/d3_components/helpers/timeparser');
 
   return function vertical() {
     var x = function (d) { return d.x; };
@@ -12097,10 +12755,9 @@ define('src/modules/d3_components/layout/bars/vertical',['require','d3','d3_comp
     return layout;
   };
 });
-define('src/modules/d3_components/layout/bars/horizontal',['require','d3','d3_components'],function (require) {
+define('src/modules/d3_components/layout/bars/horizontal',['require','d3','src/modules/d3_components/helpers/timeparser'],function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
-  var parseTime = d3Components.helpers.timeparser;
+  var parseTime = require('src/modules/d3_components/helpers/timeparser');
 
   return function horizontal() {
     var x = function (d) { return d.x; };
@@ -12276,304 +12933,69 @@ define('src/modules/d3_components/layout/bars/horizontal',['require','d3','d3_co
     return layout;
   };
 });
-define('src/modules/d3_components/layout/base',['require','d3'],function (require) {
+define('src/modules/d3_components/generator/bars',['require','d3','src/modules/d3_components/helpers/builder','src/modules/d3_components/layout/bars/vertical','src/modules/d3_components/layout/bars/horizontal','src/modules/d3_components/generator/element/svg/rect'],function (require) {
   var d3 = require('d3');
+  var builder = require('src/modules/d3_components/helpers/builder');
+  var vertical = require('src/modules/d3_components/layout/bars/vertical');
+  var horizontal = require('src/modules/d3_components/layout/bars/horizontal');
+  var rect = require('src/modules/d3_components/generator/element/svg/rect');
 
-  return function format() {
-    // Private variables
-    var type = 'rows'; // available types: 'rows', 'columns', 'grid'
-    var size = [500, 500]; // [width, height]
-    var rowScale = d3.scale.linear();
-    var columnScale = d3.scale.linear();
-    var numOfCols = 0;
+  return function bars() {
+    var rects = rect();
+    var property = {};
+    var attr = {};
+    var barLayout;
+    var g;
 
-    function formatType(length, type, cols) {
-      var output = {};
+    if (!property.orientation) property.orientation = 'vertical';
+    barLayout = property.orientation === 'vertical' ? vertical() : horizontal();
 
-      switch (type) {
-        case 'grid':
-          output.rows = cols ? Math.ceil(length / cols) :
-            Math.round(Math.sqrt(length));
-          output.columns = cols ? cols : Math.ceil(Math.sqrt(length));
-          break;
+    function generator(selection) {
+      selection.each(function (data) {
+        barLayout = builder(property, barLayout);
+        rects = builder(attr, rects);
 
-        case 'columns':
-          output.rows = 1;
-          output.columns = length;
-          break;
+        if (!g) {
+          g = d3.select(this).append('g')
+            .attr('class', 'bar-layers');
+        }
 
-        default:
-          output.rows = length;
-          output.columns = 1;
-          break;
-      }
+        var layers = g.selectAll('g')
+          .data(barLayout(data));
 
-      return output;
-    }
-
-    function layout(data) {
-      var format = formatType(data.length, type, numOfCols);
-      var rows = format.rows;
-      var columns = format.columns;
-      var cellWidth = size[0] / columns;
-      var cellHeight = size[1] / rows;
-      var cell = 0;
-
-      rowScale.domain([0, rows]).range([0, size[1]]);
-      columnScale.domain([0, columns]).range([0, size[0]]);
-
-      d3.range(rows).forEach(function (row) {
-        d3.range(columns).forEach(function (col) {
-          if (!data[cell]) { return; }
-
-          data[cell].dx = columnScale(col);
-          data[cell].dy = rowScale(row);
-          data[cell].width = cellWidth;
-          data[cell].height = cellHeight;
-          cell++;
-        });
+        layers.exit().remove();
+        layers.enter().append('g');
+        layers.call(rects);
       });
-
-      return data;
     }
 
     // Public API
-    layout.type = function (_) {
-      if (!arguments.length) return type;
-      type = typeof _ === 'string' ? _ : type;
-      return layout;
-    };
-
-    layout.columns = function (_) {
-      if (!arguments.length) return numOfCols;
-      numOfCols = typeof _ === 'number' ? _ : numOfCols;
-      return layout;
-    };
-
-    layout.size = function (_) {
-      if (!arguments.length) return size;
-      size = Array.isArray(_) && _.length === 2 ? _ : size;
-      return layout;
-    };
-
-    return layout;
-  };
-});
-
-define('src/modules/d3_components/layout/box',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function box() {
-    // Private variables
-    var values = function (d) { return d.values; };
-    var accessor = function (d) { return d; };
-
-    function layout(data) {
-      data.forEach(function (d, i) {
-        var numbers = accessor.call(this, values.call(this, d, i));
-
-        d.median = d3.median(numbers);
-        d.q1 = d3.quantile(numbers, 0.25);
-        d.q3 = d3.quantile(numbers, 0.75);
-        d.max = d3.max(numbers);
-        d.min = d3.min(numbers);
-      });
-
-      return data;
-    }
-
-    // Public API
-    layout.values = function (_) {
-      if (!arguments.length) return values;
-      values = _;
-      return layout;
-    };
-
-    layout.accessor = function (_) {
-      if (!arguments.length) return accessor;
-      accessor = _;
-      return layout;
-    };
-
-    return layout;
-  };
-});
-define('src/modules/d3_components/layout/grid',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function grid() {
-    // Private variables
-    var gridSize = [500, 500];
-    var rowScale = d3.scale.linear();
-    var columnScale = d3.scale.linear();
-
-    function layout(data) {
-      var rows = Math.ceil(Math.sqrt(data.length));
-      var columns = rows;
-      var gridCellWidth = gridSize[0] / columns;
-      var gridCellHeight = gridSize[1] / rows;
-      var cell = 0;
-
-      rowScale.domain([0, rows]).range([0, gridSize[1]]);
-      columnScale.domain([0, columns]).range([0, gridSize[0]]);
-
-      d3.range(rows).forEach(function (row) {
-        d3.range(columns).forEach(function (col) {
-          if (!data[cell]) { return; }
-
-          data[cell].dx = columnScale(col);
-          data[cell].dy = rowScale(row);
-          data[cell].height = gridCellHeight;
-          data[cell].width = gridCellWidth;
-          cell++;
-        });
-      });
-
-      return data;
-    }
-
-    // Public API
-    layout.size = function (_) {
-      if (!arguments.length) return gridSize;
-      gridSize = Array.isArray(_) && _.length === 2 ? _ : gridSize;
-      return layout;
-    };
-
-    return layout;
-  };
-});
-define('src/modules/d3_components/layout/path',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function path() {
-    var x = function (d) { return d.x; };
-    var y = function (d) { return d.y; };
-    var type = 'area';
-    var xScale = d3.time.scale.utc();
-    var yScale = d3.scale.linear();
-    var stackOpts = { offset: 'zero', order: 'default', out: out };
-    var interpolate = 'linear';
-    var tension = 0.7;
-    var defined = function (d) { return d.y !== null; };
-
-    function layout(data) {
-      var stack = d3.layout.stack()
-        .x(x)
-        .y(y)
-        .offset(stackOpts.offset)
-        .order(stackOpts.order)
-        .out(stackOpts.out);
-      var pathFunction = d3.svg[type]()
-        .interpolate(interpolate)
-        .tension(tension)
-        .defined(defined);
-
-      if (type === 'area') {
-        pathFunction.x(X).y0(Y0).y1(Y1);
-      } else {
-        pathFunction.x(X).y(Y);
+    generator.property = function (prop, val) {
+      if (!arguments.length) return property;
+      if (arguments.length === 1 && typeof prop === 'object') {
+        property = _;
       }
-
-      data = stack(data).map(function (d) {
-        return {
-          d: pathFunction(d),
-          values: d
-        };
-      });
-
-      return data;
-    }
-
-    function out(d, y0, y) {
-      d.y0 = y0;
-      d.y = y;
-    }
-
-    function X(d, i) {
-      return xScale(x.call(this, d, i));
-    }
-
-    function Y(d, i) {
-      return yScale(y.call(this, d, i));
-    }
-
-    function Y0(d) {
-      var min = Math.max(0, yScale.domain()[0]);
-
-      if (stackOpts.offset === 'overlap') {
-        return yScale(min);
+      if (arguments.length === 2) {
+        property[prop] = val;
       }
-      return yScale(d.y0);
-    }
+      return generator;
+    };
 
-    function Y1(d, i) {
-      if (stackOpts.offset === 'overlap') {
-        return yScale(y.call(this, d, i));
+    generator.attr = function (prop, val) {
+      var validAttr = ['class', 'fill', 'stroke', 'strokeWidth', 'opacity'];
+      var isValidProp = validAttr.indexOf(prop) !== -1;
+
+      if (!arguments.length) return attr;
+      if (arguments.length === 1 && typeof prop === 'object') {
+        attr = _;
       }
-      return yScale(d.y0 + y.call(this, d, i));
-    }
-
-    // Public API
-    layout.x = function (_) {
-      if (!arguments.length) return x;
-      x = d3.functor(_);
-      return layout;
+      if (arguments.length === 2 && isValidProp) {
+        attr[prop] = val;
+      }
+      return generator;
     };
 
-    layout.y = function (_) {
-      if (!arguments.length) return y;
-      y = d3.functor(_);
-      return layout;
-    };
-
-    layout.type = function (_) {
-      var opts = ['area', 'line'];
-      var isValid = opts.indexOf(_) !== -1;
-
-      if (!arguments.length) return type;
-      type = isValid ? _ : type;
-      return layout;
-    };
-
-    layout.xScale = function (_) {
-      if (!arguments.length) return xScale;
-      xScale = typeof _ === 'function' ? _ : xScale;
-      return layout;
-    };
-
-    layout.yScale = function (_) {
-      if (!arguments.length) return yScale;
-      yScale = typeof _ === 'function' ? _ : yScale;
-      return layout;
-    };
-
-    layout.stack = function (_) {
-      if (!arguments.length) return stackOpts;
-      stackOpts.offset = typeof _.offset !== 'undefined' ? _.offset : stackOpts.offset;
-      stackOpts.order = typeof _.order !== 'undefined' ? _.order : stackOpts.order;
-      stackOpts.out = typeof _.out !== 'undefined' ? _.out : stackOpts.out;
-      return layout;
-    };
-
-    layout.interpolate = function (_) {
-      if (!arguments.length) return interpolate;
-      interpolate = _;
-      return layout;
-    };
-
-    layout.tension = function (_) {
-      if (!arguments.length) return tension;
-      tension = _;
-      return layout;
-    };
-
-    layout.defined = function (_) {
-      if (!arguments.length) return defined;
-      defined = _;
-      return layout;
-    };
-
-    return layout;
+    return generator;
   };
 });
 define('src/modules/d3_components/layout/points',['require','d3'],function (require) {
@@ -12639,1082 +13061,171 @@ define('src/modules/d3_components/layout/points',['require','d3'],function (requ
     return layout;
   };
 });
-define('src/modules/charts/boxplot',['require','d3','d3_components'],function (require) {
-  var d3 = require("d3");
-  var d3Components = require('d3_components');
-  var box = d3Components.layout.box;
-  var boxPlot = d3Components.generator.boxplot;
-  var axis = d3Components.generator.axis;
-
-  return function boxplot() {
-    var margin = { top:20, right: 20, bottom: 50, left: 50 };
-    var width = 760;
-    var height = 400;
-    var xValue = function (d) { return d.x; };
-    var values = function (d) { return d.values; };
-    var accessor = function (d) { return d; };
-    var xScale = null;
-    var yScale = null;
-    var transform = null;
-    var dispatch = d3.dispatch("hover", "mouseover", "mouseout");
-
-    // X Axis
-    var xAxis = {
-      show: true,
-      xAxisClass:  "x axis",
-      textX: function () { return width / 2; },
-      textY: 30,
-      textDY: ".71em",
-      textAnchor: "middle",
-      title: ""
-    };
-
-    // Y Axis
-    var yAxis = {
-      show: true,
-      yAxisClass: "y axis",
-      textX: -height / 2,
-      textY: -60,
-      textDY: ".71em",
-      textAnchor: "middle",
-      title: ""
-    };
-
-    // Box Options
-    var boxWidth = 20;
-
-    function chart(selection) {
-      selection.each(function (data) {
-        var boxData = box().values(values).accessor(accessor);
-
-        var svg = d3.select(this).append("svg")
-          .datum(boxData(data))
-          .attr("width", width + margin.left + margin.right)
-          .attr("height", height + margin.top + margin.bottom);
-
-        var g = svg.append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-        xScale = xScale ? xScale : d3.time.scale()
-          .domain(d3.extent(data, xValue))
-          .range([0, width]);
-
-        yScale = yScale ? yScale : d3.scale.linear()
-          .domain([
-            Math.min(0, d3.min(d3.merge(data))),
-            Math.max(0, d3.max(d3.merge(data)))
-          ])
-          .range([height, 0]);
-
-        var boxPlotFunc = boxPlot()
-          .transform(transform ? transform : gTransform)
-          .box({ width: boxWidth, height: boxHeight, y: boxY })
-          .range({ y1: Y1, y2: Y2 })
-          .max({ y1: Y1, y2: Y1 })
-          .min({ y1: Y2, y2: Y2});
-
-        g.call(boxPlotFunc);
-
-        if (xAxis.show) {
-          var axisX = axis()
-            .scale(xScale)
-            .gClass(xAxis.xAxisClass)
-            .transform("translate(0," + yScale.range()[0] + ")")
-            .titleX(xAxis.textX)
-            .titleY(xAxis.textY)
-            .titleDY(xAxis.textDY)
-            .titleAnchor(xAxis.textAnchor)
-            .title(xAxis.title);
-
-          g.call(axisX);
-        }
-
-        if (yAxis.show) {
-          var axisY = axis()
-            .scale(yScale)
-            .orient("left")
-            .gClass(yAxis.yAxisClass)
-            .titleX(yAxis.textX)
-            .titleY(yAxis.textY)
-            .titleDY(yAxis.textDY)
-            .titleAnchor(yAxis.textAnchor)
-            .title(yAxis.title);
-
-          g.call(axisY);
-        }
-      });
-    }
-
-    function boxHeight(d) {
-      return yScale(d.q1) - yScale(d.q3);
-    }
-
-    function boxY(d) {
-      return yScale(d.q3) - yScale(d.median);
-    }
-
-    function Y1(d) {
-      return yScale(d.max) - yScale(d.median);
-    }
-
-    function Y2(d) {
-      return yScale(d.min) - yScale(d.median);
-    }
-
-    function gTransform(d, i) {
-      return "translate(" + xScale(xValue.call(this, d, i)) + "," + yScale(d.median) + ")";
-    }
-
-    chart.margin = function (_) {
-      if (!arguments.length) { return margin; }
-      margin.top = typeof _.top !== "undefined" ? _.top : margin.top;
-      margin.right = typeof _.right !== "undefined" ? _.right : margin.right;
-      margin.bottom = typeof _.bottom !== "undefined" ? _.bottom : margin.bottom;
-      margin.left = typeof _.left !== "undefined" ? _.left : margin.left;
-      return chart;
-    };
-
-    chart.width = function (_) {
-      if (!arguments.length) { return width; }
-      width = _;
-      return chart;
-    };
-
-    chart.height = function (_) {
-      if (!arguments.length) { return height; }
-      height = _;
-      return chart;
-    };
-
-    chart.x = function (_) {
-      if (!arguments.length) { return xValue; }
-      xValue = _;
-      return chart;
-    };
-
-    chart.values = function (_) {
-      if (!arguments.length) { return values; }
-      values = _;
-      return chart;
-    };
-
-    chart.accessor = function (_) {
-      if (!arguments.length) { return accessor; }
-      accessor = _;
-      return chart;
-    };
-
-    chart.xScale = function (_) {
-      if (!arguments.length) { return xScale; }
-      xScale = _;
-      return chart;
-    };
-
-    chart.yScale = function (_) {
-      if (!arguments.length) { return yScale; }
-      yScale = _;
-      return chart;
-    };
-
-    chart.transform = function (_) {
-      if (!arguments.length) { return transform; }
-      transform = _;
-      return chart;
-    };
-
-    chart.dispatch = function (_) {
-      if (!arguments.length) { return dispatch; }
-      dispatch = _;
-      return chart;
-    };
-
-    chart.xAxis = function (_) {
-      if (!arguments.length) { return xAxis; }
-      xAxis.show = typeof _.show !== "undefined" ? _.show: xAxis.show;
-      xAxis.xAxisClass = typeof _.xAxisClass !== "undefined" ? _.xAxisClass : xAxis.xAxisClass;
-      xAxis.textX = typeof _.textX !== "undefined" ? _.textX : xAxis.textX;
-      xAxis.textY = typeof _.textY !== "undefined" ? _.textY : xAxis.textY;
-      xAxis.textDY = typeof _.textDY !== "undefined" ? _.textDY : xAxis.textDY;
-      xAxis.textAnchor = typeof _.textAnchor !== "undefined" ? _.textAnchor : xAxis.textAnchor;
-      xAxis.title = typeof _.title !== "undefined" ? _.title : xAxis.title;
-      return chart;
-    };
-
-    chart.yAxis = function (_) {
-      if (!arguments.length) { return yAxis; }
-      yAxis.show = typeof _.show !== "undefined" ? _.show: yAxis.show;
-      yAxis.yAxisClass = typeof _.yAxisClass !== "undefined" ? _.yAxisClass : yAxis.yAxisClass;
-      yAxis.textX = typeof _.textX !== "undefined" ? _.textX : yAxis.textX;
-      yAxis.textY = typeof _.textY !== "undefined" ? _.textY : yAxis.textY;
-      yAxis.textDY = typeof _.textDY !== "undefined" ? _.textDY : yAxis.textDY;
-      yAxis.textAnchor = typeof _.textAnchor !== "undefined" ? _.textAnchor : yAxis.textAnchor;
-      yAxis.title = typeof _.title !== "undefined" ? _.title : yAxis.title;
-      return chart;
-    };
-
-    chart.boxWidth = function (_) {
-      if (!arguments.length) { return boxWidth; }
-      boxWidth = _;
-      return chart;
-    };
-
-    d3.rebind(chart, dispatch, "on");
-    return chart;
-  };
-});
-define('src/modules/charts/dendrogram',['require','d3'],function (require) {
-  var d3 = require("d3");
-
-  return function dendrogram() {
-    var marginFactor = 0.5;
-    var width = 300;
-    var height = 800;
-    var color = d3.scale.category20b();
-    var value = function (d) { return d.size; };
-    var projection = function (d) { return [d.y, d.x]; };
-    var transform = "translate(20,0)";
-    var dispatch = d3.dispatch("hover", "mouseover", "mouseout");
-
-    // Node options
-    var nodeRadius = 4.5;
-    var nodeTransform = function (d) { return "translate(" + d.y + "," + d.x + ")"; };
-    var nodeFill = function (d, i) { return color(i); };
-    var nodeStroke = function (d, i) { return color(i); };
-    var nodeClass = "node";
-
-    // Link options
-    var linkClass = "link";
-
-    // Text options
-    var label = function (d) { return d.children ? d.name : d.name + ": " + d.size; };
-    var textDX = function (d) { return d.children ? -8 : 8; };
-    var textDY = 3;
-    var textAnchor = function (d) { return d.children ? "end" : "start"; };
-
-    function chart(selection) {
-      selection.each(function (data) {
-        var cluster = d3.layout.cluster()
-          .size([height, width - (width * marginFactor)])
-          .value(value);
-
-        var diagonal = d3.svg.diagonal().projection(projection);
-        var nodes = cluster.nodes(data);
-        var links = cluster.links(nodes);
-
-        var svg = d3.select(this).append("svg")
-          .attr("width", width)
-          .attr("height", height)
-          .append("g")
-          .attr("transform", transform);
-
-
-        var link = svg.selectAll(".link")
-          .data(links)
-          .enter().append("path")
-          .attr("class", linkClass)
-          .attr("d", diagonal);
-
-        var node = svg.selectAll(".node")
-          .data(nodes)
-          .enter().append("g")
-          .attr("class", nodeClass)
-          .attr("transform", nodeTransform);
-
-        node.append("circle")
-          .attr("r", nodeRadius)
-          .style("fill", nodeFill)
-          .style("stroke", nodeStroke);
-
-        node.append("text")
-          .attr("dx", textDX)
-          .attr("dy", textDY)
-          .style("text-anchor", textAnchor)
-          .text(label);
-
-        d3.select(this.frameElement).style("height", height + "px");
-      });
-    }
-
-    chart.marginFactor = function (_) {
-      if (!arguments.length) { return marginFactor; }
-      marginFactor = _;
-      return chart;
-    };
-
-    chart.width = function (_) {
-      if (!arguments.length) { return width; }
-      width = _;
-      return chart;
-    };
-
-    chart.height = function (_) {
-      if (!arguments.length) { return height; }
-      height = _;
-      return chart;
-    };
-
-    chart.color = function (_) {
-      if (!arguments.length) { return color; }
-      color = _;
-      return chart;
-    };
-
-    chart.value = function (_) {
-      if (!arguments.length) { return value; }
-      value = _;
-      return chart;
-    };
-
-    chart.projection = function (_) {
-      if (!arguments.length) { return projection; }
-      projection = _;
-      return chart;
-    };
-
-    chart.transform = function (_) {
-      if (!arguments.length) { return transform; }
-      transform = _;
-      return chart;
-    };
-
-    chart.dispatch = function (_) {
-      if (!arguments.length) { return dispatch;}
-      dispatch = _;
-      return chart;
-    };
-
-    chart.nodeRadius = function (_) {
-      if (!arguments.length) { return nodeRadius; }
-      nodeRadius = _;
-      return chart;
-    };
-
-    chart.nodeFill = function (_) {
-      if (!arguments.length) { return nodeFill; }
-      nodeFill = _;
-      return chart;
-    };
-
-    chart.nodeStroke = function (_) {
-      if (!arguments.length) { return nodeStroke; }
-      nodeStroke = _;
-      return chart;
-    };
-
-    chart.nodeClass = function (_) {
-      if (!arguments.length) { return nodeClass; }
-      nodeClass = _;
-      return chart;
-    };
-
-    chart.linkClass = function (_) {
-      if (!arguments.length) { return linkClass; }
-      linkClass = _;
-      return chart;
-    };
-
-    chart.label = function (_) {
-      if (!arguments.length) { return label; }
-      label = _;
-      return chart;
-    };
-
-    chart.textDX = function (_) {
-      if (!arguments.length) { return textDX; }
-      textDX = _;
-      return chart;
-    };
-
-    chart.textDY = function (_) {
-      if (!arguments.length) { return textDY; }
-      textDY = _;
-      return chart;
-    };
-
-    chart.textAnchor = function (_) {
-      if (!arguments.length) { return textAnchor; }
-      textAnchor = _;
-      return chart;
-    };
-
-    d3.rebind(chart, dispatch, "on");
-    return chart;
-  };
-});
-
-define('src/modules/charts/heatmap',['require','d3','d3_components'],function (require) {
-  var d3 = require("d3");
-  var d3Components = require('d3_components');
-  var svgRect = d3Components.element.rect;
-  var canvasRect = d3Components.canvas.rect;
-  var axis = d3Components.generator.axis;
-  var events = d3Components.control.events;
-  var valuator = d3Components.helpers.valuator;
-
-  return function heatmap() {
-    // Private variables
-    var margin = { top: 20, right: 20, bottom: 20, left: 50 };
-    var width = 960;
-    var height = 500;
-    var xValue = function (d) { return d.x; };
-    var yValue = function (d) { return d.y; };
-    var rectPadding = 0.1;
-    var isCanvas = false;
-
-    var xScale = {
-      domain: null,
-      reverse: false,
-      sort: false
-    };
-
-    var yScale = {
-      domain: null,
-      reverse: false,
-      sort: false
-    };
-
-    var rect = {
-      class: "rect",
-      fill: function (d) { return d.fill; },
-      opacity: function () { return 1; },
-      strokeWidth: 0
-    };
-
-    var xAxis = {
-      show: true,
-      class: "x axis",
-      title: { class: "x-label", text: "" },
-      tick: {},
-      tickText: {
-        x: 0,
-        y: 9,
-        dy: ".71em",
-        anchor: "middle"
-      },
-      filterTicksBy: 1,
-      tickRotate: 270
-    };
-
-    var yAxis = {
-      show: true,
-      class: "y axis",
-      title: { class: "y-label", text: "" },
-      tick: {},
-      tickText: {
-        x: -9,
-        y: 0,
-        dy: ".35em",
-        anchor: "end"
-      },
-      filterTicksBy: 1
-    };
-
-    var listeners = {};
-
-    function chart(selection) {
-      selection.each(function (data, index) {
-        var canvas;
-
-        width = width - margin.left - margin.right;
-        height = height - margin.top - margin.bottom;
-
-        var xDomain = xScale.domain || getDomain(data, xValue);
-        var yDomain = yScale.domain || getDomain(data, yValue);
-
-        if (xScale.sort) {
-          xDomain.sort(typeof xScale.sort === "function" ? xScale.sort : ascending);
-        }
-        if (yScale.sort) {
-          yDomain.sort(typeof yScale.sort === "function" ? yScale.sort : ascending);
-        }
-        if (xScale.reverse) { xDomain.reverse(); }
-        if (yScale.reverse) { yDomain.reverse(); }
-
-        var x = d3.scale.ordinal()
-          .domain(xDomain)
-          .rangeBands([0, width], rectPadding);
-
-        var y = d3.scale.ordinal()
-          .domain(yDomain)
-          .rangeBands([0, height], rectPadding);
-
-        data.forEach(function (d, i) {
-          d.dx = xValue.call(data, d, i);
-          d.dy = yValue.call(data, d, i);
-          d.fill = rect.fill.call(data, d, i);
-          d.opacity = rect.opacity.call(data, d, i);
-        });
-
-        var padding = Object.keys(margin)
-          .map(function (key) {
-            return margin[key];
-          }).join("px ") + "px";
-
-        if (isCanvas) {
-          var canvasRects = canvasRect()
-            .class(rect.class)
-            .x(function (d) { return x(d.dx); })
-            .y(function (d) { return y(d.dy); })
-            .width(x.rangeBand())
-            .height(y.rangeBand())
-            .fillStyle(rect.fill)
-            .strokeStyle(rect.stroke)
-            .lineWidth(rect.strokeWidth)
-            .opacity(rect.opacity);
-
-          canvas = d3.select(this).append("canvas")
-            .attr("width", width)
-            .attr("height", height)
-            .style("padding", padding);
-
-          canvas.datum(data).call(canvasRects);
-        }
-
-        var svgEvents = events().listeners(listeners);
-
-        var svg = d3.select(this).append("svg")
-          .attr("width", width)
-          .attr("height", height)
-          .style("padding", padding)
-          .call(svgEvents);
-
-        var g = svg.append("g").attr("transform", "translate(0,0)");
-
-        if (!isCanvas) {
-          var svgRects = svgRect()
-            .class(rect.class)
-            .x(function (d) { return x(d.dx); })
-            .y(function (d) { return y(d.dy); })
-            .width(x.rangeBand())
-            .height(y.rangeBand())
-            .fill(rect.fill)
-            .stroke(rect.stroke)
-            .strokeWidth(rect.strokeWidth)
-            .opacity(rect.opacity);
-
-          g.append("g")
-            .attr("class", "heat-rect")
-            .datum(data).call(svgRects);
-        }
-
-        if (xAxis.show) {
-          var axisX = axis()
-            .scale(x)
-            .class(xAxis.class)
-            .transform(xAxis.transform || "translate(0," + height + ")")
-            .tick({
-              values: x.domain()
-                .filter(function (d, i) {
-                  return (i % xAxis.filterTicksBy) === 0;
-                })
-            })
-            .tickText(xAxis.tickText)
-            .title(xAxis.title);
-
-          g.call(axisX);
-
-          // Modifying the x axis tick labels
-          g.selectAll(".tick text")
-            .attr("x", -10)
-            .attr("y", -4)
-            .attr("transform", "rotate(" + xAxis.tickRotate + ")")
-            .style("text-anchor", "end");
-        }
-
-        if (yAxis.show) {
-          var axisY = axis()
-            .scale(y)
-            .class(yAxis.class)
-            .orient("left")
-            .tick({
-              values: y.domain()
-                .filter(function (d, i) {
-                  return (i % yAxis.filterTicksBy) === 0;
-                })
-            })
-            .tickText(yAxis.tickText)
-            .title(yAxis.title);
-
-          g.call(axisY);
-        }
-      });
-    }
-
-    // Sort ascending
-    function ascending(prev, cur) {
-      if (prev > cur) { return 1; }
-      if (prev < cur) { return -1; }
-      return 0;
-    }
-
-    // Creates a unique array of items
-    function getDomain(data, accessor) {
-      return data
-        .map(function (item) {
-          return accessor.call(this, item);
-        })
-        .filter(function (item, index, array) {
-          return array.indexOf(item) === index;
-        });
-    }
-
-    // Public API
-    chart.margin = function (_) {
-      if (!arguments.length) { return margin; }
-      margin.top = typeof _.top !== "undefined" ? _.top : margin.top;
-      margin.right = typeof _.right !== "undefined" ? _.right : margin.right;
-      margin.bottom = typeof _.bottom !== "undefined" ? _.bottom : margin.bottom;
-      margin.left = typeof _.left !== "undefined" ? _.left : margin.left;
-      return chart;
-    };
-
-    chart.width = function (_) {
-      if (!arguments.length) { return width; }
-      width = typeof _ !== "number" ? width : _;
-      return chart;
-    };
-
-    chart.height = function (_) {
-      if (!arguments.length) { return height; }
-      height = typeof _ !== "number" ? height : _;
-      return chart;
-    };
-
-    chart.x = function (_) {
-      if (!arguments.length) { return xValue; }
-      xValue = valuator(_);
-      return chart;
-    };
-
-    chart.y = function (_) {
-      if (!arguments.length) { return yValue; }
-      yValue = valuator(_);
-      return chart;
-    };
-
-    chart.xScale = function (_) {
-      if (!arguments.length) { return xScale; }
-      xScale.domain = typeof _.domain !== "undefined" ? _.domain : xScale.domain;
-      xScale.reverse = typeof _.reverse !== "undefined" ? _.reverse : xScale.reverse;
-      xScale.sort = typeof _.sort !== "undefined" ? _.sort : xScale.sort;
-      return chart;
-    };
-
-    chart.yScale = function (_) {
-      if (!arguments.length) { return yScale; }
-      yScale.domain = typeof _.domain !== "undefined" ? _.domain : yScale.domain;
-      yScale.reverse = typeof _.reverse !== "undefined" ? _.reverse : yScale.reverse;
-      yScale.sort = typeof _.sort !== "undefined" ? _.sort : yScale.sort;
-      return chart;
-    };
-
-    chart.padding = function (_) {
-      if (!arguments.length) { return rectPadding; }
-      rectPadding = typeof _ !== "number" ? rectPadding : _;
-      return chart;
-    };
-
-    chart.canvas = function (_) {
-      if (!arguments.length) { return isCanvas; }
-      isCanvas = typeof _ === "boolean" ? _ : false;
-      return chart;
-    };
-
-    chart.rect = function (_) {
-      if (!arguments.length) { return rect; }
-      rect.class = typeof _.class !== "undefined" ? _.class : rect.class;
-      rect.stroke = typeof _.stroke !== "undefined" ? _.stroke : rect.stroke;
-      rect.strokeWidth = typeof _.strokeWidth !== "undefined" ? _.strokeWidth : rect.strokeWidth;
-      rect.fill = typeof _.fill !== "undefined" ? d3.functor(_.fill) : rect.fill;
-      rect.opacity = typeof _.opacity !== "undefined" ? d3.functor(_.opacity) : rect.opacity;
-      return chart;
-    };
-
-    chart.xAxis = function (_) {
-      if (!arguments.length) { return xAxis; }
-      xAxis.show = typeof _.show !== "undefined" ? _.show : xAxis.show;
-      xAxis.class = typeof _.class !== "undefined" ? _.class : xAxis.class;
-      xAxis.transform = typeof _.transform !== "undefined" ? _.transform : xAxis.transform;
-      xAxis.tick = typeof _.tick !== "undefined" ? _.tick : xAxis.tick;
-      xAxis.tickText = typeof _.tickText!== "undefined" ? _.tickText: xAxis.tickText;
-      xAxis.title = typeof _.title !== "undefined" ? _.title : xAxis.title;
-      xAxis.filterTicksBy = typeof _.filterTicksBy !== "undefined" ? _.filterTicksBy : xAxis.filterTicksBy;
-      xAxis.tickRotate = typeof _.tickRotate !== "undefined" ? _.tickRotate : xAxis.tickRotate;
-      return chart;
-    };
-
-    chart.yAxis = function (_) {
-      if (!arguments.length) { return yAxis; }
-      yAxis.show = typeof _.show !== "undefined" ? _.show : yAxis.show;
-      yAxis.gridlines = typeof _.gridlines !== "undefined" ? _.gridlines : yAxis.gridlines;
-      yAxis.class = typeof _.class !== "undefined" ? _.class : yAxis.class;
-      yAxis.transform = typeof _.transform !== "undefined" ? _.transform : yAxis.transform;
-      yAxis.tick = typeof _.tick !== "undefined" ? _.tick : yAxis.tick;
-      yAxis.tickText = typeof _.tickText!== "undefined" ? _.tickText: yAxis.tickText;
-      yAxis.title = typeof _.title !== "undefined" ? _.title : yAxis.title;
-      yAxis.filterTicksBy = typeof _.filterTicksBy !== "undefined" ? _.filterTicksBy : yAxis.filterTicksBy;
-      return chart;
-    };
-
-    chart.listeners = function (_) {
-      if (!arguments.length) { return listeners; }
-      listeners = typeof _ !== "object" ? listeners : _;
-      return chart;
-    };
-
-    return chart;
-  };
-});
-
-define('src/modules/charts/histogram',['require','d3','d3_components'],function (require) {
+define('src/modules/d3_components/generator/element/svg/circle',['require','d3'],function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
-  var valuator = d3Components.helpers.valuator;
 
-  return function histogram() {
-    // Private variables
-    var margin = { top: 20, right: 20, bottom: 20, left: 50 };
-    var width = 900;
-    var height = 500;
-    var bins = null;
-    var range = null;
-    var frequency = 'frequency';
-    var value = function (d) { return d.y; };
+  return function circle() {
+    var color = d3.scale.category10();
+    var cx = function (d) { return d.coords.cx; };
+    var cy = function (d) { return d.coords.cy; };
+    var radius = function (d) { return d.coords.radius || 5; };
+    var cssClass = 'circle';
+    var fill = colorFill;
+    var stroke = colorFill;
+    var strokeWidth = 0;
+    var opacity = null;
 
-    var bars = {
-      class: 'rect',
-      fill: 'blue',
-      stroke: 'white',
-      strokeWidth: 1,
-      opacity: 1
-    };
-
-    var text = {
-      class: 'text',
-      dy: '0.71em',
-      textAnchor: 'middle',
-      fill: 'black'
-    };
-
-    function chart(selection) {
-      selection.each(function (data, index) {
-        width = width - margin.left - margin.right;
-        height = height - margin.top - margin.bottom;
-
-        var histogram = d3.layout.histogram()
-          .bins(bins)
-          .value(value)
-          .frequency(frequency)
-          .range(range || d3.extent(data, value));
-
-        data = histogram(data);
-
-        var xScale = d3.scale.linear()
-          .domain(d3.extent(bins))
-          .range([0, width]);
-
-        var yScale = d3.scale.linear()
-          .domain([0, d3.max(data, yValue)])
-          .range([height, 0]);
-
-        var svg = d3.select(this).append('svg')
-          .attr('width', width + margin.left + margin.right)
-          .attr('height', height + margin.top + margin.bottom)
-          .append('g')
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-        var xAxis = d3.svg.axis().scale(xScale).orient('bottom');
-        var yAxis = d3.svg.axis().scale(yScale).orient('left');
-
-        svg.append('g')
-          .attr('class', 'x axis')
-          .attr('transform', 'translate(0,' + yScale.range()[0] + ')')
-          .call(xAxis);
-
-        var group = svg.selectAll('groups')
+    function element(selection) {
+      selection.each(function (data) {
+        var circles = d3.select(this).selectAll('circle')
           .data(data);
 
         // Exit
-        group.exit().remove();
+        circles.exit().remove();
 
         // Enter
-        group.enter().append('g');
+        circles
+          .enter().append('circle');
 
         // Update
-        group.append('rect')
-          .attr('class', bars.class)
-          .attr('fill', bars.fill)
-          .attr('stroke', bars.stroke)
-          .attr('stroke-width', bars.strokeWidth)
-          .attr('x', function (d) { return xScale(d.x); })
-          .attr('y', function (d) { return yScale(d.y); })
-          .attr('width', function (d) { return xScale(d.dx); })
-          .attr('height', function (d) { return yScale.range()[0] - yScale(d.y); });
-
-        group.append('text')
-          .attr('class', text.class)
-          .attr('dy', text.dy)
-          .attr('y', function (d) { return yScale(d.y - 0.1); })
-          .attr('x', function (d) { return xScale(d.x) + (xScale(d.dx) / 2); })
-          .attr('text-anchor', text.textAnchor)
-          .attr('fill', text.fill)
-          .text(function (d) { return !d.y ? '' : d.y; });
+        circles
+          .attr('class', cssClass)
+          .attr('fill', fill)
+          .attr('stroke', stroke)
+          .attr('stroke-width', strokeWidth)
+          .attr('r', radius)
+          .attr('cx', cx)
+          .attr('cy', cy)
+          .style('opacity', opacity);
       });
     }
 
-    // Public API
-    chart.margin = function (_) {
-      if (!arguments.length) { return margin; }
-      margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
-      margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
-      margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
-      margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
-      return chart;
-    };
-
-    chart.width = function (_) {
-      if (!arguments.length) { return width; }
-      width = typeof _ !== 'number' ? width : _;
-      return chart;
-    };
-
-    chart.height = function (_) {
-      if (!arguments.length) { return height; }
-      height = typeof _ !== 'number' ? height : _;
-      return chart;
-    };
-
-    chart.value = function (_) {
-      if (!arguments.length) { return value; }
-      value = valuator(_);
-      return chart;
-    };
-
-    chart.bins = function (_) {
-      if (!arguments.length) { return bins; }
-      bins = _;
-      return chart;
-    };
-
-    chart.frequency = function (_) {
-      if (!arguments.length) { return frequency; }
-      frequency = typeof _ !== 'string' ? frequency : _;
-      return chart;
-    };
-
-    chart.range = function (_) {
-      if (!arguments.length) return range;
-      range = d3.functor(_);
-      return chart;
-    };
-
-    chart.bars = function (_) {
-      if (!arguments.length) { return bars; }
-      bars.class = typeof _.class !== 'undefined' ? _.class : bars.class;
-      bars.fill = typeof _.fill !== 'undefined' ? _.fill : bars.fill;
-      bars.stroke = typeof _.stroke !== 'undefined' ? _.stroke : bars.stroke;
-      bars.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : bars.strokeWidth;
-      return chart;
-    };
-
-    chart.text = function (_) {
-      if (!arguments.length) { return text; }
-      text.class = typeof _.class !== 'undefined' ? _.class : text.class;
-      text.fill = typeof _.fill !== 'undefined' ? _.fill : text.fill;
-      text.dy = typeof _.dy !== 'undefined' ? _.dy : text.dy;
-      text.textAnchor = typeof _.textAnchor !== 'undefined' ? _.textAnchor : text.textAnchor;
-      return chart;
-    };
-
-    return chart;
-  };
-});
-define('src/modules/charts/horizon',['require'],function (require) {});
-
-define('src/modules/charts/pie',['require','d3','d3_components'],function (require) {
-  var d3 = require('d3');
-  var d3Components = require('d3_components');
-  var path = d3Components.element.path;
-  var textElement = d3Components.element.text;
-  var events = d3Components.control.events;
-  var valuator = d3Components.helpers.valuator;
-
-  return function pieChart() {
-    var width = 300;
-    var height = 300;
-    var color = d3.scale.category10();
-    var outerRadius = null;
-    var innerRadius = 0;
-    var sort = null;
-    var value = function (d) { return d.x; };
-    var label = function (d) { return d.name; };
-
-    var pieClass = 'pie';
-    var fill = function (d, i) {
-      return color(label.call(this, d.data, i));
-    };
-    var stroke = '#ffffff';
-
-    // Text options
-    var text = {
-      fill: '#ffffff',
-      dy: '.35em',
-      anchor: 'middle',
-      transform: null
-    };
-
-    var listeners = {};
-
-    function chart (selection) {
-      selection.each(function (data, index) {
-        var pie = d3.layout.pie()
-          .sort(sort)
-          .value(value);
-
-        data = pie(data).map(function (d) {
-          return [d];
-        });
-
-        var radius = Math.min(width, height) / 2;
-
-        var svgEvents = events().listeners(listeners);
-
-        var svg = d3.select(this).append('svg')
-          .attr('width', width)
-          .attr('height', height)
-          .call(svgEvents);
-
-        var g = svg.append('g')
-          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
-
-        var arc = d3.svg.arc()
-          .outerRadius(outerRadius || radius)
-          .innerRadius(innerRadius);
-
-        var piePath = path()
-          .pathGenerator(arc)
-          .class(pieClass)
-          .fill(fill)
-          .stroke(stroke);
-
-        var pieText = textElement()
-          .transform(text.transform || function (d) {
-            return 'translate(' + arc.centroid(d) + ')';
-          })
-          .dy(text.dy)
-          .anchor(text.anchor)
-          .fill(text.fill)
-          .text(function (d, i) {
-            return label.call(this, d.data, i);
-          });
-
-        g.selectAll('groups')
-          .data(data)
-          .enter().append('g')
-          .call(piePath)
-          .call(pieText);
-      });
+    function colorFill (d, i) {
+      return color(i);
     }
 
     // Public API
-    chart.width = function (_) {
-      if (!arguments.length) { return width; }
-      width = _;
-      return chart;
+    element.cx = function (_) {
+      if (!arguments.length) return cx;
+      cx = d3.functor(_);
+      return element;
     };
 
-    chart.height = function (_) {
-      if (!arguments.length) { return height; }
-      height = _;
-      return chart;
+    element.cy = function (_) {
+      if (!arguments.length) return cy;
+      cy = d3.functor(_);
+      return element;
     };
 
-    chart.color = function (_) {
-      if (!arguments.length) { return color; }
-      color = _;
-      return chart;
+    element.radius = function (_) {
+      if (!arguments.length) return radius;
+      radius = d3.functor(_);
+      return element;
     };
 
-    chart.outerRadius = function (_) {
-      if (!arguments.length) { return outerRadius; }
-      outerRadius = _;
-      return chart;
+    element.class = function (_) {
+      if (!arguments.length) return cssClass;
+      cssClass = _;
+      return element;
     };
 
-    chart.innerRadius = function (_) {
-      if (!arguments.length) { return innerRadius; }
-      innerRadius = _;
-      return chart;
-    };
-
-    chart.sort = function (_) {
-      if (!arguments.length) { return sort; }
-      sort = _;
-      return chart;
-    };
-
-    chart.value = function (_) {
-      if (!arguments.length) { return value; }
-      value = valuator(_);
-      return chart;
-    };
-
-    chart.label = function (_) {
-      if (!arguments.length) { return label; }
-      label = valuator(_);
-      return chart;
-    };
-
-    chart.class = function (_) {
-      if (!arguments.length) { return pieClass; }
-      pieClass = _;
-      return chart;
-    };
-
-    chart.fill = function (_) {
-      if (!arguments.length) { return fill; }
+    element.fill = function (_) {
+      if (!arguments.length) return fill;
       fill = _;
-      return chart;
+      return element;
     };
 
-    chart.stroke = function (_) {
-      if (!arguments.length) { return stroke; }
+    element.opacity = function (_) {
+      if (!arguments.length) return opacity;
+      opacity = _;
+      return element;
+    };
+
+    element.stroke = function (_) {
+      if (!arguments.length) return stroke;
       stroke = _;
-      return chart;
+      return element;
     };
 
-    chart.text = function (_) {
-      if (!arguments.length) { return text; }
-      text.fill = typeof _.fill !== 'undefined' ? _.fill : text.fill;
-      text.anchor = typeof _.anchor !== 'undefined' ? _.anchor: text.anchor;
-      text.dy = typeof _.dy !== 'undefined' ? _.dy : text.dy;
-      text.transform = typeof _.transform !== 'undefined' ? _.transform : text.transform;
-      return chart;
+    element.strokeWidth = function (_) {
+      if (!arguments.length) return strokeWidth;
+      strokeWidth = _;
+      return element;
     };
 
-    chart.listeners = function (_) {
-      if (!arguments.length) { return listeners; }
-      listeners = typeof _ !== 'object' ? listeners : _;
-      return chart;
-    };
-
-    return chart;
+    return element;
   };
 });
-define('src/modules/charts/series',['require','d3','d3_components','src/modules/d3_components/helpers/builder','src/modules/d3_components/helpers/valuator'],function (require) {
+
+define('src/modules/d3_components/generator/points',['require','d3','src/modules/d3_components/layout/points','src/modules/d3_components/generator/element/svg/circle','src/modules/d3_components/helpers/builder'],function (require) {
+  var d3 = require("d3");
+  var layout = require('src/modules/d3_components/layout/points');
+  var circle = require('src/modules/d3_components/generator/element/svg/circle');
+  var builder = require('src/modules/d3_components/helpers/builder');
+
+  return function points() {
+    var scatterLayout = layout();
+    var circles = circle();
+    var property = {};
+    var attr = {};
+    var g;
+
+    function generator(selection) {
+      selection.each(function (data) {
+        scatterLayout = builder(property, scatterLayout);
+        circles = builder(attr, circles);
+
+        if (!g) {
+          g = d3.select(this).append("g");
+        }
+
+        g.datum(scatterLayout(data))
+          .call(circles);
+      });
+    }
+
+    // Public API
+    generator.property = function (prop, val) {
+      if (!arguments.length) return property;
+      if (arguments.length === 1 && typeof prop === 'object') {
+        property = _;
+      }
+      if (arguments.length === 2) {
+        property[prop] = val;
+      }
+      return generator;
+    };
+
+    generator.attr = function (prop, val) {
+      var validAttr = ['class', 'fill', 'stroke', 'strokeWidth', 'opacity'];
+      var isValidProp = validAttr.indexOf(prop) !== -1;
+
+      if (!arguments.length) return attr;
+      if (arguments.length === 1 && typeof prop === 'object') {
+        attr = _;
+      }
+      if (arguments.length === 2 && isValidProp) {
+        attr[prop] = val;
+      }
+      return generator;
+    };
+
+    return generator;
+  };
+});
+
+define('src/modules/charts/series',['require','d3','src/modules/d3_components/helpers/builder','src/modules/d3_components/helpers/valuator','src/modules/d3_components/generator/clippath','src/modules/d3_components/generator/axis/axis','src/modules/d3_components/control/brush','src/modules/d3_components/control/events','src/modules/d3_components/generator/element/svg/line','src/modules/d3_components/generator/path','src/modules/d3_components/generator/bars','src/modules/d3_components/generator/points'],function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
   var builder = require('src/modules/d3_components/helpers/builder');
   var valuator = require('src/modules/d3_components/helpers/valuator');
-  var clipPathGenerator = d3Components.generator.clipPath;
-  var axisGenerator = d3Components.generator.axis;
-  var brushControl = d3Components.control.brush;
-  var events = d3Components.control.event;
-  var lineElement = d3Components.element.line;
-  var areaGenerator = d3Components.generator.path;
-  var barGenerator = d3Components.generator.bars;
-  var lineGenerator = d3Components.generator.path;
-  var pointsGenerator = d3Components.generator.points;
+  var clipPathGenerator = require('src/modules/d3_components/generator/clippath');
+  var axisGenerator = require('src/modules/d3_components/generator/axis/axis');
+  var brushControl = require('src/modules/d3_components/control/brush');
+  var events = require('src/modules/d3_components/control/events');
+  var lineElement = require('src/modules/d3_components/generator/element/svg/line');
+  var pathGenerator = require('src/modules/d3_components/generator/path');
+  var barGenerator = require('src/modules/d3_components/generator/bars');
+  var pointsGenerator = require('src/modules/d3_components/generator/points');
 
   return function series() {
     var margin = {top: 20, right: 50, bottom: 50, left: 50};
@@ -13724,11 +13235,11 @@ define('src/modules/charts/series',['require','d3','d3_components','src/modules/
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
 
-    var area = areaGenerator();
+    var area = pathGenerator();
     var bar = barGenerator();
     var brush = brushControl();
     var clippath = clipPathGenerator();
-    var line = lineGenerator();
+    var line = pathGenerator();
     var points = pointsGenerator();
     var svgEvents = events();
     var zeroLine = lineElement();
@@ -13928,12 +13439,11 @@ define('src/modules/charts/series',['require','d3','d3_components','src/modules/
     return chart;
   };
 });
-define('src/modules/charts/sunburst',['require','d3','d3_components'],function (require) {
+define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/generator/element/svg/path','src/modules/d3_components/control/events','src/modules/d3_components/helpers/valuator'],function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
-  var path = d3Components.element.path;
-  var events = d3Components.control.events;
-  var valuator = d3Components.helpers.valuator;
+  var path = require('src/modules/d3_components/generator/element/svg/path');
+  var events = require('src/modules/d3_components/control/events');
+  var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function sunburst() {
     // Private variables
@@ -14099,7 +13609,7 @@ define('src/modules/charts/sunburst',['require','d3','d3_components'],function (
 });
 
 define('src/modules/charts/treemap',['require','d3'],function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
 
   return function treemap() {
     var margin = {top: 40, right: 10, bottom: 10, left: 10};
@@ -14109,9 +13619,8 @@ define('src/modules/charts/treemap',['require','d3'],function (require) {
     var sticky = true;
     var value = function (d) { return d.size; };
     var children = function (d) { return d.children; };
-    var dispatch = d3.dispatch("hover", "mouseover", "mouseout");
 
-    var nodeClass = "node";
+    var nodeClass = 'node';
     var nodeColor = function (d, i) { return d.children ? color(i) : null; };
     var label = function (d) { return d.children ? null : d.name; };
 
@@ -14123,36 +13632,36 @@ define('src/modules/charts/treemap',['require','d3'],function (require) {
           .children(children)
           .value(value);
 
-        var div = d3.select(this).append("div")
-          .style("position", "relative")
-          .style("width", (width + margin.left + margin.right) + "px")
-          .style("height", (height + margin.top + margin.bottom) + "px")
-          .style("left", margin.left + "px")
-          .style("top", margin.top + "px");
+        var div = d3.select(this).append('div')
+          .style('position', 'relative')
+          .style('width', (width + margin.left + margin.right) + 'px')
+          .style('height', (height + margin.top + margin.bottom) + 'px')
+          .style('left', margin.left + 'px')
+          .style('top', margin.top + 'px');
 
-        div.datum(data).selectAll(".node")
+        div.datum(data).selectAll('.node')
           .data(treemap.nodes)
-          .enter().append("div")
-          .attr("class", nodeClass)
+          .enter().append('div')
+          .attr('class', nodeClass)
           .call(position)
-          .style("background", nodeColor)
+          .style('background', nodeColor)
           .text(label);
       });
     }
 
     function position() {
-      this.style("left", function(d) { return d.x + "px"; })
-        .style("top", function(d) { return d.y + "px"; })
-        .style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
-        .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
+      this.style('left', function(d) { return d.x + 'px'; })
+        .style('top', function(d) { return d.y + 'px'; })
+        .style('width', function(d) { return Math.max(0, d.dx - 1) + 'px'; })
+        .style('height', function(d) { return Math.max(0, d.dy - 1) + 'px'; });
     }
 
     chart.margin = function (_) {
       if (!arguments.length) { return margin; }
-      margin.top = typeof _.top !== "undefined" ? _.top : margin.top;
-      margin.right = typeof _.right !== "undefined" ? _.right : margin.right;
-      margin.bottom = typeof _.bottom !== "undefined" ? _.bottom : margin.bottom;
-      margin.left = typeof _.left !== "undefined" ? _.left : margin.left;
+      margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
+      margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
+      margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
+      margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
       return chart;
     };
 
@@ -14178,7 +13687,7 @@ define('src/modules/charts/treemap',['require','d3'],function (require) {
   };
 });
 
-define('charts',['require','src/modules/charts/boxplot','src/modules/charts/dendrogram','src/modules/charts/heatmap','src/modules/charts/histogram','src/modules/charts/horizon','src/modules/charts/pie','src/modules/charts/series','src/modules/charts/sunburst','src/modules/charts/treemap'],function (require) {
+define('src/modules/charts/index',['require','src/modules/charts/boxplot','src/modules/charts/dendrogram','src/modules/charts/heatmap','src/modules/charts/histogram','src/modules/charts/horizon','src/modules/charts/pie','src/modules/charts/series','src/modules/charts/sunburst','src/modules/charts/treemap'],function (require) {
   return {
     boxplot: require('src/modules/charts/boxplot'),
     dendrogram: require('src/modules/charts/dendrogram'),
@@ -14191,8 +13700,8 @@ define('charts',['require','src/modules/charts/boxplot','src/modules/charts/dend
     treemap: require('src/modules/charts/treemap')
   };
 });
-define('src/modules/d3_components/mixed/chart',['require','charts'],function (require) {
-  var charts = require('charts');
+define('src/modules/d3_components/mixed/chart',['require','src/modules/charts/index'],function (require) {
+  var charts = require('src/modules/charts/index');
 
   return function chart() {
     var opts = {};
@@ -14235,7 +13744,7 @@ define('src/modules/d3_components/mixed/chart',['require','charts'],function (re
     };
 
     generator.on = function (event, listener) {
-      if (arguments.length === 2 && typeof listener === 'function') {
+      if (listener && typeof listener === 'function') {
         if (!listeners[event]) listeners[event] = [];
         listeners[event].push(listener);
       }
@@ -14243,12 +13752,14 @@ define('src/modules/d3_components/mixed/chart',['require','charts'],function (re
     };
 
     generator.off = function (event, listener) {
-      if (arguments.length === 1 && listeners[event]) {
-        listeners[event] = null;
+      var handlers = listeners[event];
+
+      if (!listener && handlers) {
+        handlers = null;
       }
-      if (arguments.length === 2 && typeof listener === 'function') {
-        if (listeners[event]) {
-          listeners[event] = listeners[event].filter(function (handler) {
+      if (listener && typeof listener === 'function') {
+        if (handlers) {
+          listeners[event] = handlers.filter(function (handler) {
             return handler !== listener;
           });
         }
@@ -14259,56 +13770,149 @@ define('src/modules/d3_components/mixed/chart',['require','charts'],function (re
     return generator;
   };
 });
-define('d3_components',['require','src/modules/d3_components/control/brush','src/modules/d3_components/control/events','src/modules/d3_components/generator/element/canvas/rect','src/modules/d3_components/generator/element/svg/circle','src/modules/d3_components/generator/element/html/div','src/modules/d3_components/generator/element/svg/ellipse','src/modules/d3_components/generator/element/svg/image','src/modules/d3_components/generator/element/svg/line','src/modules/d3_components/generator/element/svg/path','src/modules/d3_components/generator/element/svg/rect','src/modules/d3_components/generator/element/svg/text','src/modules/d3_components/generator/axis/axis','src/modules/d3_components/generator/bars','src/modules/d3_components/generator/boxplot','src/modules/d3_components/generator/clippath','src/modules/d3_components/generator/legend','src/modules/d3_components/generator/path','src/modules/d3_components/generator/points','src/modules/d3_components/helpers/builder','src/modules/d3_components/helpers/functor','src/modules/d3_components/helpers/scaletor','src/modules/d3_components/helpers/timeparser','src/modules/d3_components/helpers/valuator','src/modules/d3_components/layout/bars/vertical','src/modules/d3_components/layout/bars/horizontal','src/modules/d3_components/layout/base','src/modules/d3_components/layout/box','src/modules/d3_components/layout/grid','src/modules/d3_components/layout/path','src/modules/d3_components/layout/points','src/modules/d3_components/mixed/chart'],function (require) {
-  return {
-    control: {
-      brush: require('src/modules/d3_components/control/brush'),
-      events: require('src/modules/d3_components/control/events')
-    },
-    canvas: {
-      rect: require('src/modules/d3_components/generator/element/canvas/rect')
-    },
-    element: {
-      circle: require('src/modules/d3_components/generator/element/svg/circle'),
-      div: require('src/modules/d3_components/generator/element/html/div'),
-      ellipse: require('src/modules/d3_components/generator/element/svg/ellipse'),
-      image: require('src/modules/d3_components/generator/element/svg/image'),
-      line: require('src/modules/d3_components/generator/element/svg/line'),
-      path: require('src/modules/d3_components/generator/element/svg/path'),
-      rect: require('src/modules/d3_components/generator/element/svg/rect'),
-      text: require('src/modules/d3_components/generator/element/svg/text')
-    },
-    generator: {
-      axis: require('src/modules/d3_components/generator/axis/axis'),
-      bars: require('src/modules/d3_components/generator/bars'),
-      boxPlot: require('src/modules/d3_components/generator/boxplot'),
-      clipPath: require('src/modules/d3_components/generator/clippath'),
-      legend: require('src/modules/d3_components/generator/legend'),
-      path: require('src/modules/d3_components/generator/path'),
-      points: require('src/modules/d3_components/generator/points')
-    },
-    helpers: {
-      builder: require('src/modules/d3_components/helpers/builder'),
-      functor: require('src/modules/d3_components/helpers/functor'),
-      scaletor: require('src/modules/d3_components/helpers/scaletor'),
-      timeparser: require('src/modules/d3_components/helpers/timeparser'),
-      valuator: require('src/modules/d3_components/helpers/valuator')
-    },
-    layout: {
-      verticalBars: require('src/modules/d3_components/layout/bars/vertical'),
-      horizontalBars: require('src/modules/d3_components/layout/bars/horizontal'),
-      base: require('src/modules/d3_components/layout/base'),
-      box: require('src/modules/d3_components/layout/box'),
-      grid: require('src/modules/d3_components/layout/grid'),
-      path: require('src/modules/d3_components/layout/path'),
-      points: require('src/modules/d3_components/layout/points')
-    },
-    mixed: {
-      chart: require('src/modules/d3_components/mixed/chart')
+define('src/modules/d3_components/layout/base',['require','d3'],function (require) {
+  var d3 = require('d3');
+
+  return function format() {
+    // Private variables
+    var type = 'rows'; // available types: 'rows', 'columns', 'grid'
+    var size = [500, 500]; // [width, height]
+    var rowScale = d3.scale.linear();
+    var columnScale = d3.scale.linear();
+    var numOfCols = 0;
+
+    function formatType(length, type, cols) {
+      var output = {};
+
+      switch (type) {
+        case 'grid':
+          output.rows = cols ? Math.ceil(length / cols) :
+            Math.round(Math.sqrt(length));
+          output.columns = cols ? cols : Math.ceil(Math.sqrt(length));
+          break;
+
+        case 'columns':
+          output.rows = 1;
+          output.columns = length;
+          break;
+
+        default:
+          output.rows = length;
+          output.columns = 1;
+          break;
+      }
+
+      return output;
     }
+
+    function layout(data) {
+      var format = formatType(data.length, type, numOfCols);
+      var rows = format.rows;
+      var columns = format.columns;
+      var cellWidth = size[0] / columns;
+      var cellHeight = size[1] / rows;
+      var cell = 0;
+
+      rowScale.domain([0, rows]).range([0, size[1]]);
+      columnScale.domain([0, columns]).range([0, size[0]]);
+
+      d3.range(rows).forEach(function (row) {
+        d3.range(columns).forEach(function (col) {
+          if (!data[cell]) { return; }
+
+          data[cell].dx = columnScale(col);
+          data[cell].dy = rowScale(row);
+          data[cell].width = cellWidth;
+          data[cell].height = cellHeight;
+          cell++;
+        });
+      });
+
+      return data;
+    }
+
+    // Public API
+    layout.type = function (_) {
+      if (!arguments.length) return type;
+      type = typeof _ === 'string' ? _ : type;
+      return layout;
+    };
+
+    layout.columns = function (_) {
+      if (!arguments.length) return numOfCols;
+      numOfCols = typeof _ === 'number' ? _ : numOfCols;
+      return layout;
+    };
+
+    layout.size = function (_) {
+      if (!arguments.length) return size;
+      size = Array.isArray(_) && _.length === 2 ? _ : size;
+      return layout;
+    };
+
+    return layout;
   };
 });
 
+define('src/modules/d3_components/generator/element/html/div',['require','src/modules/d3_components/layout/base'],function (require) {
+  var base = require('src/modules/d3_components/layout/base');
+
+  /**
+   * Returns a configurable function that sets attributes on
+   * data objects to create a layout for chart(s).
+   * Available layouts => 'rows', 'columns', 'grid'
+   */
+
+  return function div() {
+    var cssClass = 'chart';
+    var type = 'rows';
+    var size = [500, 500];
+    var layout = base();
+
+    function generator(selection) {
+      selection.each(function (data) {
+        var div;
+
+        layout.type(type).size(size); // Appends divs based on the data array
+
+        div = d3.select(this).selectAll('div')
+          .data(layout(data));
+
+        div.exit().remove();
+        div.enter().append('div');
+        div.attr('class', cssClass)
+          .style('position', 'absolute')
+          .style('left', function (d) { return d.dx + 'px'; })
+          .style('top', function (d) { return d.dy + 'px'; })
+          .style('width', function (d) { return d.width + 'px'; })
+          .style('height', function (d) { return d.height + 'px'; });
+      });
+    }
+
+    // Sets css class on div(s)
+    generator.class = function (_) {
+      if (!arguments.length) return cssClass;
+      cssClass = _;
+      return generator;
+    };
+
+    // Layout types => 'rows', 'columns', 'grid'
+    generator.layout = function (_) {
+      if (!arguments.length) return type;
+      type = typeof _ === 'string' ? _ : type;
+      return generator;
+    };
+
+    // Parent element size, [width, height]
+    generator.size = function (_) {
+      if (!arguments.length) return size;
+      size = _ instanceof Array && _.length === 2 ? _ : size;
+      return generator;
+    };
+
+    return generator;
+  };
+});
 define('src/modules/helpers/size',[],function () {
   /**
    * Returns a function that returns an array of
@@ -14350,11 +13954,10 @@ define('src/modules/helpers/sum_listeners',[],function () {
     }, 0);
   };
 });
-define('phx',['require','d3','d3_components','src/modules/helpers/size','src/modules/helpers/sum_listeners'],function (require) {
+define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/modules/d3_components/generator/element/html/div','src/modules/helpers/size','src/modules/helpers/sum_listeners'],function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
-  var chart = d3Components.mixed.chart;
-  var layout = d3Components.element.div;
+  var chart = require('src/modules/d3_components/mixed/chart');
+  var layout = require('src/modules/d3_components/generator/element/html/div');
   var sizeFunc = require('src/modules/helpers/size');
   var sumListeners = require('src/modules/helpers/sum_listeners');
 
@@ -14402,6 +14005,7 @@ define('phx',['require','d3','d3_components','src/modules/helpers/size','src/mod
 
     this._el = el; // => Setter
     this._selection = d3.select(el); // Create d3 selection
+    if (this._datum) this.data(this._datum);
     return this;
   };
 
@@ -14488,7 +14092,6 @@ define('phx',['require','d3','d3_components','src/modules/helpers/size','src/mod
     this._chartClass = '.' + layout.class();
     this._selection.call(layout.size(size))
       .selectAll(this._chartClass).call(chart);
-    return this;
   };
 
   /**
@@ -14562,9 +14165,9 @@ define('phx',['require','d3','d3_components','src/modules/helpers/size','src/mod
    */
   Phx.prototype.off = function (event, listener) {
     if (!this._selection) throw new Error('A valid element is required');
-
     if (arguments.length === 1) this._chart.off(event);
-    if (arguments.length === 2) this._chart.off(event, listener);
+
+    this._chart.off(event, listener);
     this._listeners = this._chart.listeners(); // Redefine listeners
     return this;
   };

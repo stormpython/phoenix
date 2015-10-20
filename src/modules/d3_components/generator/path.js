@@ -1,9 +1,8 @@
 define(function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
-  var layout = d3Components.layout.path;
-  var path = d3Components.element.path;
-  var builder = d3Components.builder;
+  var layout = require('src/modules/d3_components/layout/path');
+  var path = require('src/modules/d3_components/generator/element/svg/path');
+  var builder = require('src/modules/d3_components/helpers/builder');
 
   return function paths() {
     var pathLayout = layout();

@@ -1,10 +1,9 @@
 define(function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
-  var path = d3Components.element.path;
-  var textElement = d3Components.element.text;
-  var events = d3Components.control.events;
-  var valuator = d3Components.helpers.valuator;
+  var path = require('src/modules/d3_components/generator/element/svg/path');
+  var textElement = require('src/modules/d3_components/generator/element/svg/text');
+  var events = require('src/modules/d3_components/control/events');
+  var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function pieChart() {
     var width = 300;

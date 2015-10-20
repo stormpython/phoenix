@@ -1,9 +1,8 @@
 define(function (require) {
   var d3 = require("d3");
-  var d3Components = require('d3_components');
-  var layout = d3Components.layout.points;
-  var circle = d3Components.element.circle;
-  var builder = d3Components.helpers.builder;
+  var layout = require('src/modules/d3_components/layout/points');
+  var circle = require('src/modules/d3_components/generator/element/svg/circle');
+  var builder = require('src/modules/d3_components/helpers/builder');
 
   return function points() {
     var scatterLayout = layout();

@@ -1,8 +1,7 @@
 define(function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
-  var chart = d3Components.mixed.chart;
-  var layout = d3Components.element.div;
+  var chart = require('src/modules/d3_components/mixed/chart');
+  var layout = require('src/modules/d3_components/generator/element/html/div');
   var sizeFunc = require('src/modules/helpers/size');
   var sumListeners = require('src/modules/helpers/sum_listeners');
 
@@ -50,6 +49,7 @@ define(function (require) {
 
     this._el = el; // => Setter
     this._selection = d3.select(el); // Create d3 selection
+    if (this._datum) this.data(this._datum);
     return this;
   };
 
@@ -136,7 +136,6 @@ define(function (require) {
     this._chartClass = '.' + layout.class();
     this._selection.call(layout.size(size))
       .selectAll(this._chartClass).call(chart);
-    return this;
   };
 
   /**
@@ -210,9 +209,9 @@ define(function (require) {
    */
   Phx.prototype.off = function (event, listener) {
     if (!this._selection) throw new Error('A valid element is required');
-
     if (arguments.length === 1) this._chart.off(event);
-    if (arguments.length === 2) this._chart.off(event, listener);
+
+    this._chart.off(event, listener);
     this._listeners = this._chart.listeners(); // Redefine listeners
     return this;
   };

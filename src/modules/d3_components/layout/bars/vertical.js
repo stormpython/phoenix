@@ -1,7 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
-  var d3Components = require('d3_components');
-  var parseTime = d3Components.helpers.timeparser;
+  var parseTime = require('src/modules/d3_components/helpers/timeparser');
 
   return function vertical() {
     var x = function (d) { return d.x; };

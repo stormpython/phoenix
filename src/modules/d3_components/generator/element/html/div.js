@@ -1,5 +1,5 @@
 define(function (require) {
-  var base = require('d3_components').layout.base;
+  var base = require('src/modules/d3_components/layout/base');
 
   /**
    * Returns a configurable function that sets attributes on
