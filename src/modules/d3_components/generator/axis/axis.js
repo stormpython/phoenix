@@ -3,26 +3,6 @@ define(function (require) {
   var builder = require('src/modules/d3_components/helpers/builder');
   var rotate = require('src/modules/d3_components/generator/axis/rotate');
 
-  function getTransform(position, size) {
-    var width = size[0];
-    var height = size[1];
-
-    if (position === 'bottom') return 'translate(0,' + height + ')';
-    if (position === 'right') return 'translate(' + width + ',0)';
-    if (position === 'left' || position === 'top') return 'translate(0,0)';
-  }
-
-  function getAxisClass(position) {
-    if (position === 'bottom') return 'x axis';
-    if (position === 'left') return 'y axis';
-    if (position === 'right') return 'y2 axis';
-    if (position === 'top') return 'x2 axis';
-  }
-
-  function getAxisOrientation(position, axis) {
-    return axis.orient(position);
-  }
-
   return function axes() {
     var scale = d3.scale.linear();
     var position = 'bottom';
@@ -78,6 +58,26 @@ define(function (require) {
           .style('title-anchor', title.anchor || 'end')
           .text(title.text || '');
       });
+    }
+
+    function getTransform(position, size) {
+      var width = size[0];
+      var height = size[1];
+
+      if (position === 'bottom') return 'translate(0,' + height + ')';
+      if (position === 'right') return 'translate(' + width + ',0)';
+      if (position === 'left' || position === 'top') return 'translate(0,0)';
+    }
+
+    function getAxisClass(position) {
+      if (position === 'bottom') return 'x axis';
+      if (position === 'left') return 'y axis';
+      if (position === 'right') return 'y2 axis';
+      if (position === 'top') return 'x2 axis';
+    }
+
+    function getAxisOrientation(position, axis) {
+      return axis.orient(position);
     }
 
     // Public API

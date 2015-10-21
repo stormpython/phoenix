@@ -5,20 +5,14 @@ define(function (require) {
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
     var type = 'area';
+    var offset = 'zero';
     var xScale = d3.time.scale.utc();
     var yScale = d3.scale.linear();
-    var stackOpts = { offset: 'zero', order: 'default', out: out };
     var interpolate = 'linear';
     var tension = 0.7;
     var defined = function (d) { return d.y !== null; };
 
     function layout(data) {
-      var stack = d3.layout.stack()
-        .x(x)
-        .y(y)
-        .offset(stackOpts.offset)
-        .order(stackOpts.order)
-        .out(stackOpts.out);
       var pathFunction = d3.svg[type]()
         .interpolate(interpolate)
         .tension(tension)
@@ -30,7 +24,7 @@ define(function (require) {
         pathFunction.x(X).y(Y);
       }
 
-      data = stack(data).map(function (d) {
+      data = data.map(function (d) {
         return {
           d: pathFunction(d),
           values: d
@@ -38,11 +32,6 @@ define(function (require) {
       });
 
       return data;
-    }
-
-    function out(d, y0, y) {
-      d.y0 = y0;
-      d.y = y;
     }
 
     function X(d, i) {
@@ -56,16 +45,12 @@ define(function (require) {
     function Y0(d) {
       var min = Math.max(0, yScale.domain()[0]);
 
-      if (stackOpts.offset === 'overlap') {
-        return yScale(min);
-      }
+      if (offset === 'overlap') return yScale(min);
       return yScale(d.y0);
     }
 
     function Y1(d, i) {
-      if (stackOpts.offset === 'overlap') {
-        return yScale(y.call(this, d, i));
-      }
+      if (offset === 'overlap') return yScale(y.call(this, d, i));
       return yScale(d.y0 + y.call(this, d, i));
     }
 
@@ -100,14 +85,6 @@ define(function (require) {
     layout.yScale = function (_) {
       if (!arguments.length) return yScale;
       yScale = typeof _ === 'function' ? _ : yScale;
-      return layout;
-    };
-
-    layout.stack = function (_) {
-      if (!arguments.length) return stackOpts;
-      stackOpts.offset = typeof _.offset !== 'undefined' ? _.offset : stackOpts.offset;
-      stackOpts.order = typeof _.order !== 'undefined' ? _.order : stackOpts.order;
-      stackOpts.out = typeof _.out !== 'undefined' ? _.out : stackOpts.out;
       return layout;
     };
 
