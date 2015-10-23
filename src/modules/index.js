@@ -210,7 +210,7 @@ define(function (require) {
         this._selection.selectAll('svg').each(function () {
           d3.select(this).on(event, null);
         });
-        this._listeners = delete this._listeners[event];
+        delete this._listeners[event];
         this._chart.listeners(this._listeners);
       }
       if (event && listener) {
