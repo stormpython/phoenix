@@ -133,9 +133,8 @@ define(function (require) {
     size = sizeFunc(this._selection, width, height);
     if (size[0] <= 0 || size[1] <= 0) return this;
 
-    this._chartClass = '.' + layout.class();
     this._selection.call(layout.size(size))
-      .selectAll(this._chartClass).call(chart);
+      .selectAll('.' + layout.class()).call(chart);
   };
 
   /**
@@ -173,12 +172,10 @@ define(function (require) {
     this._selection.datum(null);
     this._selection = null;
     this._chart = null;
-    this._chartClass = null;
     this._layout = null;
     this._opts = null;
     this._datum = null;
     this._el = null;
-
     return this;
   };
 
@@ -191,7 +188,6 @@ define(function (require) {
    */
   Phx.prototype.on = function (event, listener) {
     if (!this._selection) throw new Error('A valid element is required');
-
     this._chart.on(event, listener); // value => 'on' or 'off'
     this._listeners = this._chart.listeners(); // Redefine listeners
     return this;
@@ -209,10 +205,19 @@ define(function (require) {
    */
   Phx.prototype.off = function (event, listener) {
     if (!this._selection) throw new Error('A valid element is required');
-    if (arguments.length === 1) this._chart.off(event);
-
-    this._chart.off(event, listener);
-    this._listeners = this._chart.listeners(); // Redefine listeners
+    if (!listener) {
+      this._selection.selectAll('svg').each(function () {
+        d3.select(this).on(event, null);
+      });
+      this._listeners = Object.keys(this._listeners).forEach(function (key) {
+        return key !== event;
+      });
+      this._chart.listeners(this._listeners);
+    }
+    if (event && listener) {
+      this._chart.off(event, listener);
+      this._listeners = this._chart.listeners();
+    }
     return this;
   };
 
@@ -223,13 +228,16 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.removeAllListeners = function () {
-    var chart = this._chart;
+    var selection = this._selection;
+
+    if (!selection) throw new Error('A valid element is required');
 
     Object.keys(this._listeners).forEach(function (key) {
-      chart.off(key);
+      selection.selectAll('svg').each(function () {
+        d3.select(this).on(key, null);
+      });
     });
 
-    this.draw(); // Remove listeners from the DOM
     this._chart.listeners(this._listeners = {});
     return this;
   };
