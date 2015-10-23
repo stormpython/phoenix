@@ -205,13 +205,11 @@ define(function (require) {
    */
   Phx.prototype.off = function (event, listener) {
     if (!this._selection) throw new Error('A valid element is required');
-    if (!listener) {
+    if (!listener && this._listeners[event]) {
       this._selection.selectAll('svg').each(function () {
         d3.select(this).on(event, null);
       });
-      this._listeners = Object.keys(this._listeners).forEach(function (key) {
-        return key !== event;
-      });
+      this._listeners = delete this._listeners[event];
       this._chart.listeners(this._listeners);
     }
     if (event && listener) {
