@@ -52,7 +52,6 @@ define(function (require) {
     generator.off = function (event, listener) {
       var handlers = listeners[event];
 
-      if (!listener && handlers) handlers = null;
       if (listener && typeof listener === 'function') {
         if (handlers) {
           listeners[event] = handlers.filter(function (handler) {

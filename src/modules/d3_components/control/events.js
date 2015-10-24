@@ -4,24 +4,19 @@ define(function (require) {
   /**
    * Adds event listeners to DOM elements
    */
-
   return function events() {
-    var listeners = {};
     var processor = function (e) { return e; };
+    var listeners = {};
     var element;
 
     function control(selection) {
       selection.each(function () {
-        if (!element) {
-          element = d3.select(this);
-        }
+        if (!element) element = d3.select(this);
 
         d3.entries(listeners).forEach(function (e) {
           // Stop listening for event types that have
           // an empty listeners array or that is set to null
-          if (!e.value || !e.value.length) {
-            return element.on(e.key, null);
-          }
+          if (!e.value || !e.value.length) return element.on(e.key, null);
 
           element.on(e.key, function () {
             d3.event.stopPropagation(); // => event.stopPropagation()
