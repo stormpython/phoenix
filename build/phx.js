@@ -12683,12 +12683,13 @@ define('src/modules/d3_components/generator/path',['require','d3','src/modules/d
             .attr('class', 'path-layers')
         }
 
-        var layers = g.selectAll('g')
-          .data(pathLayout(data));
-
-        layers.exit().remove();
-        layers.enter().append('g');
-        layers.call(paths);
+        g.data(pathLayout(data)).call(paths);
+        //var layers = g.selectAll('g')
+        //  .data(pathLayout(data));
+        //
+        //layers.exit().remove();
+        //layers.enter().append('g');
+        //layers.call(paths);
       });
     }
 

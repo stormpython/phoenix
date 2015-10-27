@@ -50,12 +50,7 @@ define(function (require) {
             .attr('class', 'path-layers')
         }
 
-        var layers = g.selectAll('g')
-          .data(pathLayout(data));
-
-        layers.exit().remove();
-        layers.enter().append('g');
-        layers.call(paths);
+        g.data(pathLayout(data)).call(paths);
       });
     }
 
