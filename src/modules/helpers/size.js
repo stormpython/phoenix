@@ -12,8 +12,7 @@ define(function () {
   return function size(selection, width, height) {
     var node = selection.node();
     var w = typeof width === 'function' ? width() : width || node.clientWidth;
-    var h = typeof height === 'function' ? height() : height ||
-    node.clientHeight;
+    var h = typeof height === 'function' ? height() : height || node.clientHeight;
 
     if (typeof +w !== 'number' || isNaN(+w) ||
       typeof +h !== 'number' || isNaN(+h)) {

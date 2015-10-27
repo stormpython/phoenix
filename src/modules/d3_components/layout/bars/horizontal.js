@@ -73,7 +73,7 @@ define(function (require) {
         return yScale(x.call(this, d, i)) + groupScale(j) + groupScale.rangeBand();
       }
       if (timeInterval) return yScale(x.call(this, d, i));
-      return yScale(x.call(this, d, i)) + yScale.rangeBand();
+      return yScale(x.call(this, d, i));
     }
 
     function width(d, i) {

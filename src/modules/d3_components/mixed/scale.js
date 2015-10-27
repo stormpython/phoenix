@@ -1,56 +1,76 @@
 define(function (require) {
   var d3 = require('d3');
-  var scaletor = require('src/modules/d3_components/helpers/scaletor');
+  var parseTime = require('src/modules/d3_components/helpers/timeparser');
+  var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function scale() {
-    var scale = d3.scale.linear();
+    var type = null;
     var accessor = function (d) { return d.y; };
-    var sort = null;
+    var categories = [];
+    var range = [0, 1];
     var min = null;
     var max = null;
     var padding = 0;
-    var nice = true;
     var clamp = false;
+    var utc = false;
+    var timeInterval = null;
 
     function mixed(data) {
+      var timeNotation;
+      var step;
+
+      // Flatten data
       data = data.reduce(function (a, b) {
         return a.concat(b);
       }, []);
 
-      if (typeof scale.rangeRoundBands === 'function') {
-        scale
-          .domain(data.map(accessor).sort(sort))
+      if (categories.length) {
+        return d3.scale.ordinal()
+          .domain(categories)
           .rangeRoundBands(range, padding, 0);
-      } else {
-        scale
-          .domain([
-            min ? min : d3.min(data, accessor) || 0,
-            max ? max : d3.max(data, accessor) || 1
-          ])
-          .range(range, padding);
-
-        if (nice) scale.nice();
-        if (clamp) scale.clamp(true);
       }
 
-      return scale;
+      if (type === 'datetime') {
+        var scale = utc ? d3.time.scale.utc() : d3.time.scale();
+        timeNotation = parseTime(timeInterval);
+        step = parseFloat(timeInterval);
+
+        return scale
+          .domain([
+            d3.min(data, accessor),
+            d3.max(data, accessor)
+            //d3.time[timeNotation].offset(d3.max(data, accessor), step)
+          ])
+          .range(range);
+      }
+
+      if (typeof d3.scale[type] === 'function') {
+        return d3.scale[type]()
+          .domain([
+            min ? min : Math.min(0, d3.min(data, accessor)),
+            max ? max : Math.max(0, d3.max(data, accessor))
+          ])
+          .range(range)
+          .clamp(clamp)
+          .nice();
+      }
     }
 
     mixed.type = function (_) {
-      if (!arguments.length) return scale;
-      scale = scaletor(_);
+      if (!arguments.length) return type;
+      type = _;
       return mixed;
     };
 
     mixed.accessor = function (_) {
       if (!arguments.length) return accessor;
-      accessor = _;
+      accessor = valuator(_);
       return mixed;
     };
 
-    mixed.sort = function (_) {
-      if (!arguments.length) return sort;
-      sort = _;
+    mixed.categories = function (_) {
+      if (!arguments.length) return categories;
+      categories = Array.isArray(_) ? _ : categories;
       return mixed;
     };
 
@@ -78,15 +98,21 @@ define(function (require) {
       return mixed;
     };
 
-    mixed.nice = function (_) {
-      if (!arguments.length) return nice;
-      nice = _;
-      return mixed;
-    };
-
     mixed.clamp = function (_) {
       if (!arguments.length) return clamp;
       clamp = _;
+      return mixed;
+    };
+
+    mixed.timeInterval = function (_) {
+      if (!arguments.length) return timeInterval;
+      timeInterval = _;
+      return mixed;
+    };
+
+    mixed.utc = function (_) {
+      if (!arguments.length) return utc;
+      utc = _;
       return mixed;
     };
 

@@ -3,7 +3,7 @@ define(function (require) {
 
   return function path() {
     var color = d3.scale.category10();
-    var path = function (d) { return d.d; };
+    var value = function (d) { return d.d; };
     var cssClass = 'path';
     var transform = 'translate(0,0)';
     var fill = 'none';
@@ -26,15 +26,15 @@ define(function (require) {
           .attr('fill', fill)
           .attr('stroke', stroke)
           .attr('stroke-width', strokeWidth)
-          .attr('d', path)
+          .attr('d', value)
           .style('opacity', opacity);
       });
     }
 
     // Public API
     element.path = function (_) {
-      if (!arguments.length) return path;
-      path = d3.functor(_);
+      if (!arguments.length) return value;
+      value = d3.functor(_);
       return element;
     };
 

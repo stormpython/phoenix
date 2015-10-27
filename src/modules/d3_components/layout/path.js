@@ -4,6 +4,7 @@ define(function (require) {
   return function path() {
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
+    var label = function (d) { return d.label; };
     var type = 'area';
     var offset = 'zero';
     var xScale = d3.time.scale.utc();
@@ -27,14 +28,18 @@ define(function (require) {
       data = data.map(function (d) {
         return {
           d: pathFunction(d),
+          label: label.call(this, d[0]),
           values: d
         };
       });
 
-      return data;
+      return [data];
     }
 
     function X(d, i) {
+      if (typeof xScale.rangeRoundBands === 'function') {
+        return xScale(x.call(this, d, i)) + xScale.rangeBand() / 2;
+      }
       return xScale(x.call(this, d, i));
     }
 
@@ -67,6 +72,12 @@ define(function (require) {
       return layout;
     };
 
+    layout.label = function (_) {
+      if (!arguments.length) return label;
+      label = d3.functor(_);
+      return layout;
+    };
+
     layout.type = function (_) {
       var opts = ['area', 'line'];
       var isValid = opts.indexOf(_) !== -1;
@@ -85,6 +96,12 @@ define(function (require) {
     layout.yScale = function (_) {
       if (!arguments.length) return yScale;
       yScale = typeof _ === 'function' ? _ : yScale;
+      return layout;
+    };
+
+    layout.offset = function (_) {
+      if (!arguments.length) return offset;
+      offset = typeof _ === 'string' ? _ : offset;
       return layout;
     };
 

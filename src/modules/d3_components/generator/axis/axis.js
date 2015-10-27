@@ -2,22 +2,28 @@ define(function (require) {
   var d3 = require('d3');
   var builder = require('src/modules/d3_components/helpers/builder');
   var rotate = require('src/modules/d3_components/generator/axis/rotate');
+  var scaleGenerator = require('src/modules/d3_components/mixed/scale');
 
   return function axes() {
-    var scale = d3.scale.linear();
-    var position = 'bottom';
-    var size = [0, 1];
+    var position = 'bottom'; // `top`, `left`, `right`, `bottom`
+    var size = [0, 1]; // [width, height]
     var tick = {};
     var rotateLabels = {};
     var title = {};
+    var scaleOpts = {};
     var axis = d3.svg.axis();
+    var rotation = rotate();
     var g;
-    var rotation;
     var text;
 
     function generator(selection) {
-      selection.each(function () {
-        axis = getAxisOrientation(position, axis)
+      selection.each(function (data) {
+        var scaleRange = getScaleRange(position, size, scaleOpts.categories);
+
+        var scale = builder(scaleOpts, scaleGenerator())
+          .range(scaleRange)(data);
+
+        axis.orient(position)
           .scale(scale)
           .ticks(tick.number || 10)
           .tickValues(tick.values || null)
@@ -27,9 +33,7 @@ define(function (require) {
           .tickPadding(tick.padding || 3)
           .tickFormat(tick.format || null);
 
-        if (!g) {
-          g = d3.select(this).append('g');
-        }
+        if (!g) g = d3.select(this).append('g');
 
         // Attach axis
         g.attr('class', getAxisClass(position))
@@ -39,15 +43,11 @@ define(function (require) {
         if (rotateLabels.allow) {
           var axisLength = Math.abs(scale.range()[1] - scale.range()[0]);
 
-          if (!rotation) rotation = rotate();
-
           rotation.axisLength(axisLength);
           g.call(builder(rotateLabels, rotation));
         }
 
-        if (!text) {
-          text = g.append('text');
-        }
+        if (!text) text = g.append('text');
 
         text.attr('class', title.class || 'axis title')
           .attr('x', title.x || 6)
@@ -66,7 +66,7 @@ define(function (require) {
 
       if (position === 'bottom') return 'translate(0,' + height + ')';
       if (position === 'right') return 'translate(' + width + ',0)';
-      if (position === 'left' || position === 'top') return 'translate(0,0)';
+      return 'translate(0,0)';
     }
 
     function getAxisClass(position) {
@@ -76,14 +76,26 @@ define(function (require) {
       if (position === 'top') return 'x2 axis';
     }
 
-    function getAxisOrientation(position, axis) {
-      return axis.orient(position);
+    function getScaleRange(position, size, categories) {
+      var width = size[0];
+      var height = size[1];
+
+      if (position === 'bottom' || position === 'top') {
+        return [0, width];
+      } else if (categories) {
+        return [0, height];
+      } else if (scaleOpts.type === 'datetime') {
+        return [0, height]
+      } else {
+        return [height, 0]
+      }
     }
+
 
     // Public API
     generator.scale = function (_) {
-      if (!arguments.length) return scale;
-      scale = _;
+      if (!arguments.length) return axis.scale();
+      scaleOpts = typeof _ === 'object' ? _ : scaleOpts;
       return generator;
     };
 

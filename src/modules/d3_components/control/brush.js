@@ -1,9 +1,7 @@
 define(function (require) {
   var d3 = require('d3');
 
-  /**
-   * Creates a brush control and binds it to an <svg></svg>.
-   */
+  // Creates a brush control and binds it to an <svg></svg>.
   return function brush() {
     var margin = { top: 0, right: 0, bottom: 0, left: 0 };
     var cssClass = 'brush';
@@ -25,6 +23,27 @@ define(function (require) {
         width = width - margin.left - margin.right;
         height = height - margin.top - margin.bottom;
 
+        brush
+          .on('brushstart', brushStartCallback ? brushStart : null)
+          .on('brush', brushCallback ? brushF : null)
+          .on('brushend', brushEndCallback ? brushEnd : null);
+
+        if (xScale) brush.x(xScale);
+        if (yScale) brush.y(yScale);
+        if (extent) brush.extent(extent);
+        if (clamp) brush.clamp(clamp);
+
+        if (!brushG) brushG = d3.select(this).append('g');
+
+        // Attach new brush
+        brushG.attr('class', cssClass)
+          .attr('opacity', opacity)
+          .call(brush)
+          .selectAll('rect');
+
+        if (width) brushG.attr('width', width);
+        if (height) brushG.attr('height', height);
+
         function brushStart() {
           brushStartCallback.forEach(function (listener) {
             listener.call(this, brush, data, index);
@@ -42,33 +61,9 @@ define(function (require) {
             listener.call(this, brush, data, index);
 
             // Clear brush
-            d3.selectAll('g.' + cssClass)
-              .call(brush.clear());
+            d3.selectAll('g.' + cssClass).call(brush.clear());
           });
         }
-
-        brush
-          .on('brushstart', brushStartCallback ? brushStart : null)
-          .on('brush', brushCallback ? brushF : null)
-          .on('brushend', brushEndCallback ? brushEnd : null);
-
-        if (xScale) { brush.x(xScale); }
-        if (yScale) { brush.y(yScale); }
-        if (extent) { brush.extent(extent); }
-        if (clamp) { brush.clamp(clamp); }
-
-        if (!brushG) {
-          brushG = d3.select(this).append('g');
-        }
-
-        // Attach new brush
-        brushG.attr('class', cssClass)
-          .attr('opacity', opacity)
-          .call(brush)
-          .selectAll('rect');
-
-        if (width) { brushG.attr('width', width); }
-        if (height) { brushG.attr('height', height); }
       });
     }
 

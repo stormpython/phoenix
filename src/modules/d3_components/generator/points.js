@@ -2,52 +2,105 @@ define(function (require) {
   var d3 = require("d3");
   var layout = require('src/modules/d3_components/layout/points');
   var circle = require('src/modules/d3_components/generator/element/svg/circle');
-  var builder = require('src/modules/d3_components/helpers/builder');
 
   return function points() {
+    var color = d3.scale.category10();
+    var x = function (d) { return d.x; };
+    var y = function (d) { return d.y; };
+    var xScale = d3.scale.linear();
+    var yScale = d3.scale.linear();
+    var radius = d3.functor(5);
+    var cssClass = 'points';
+    var fill = colorFill;
+    var stroke = colorFill;
+    var strokeWidth = 0;
+    var opacity = null;
+
     var scatterLayout = layout();
     var circles = circle();
-    var property = {};
-    var attr = {};
     var g;
+
+    function colorFill (d, i) {
+      return color(i);
+    }
 
     function generator(selection) {
       selection.each(function (data) {
-        scatterLayout = builder(property, scatterLayout);
-        circles = builder(attr, circles);
+        scatterLayout.x(x).y(y)
+          .radius(radius)
+          .xScale(xScale)
+          .yScale(yScale);
 
-        if (!g) {
-          g = d3.select(this).append("g");
-        }
+        circles.class(cssClass)
+          .fill(fill)
+          .stroke(stroke)
+          .strokeWidth(strokeWidth)
+          .opacity(opacity);
 
-        g.datum(scatterLayout(data))
-          .call(circles);
+        if (!g) g = d3.select(this).append("g").attr('class', 'points-group');
+
+        g.datum(scatterLayout(data)).call(circles);
       });
     }
 
     // Public API
-    generator.property = function (prop, val) {
-      if (!arguments.length) return property;
-      if (arguments.length === 1 && typeof prop === 'object') {
-        property = _;
-      }
-      if (arguments.length === 2) {
-        property[prop] = val;
-      }
+    generator.x = function (_) {
+      if (!arguments.length) return x;
+      x = d3.functor(_);
       return generator;
     };
 
-    generator.attr = function (prop, val) {
-      var validAttr = ['class', 'fill', 'stroke', 'strokeWidth', 'opacity'];
-      var isValidProp = validAttr.indexOf(prop) !== -1;
+    generator.y = function (_) {
+      if (!arguments.length) return y;
+      y = d3.functor(_);
+      return generator;
+    };
 
-      if (!arguments.length) return attr;
-      if (arguments.length === 1 && typeof prop === 'object') {
-        attr = _;
-      }
-      if (arguments.length === 2 && isValidProp) {
-        attr[prop] = val;
-      }
+    generator.radius = function (_) {
+      if (!arguments.length) return radius;
+      radius = d3.functor(_);
+      return generator;
+    };
+
+    generator.xScale = function (_) {
+      if (!arguments.length) return xScale;
+      xScale = typeof _ === 'function' ? _ : xScale;
+      return generator;
+    };
+
+    generator.yScale = function (_) {
+      if (!arguments.length) return yScale;
+      yScale = typeof _ === 'function' ? _ : yScale;
+      return generator;
+    };
+
+    generator.class = function (_) {
+      if (!arguments.length) return cssClass;
+      cssClass = _;
+      return generator;
+    };
+
+    generator.fill = function (_) {
+      if (!arguments.length) return fill;
+      fill = _;
+      return generator;
+    };
+
+    generator.opacity = function (_) {
+      if (!arguments.length) return opacity;
+      opacity = _;
+      return generator;
+    };
+
+    generator.stroke = function (_) {
+      if (!arguments.length) return stroke;
+      stroke = _;
+      return generator;
+    };
+
+    generator.strokeWidth = function (_) {
+      if (!arguments.length) return strokeWidth;
+      strokeWidth = _;
       return generator;
     };
 

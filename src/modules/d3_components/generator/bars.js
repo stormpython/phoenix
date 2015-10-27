@@ -6,24 +6,53 @@ define(function (require) {
   var rect = require('src/modules/d3_components/generator/element/svg/rect');
 
   return function bars() {
+    var color = d3.scale.category10();
+    var x = function (d) { return d.x; };
+    var y = function (d) { return d.y; };
+    var xScale = d3.scale.linear();
+    var yScale = d3.scale.ordinal();
+    var rx = d3.functor(0);
+    var ry = d3.functor(0);
+    var padding = 0;
+    var group = false;
+    var groupPadding = 0;
+    var timeInterval = null;
+    var timePadding = 0;
+    var cssClass = 'bar';
+    var fill = colorFill;
+    var stroke = colorFill;
+    var strokeWidth = 0;
+    var opacity = 1;
+    var orientation = 'vertical';
     var rects = rect();
-    var property = {};
-    var attr = {};
-    var barLayout;
+    var verticalLayout = vertical();
+    var horizontalLayout = horizontal();
     var g;
 
-    if (!property.orientation) property.orientation = 'vertical';
-    barLayout = property.orientation === 'vertical' ? vertical() : horizontal();
+    function colorFill(d, i) {
+      return color(i);
+    }
 
     function generator(selection) {
       selection.each(function (data) {
-        barLayout = builder(property, barLayout);
-        rects = builder(attr, rects);
+        var barLayout = orientation === 'vertical' ?
+          verticalLayout : horizontalLayout;
 
-        if (!g) {
-          g = d3.select(this).append('g')
-            .attr('class', 'bar-layers');
-        }
+        barLayout.x(x).y(y).rx(rx).ry(ry)
+          .xScale(xScale)
+          .yScale(yScale)
+          .padding(padding)
+          .groupPadding(groupPadding)
+          .timeInterval(timeInterval)
+          .timePadding(timePadding);
+
+        rects.class(cssClass)
+          .fill(fill)
+          .stroke(stroke)
+          .strokeWidth(strokeWidth)
+          .opacity(opacity);
+
+        if (!g) g = d3.select(this).append('g').attr('class', 'bar-layers');
 
         var layers = g.selectAll('g')
           .data(barLayout(data));
@@ -35,28 +64,105 @@ define(function (require) {
     }
 
     // Public API
-    generator.property = function (prop, val) {
-      if (!arguments.length) return property;
-      if (arguments.length === 1 && typeof prop === 'object') {
-        property = _;
-      }
-      if (arguments.length === 2) {
-        property[prop] = val;
-      }
+    generator.x = function (_) {
+      if (!arguments.length) return x;
+      x = d3.functor(_);
       return generator;
     };
 
-    generator.attr = function (prop, val) {
-      var validAttr = ['class', 'fill', 'stroke', 'strokeWidth', 'opacity'];
-      var isValidProp = validAttr.indexOf(prop) !== -1;
+    generator.y = function (_) {
+      if (!arguments.length) return y;
+      y = d3.functor(_);
+      return generator;
+    };
 
-      if (!arguments.length) return attr;
-      if (arguments.length === 1 && typeof prop === 'object') {
-        attr = _;
-      }
-      if (arguments.length === 2 && isValidProp) {
-        attr[prop] = val;
-      }
+    generator.xScale = function (_) {
+      if (!arguments.length) return xScale;
+      xScale = typeof _ === 'function' ? _ : xScale;
+      return generator;
+    };
+
+    generator.yScale = function (_) {
+      if (!arguments.length) return yScale;
+      yScale = typeof _ === 'function' ? _ : yScale;
+      return generator;
+    };
+
+    generator.rx = function (_) {
+      if (!arguments.length) return rx;
+      rx = d3.functor(_);
+      return generator;
+    };
+
+    generator.ry = function (_) {
+      if (!arguments.length) return ry;
+      ry = d3.functor(_);
+      return generator;
+    };
+
+    generator.group = function (_) {
+      if (!arguments.length) return group;
+      group = typeof _ === 'boolean' ? _ : group;
+      return generator;
+    };
+
+    generator.padding = function (_) {
+      if (!arguments.length) return padding;
+      padding = typeof _ === 'number' ? _ : padding;
+      return generator;
+    };
+
+    generator.groupPadding = function (_) {
+      if (!arguments.length) return groupPadding;
+      groupPadding = typeof _ === 'number' ? _ : groupPadding;
+      return generator;
+    };
+
+    generator.timeInterval = function (_) {
+      if (!arguments.length) return timeInterval;
+      timeInterval = typeof _ === 'string' ? _ : timeInterval;
+      return generator;
+    };
+
+    generator.timePadding = function (_) {
+      if (!arguments.length) return timePadding;
+      timePadding = typeof _ === 'number' ? _ : timePadding;
+      return generator;
+    };
+
+    generator.orientation = function (_) {
+      if (!arguments.length) return orientation;
+      orientation = typeof _ === 'string' ? _ : orientation;
+      return generator;
+    };
+
+    generator.class= function (_) {
+      if (!arguments.length) return cssClass;
+      cssClass = _;
+      return generator;
+    };
+
+    generator.fill = function (_) {
+      if (!arguments.length) return fill;
+      fill = _;
+      return generator;
+    };
+
+    generator.opacity = function (_) {
+      if (!arguments.length) return opacity;
+      opacity = _;
+      return generator;
+    };
+
+    generator.stroke = function (_) {
+      if (!arguments.length) return stroke;
+      stroke = _;
+      return generator;
+    };
+
+    generator.strokeWidth = function (_) {
+      if (!arguments.length) return strokeWidth;
+      strokeWidth = _;
       return generator;
     };
 
