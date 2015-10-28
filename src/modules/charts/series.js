@@ -19,7 +19,6 @@ define(function (require) {
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
     var timeInterval = null;
-
     var brush = brushControl();
     var clippath = clipPathGenerator();
     var stack = d3.layout.stack();
@@ -37,7 +36,6 @@ define(function (require) {
       line: pathGenerator().type('line'),
       points: pointsGenerator()
     };
-
     var listeners = {};
     var xAxes = [];
     var yAxes = [];
@@ -45,7 +43,6 @@ define(function (require) {
     var stackOpts = {};
     var zeroLineOpts = {};
     var elements = { area: {}, bar: {}, line: [], points: [] };
-
     var svg;
     var g;
     var zeroLineG;
