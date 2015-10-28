@@ -41,18 +41,16 @@ define(function (require) {
       groupScale.domain(d3.range(data.length))
         .rangeRoundBands(groupRange, groupPadding, 0);
 
-      data = data.map(function (arr) {
-        return arr.map(function (d, i) {
+      data.forEach(function (arr) {
+        arr.forEach(function (d, i) {
           if (!d.coords) d.coords = {};
 
-          d.coords.x = X.call(this, d, i);
+          d.coords.x = X.call(this, d, i, j);
           d.coords.y = Y.call(this, d, i);
           d.coords.width = width.call(this, d, i);
           d.coords.height = height.call(this, d, i);
           d.coords.rx = rx.call(this, d, i);
           d.coords.ry = ry.call(this, d, i);
-
-          return d;
         });
 
         j++; // increment thru stack layers
@@ -61,14 +59,16 @@ define(function (require) {
       return data;
     }
 
-    function X(d, i) {
+    function negValue(y0) { return yScale(y0); }
+
+    function X(d, i, j) {
       if (group) return xScale(x.call(this, d, i)) + groupScale(j);
       return xScale(x.call(this, d, i));
     }
 
     function Y(d, i) {
-      if (group) return yScale(y.call(this, d, i));
-      return yScale(d.y0 + Math.abs(y.call(this, d, i)));
+      if (group) return (d.y < 0) ? negValue(d.y0) : yScale(y.call(this, d, i));
+      return (d.y < 0) ? negValue(d.y0) : yScale(d.y0 + y.call(this, d, i));
     }
 
     function width() {

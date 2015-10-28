@@ -15,9 +15,9 @@ define(function (require) {
     var timePadding = 0.1;
     var groupScale = d3.scale.ordinal();
     var timeScale = d3.scale.ordinal();
+    var j = 0; // stack layer counter
 
     function layout(data) {
-      var j = 0; // stack layer counter
       var groupRange;
       var timeNotation;
       var extent;
@@ -41,18 +41,16 @@ define(function (require) {
       groupScale.domain(d3.range(data.length))
         .rangeRoundBands(groupRange, groupPadding, 0);
 
-      data = data.map(function (arr) {
-        return arr.map(function (d, i) {
+      data.forEach(function (arr) {
+        arr.forEach(function (d, i) {
           if (!d.coords) d.coords = {};
 
           d.coords.x = X.call(this, d, i);
-          d.coords.y = Y.call(this, d, i);
+          d.coords.y = Y.call(this, d, i, j);
           d.coords.width = width.call(this, d, i);
           d.coords.height = height.call(this, d, i);
           d.coords.rx = rx.call(this, d, i);
           d.coords.ry = ry.call(this, d, i);
-
-          return d;
         });
 
         j++; // increment thru stack layers
@@ -62,11 +60,11 @@ define(function (require) {
     }
 
     function X(d) {
-      if (group) return xScale(0);
-      return xScale(d.y0);
+      if (group) return (d.y < 0) ? xScale(d.y) : xScale(0);
+      return (d.y < 0) ? xScale(d.y) : xScale(d.y0);
     }
 
-    function Y(d, i) {
+    function Y(d, i, j) {
       if (group) {
         if (timeInterval) return yScale(x.call(this, d, i)) + groupScale(j);
         return yScale(x.call(this, d, i)) + groupScale(j) + groupScale.rangeBand();
@@ -76,7 +74,7 @@ define(function (require) {
     }
 
     function width(d, i) {
-      return xScale(Math.abs(y.call(this, d, i)));
+      return xScale(d.y0 + Math.abs(y.call(this, d, i))) - xScale(d.y0);
     }
 
     function height() {

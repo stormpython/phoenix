@@ -2,6 +2,7 @@ define(function (require) {
   var d3 = require('d3');
   var builder = require('src/modules/d3_components/helpers/builder');
   var valuator = require('src/modules/d3_components/helpers/valuator');
+  var stackOut = require('src/modules/d3_components/helpers/stack_neg_pos');
   var clipPathGenerator = require('src/modules/d3_components/generator/clippath');
   var axisGenerator = require('src/modules/d3_components/generator/axis/axis');
   var brushControl = require('src/modules/d3_components/control/brush');
@@ -56,13 +57,12 @@ define(function (require) {
         data = accessor.call(this, data, index);
 
         // Stack data
+        var out = stackOut().stackCount(data.length);
+
         stack.x(x).y(y)
           .offset(stackOpts.offset || 'zero')
           .order(stackOpts.order || 'default')
-          .out(stackOpts.out || function (d, y0, y) {
-            d.y0 = y0;
-            d.y = y;
-          });
+          .out(stackOpts.out || out);
 
         // Brush
         brush
@@ -112,10 +112,22 @@ define(function (require) {
           if (!zeroLineG) zeroLineG = g.append('g').attr('class', 'zero-line');
 
           zeroLine
-            .x1(function () { return axisFunctions.bottom.scale().range()[0]; })
-            .x2(function () { return axisFunctions.bottom.scale().range()[1]; })
-            .y1(function () { return axisFunctions.left.scale()(0); })
-            .y2(function () { return axisFunctions.left.scale()(0); })
+            .x1(function () {
+              return axisFunctions.bottom.scale()(0);
+              //return axisFunctions.bottom.scale().range()[0];
+            })
+            .x2(function () {
+              return axisFunctions.bottom.scale()(0);
+              //return axisFunctions.bottom.scale().range()[1];
+            })
+            .y1(function () {
+              return axisFunctions.left.scale().range()[0];
+              //return axisFunctions.left.scale()(0);
+            })
+            .y2(function () {
+              return axisFunctions.left.scale().range()[1];
+              //return axisFunctions.left.scale()(0);
+            })
             .stroke(zeroLineOpts.stroke || "#000000")
             .strokeWidth(zeroLineOpts.strokeWidth || 1)
             .opacity(zeroLineOpts.opacity || 0.2);

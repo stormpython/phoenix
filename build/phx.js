@@ -12262,6 +12262,42 @@ define('src/modules/charts/pie',['require','d3','src/modules/d3_components/gener
     return chart;
   };
 });
+define('src/modules/d3_components/helpers/stack_neg_pos',[],function () {
+  return function stackNegPos() {
+    var placement = [0, 0];
+    var count = 0;
+    var stackCount;
+
+    function out(d, y0, y) {
+      if (count === stackCount) {
+        placement = [0, 0];
+        count = 0;
+      }
+
+      if (y < 0) {
+        d.y0 = placement[0];
+        placement[0] += y;
+      }
+
+      if (y > 0) {
+        d.y0 = placement[1];
+        placement[1] += y;
+      }
+
+      d.y = y;
+      count += 1;
+    }
+
+    // Public API
+    out.stackCount = function(_) {
+      if (!arguments.length) return stackCount;
+      stackCount = _;
+      return out;
+    };
+
+    return out;
+  };
+});
 define('src/modules/d3_components/generator/clippath',['require','d3'],function (require) {
   var d3 = require('d3');
 
@@ -12916,18 +12952,16 @@ define('src/modules/d3_components/layout/bars/vertical',['require','d3','src/mod
       groupScale.domain(d3.range(data.length))
         .rangeRoundBands(groupRange, groupPadding, 0);
 
-      data = data.map(function (arr) {
-        return arr.map(function (d, i) {
+      data.forEach(function (arr) {
+        arr.forEach(function (d, i) {
           if (!d.coords) d.coords = {};
 
-          d.coords.x = X.call(this, d, i);
+          d.coords.x = X.call(this, d, i, j);
           d.coords.y = Y.call(this, d, i);
           d.coords.width = width.call(this, d, i);
           d.coords.height = height.call(this, d, i);
           d.coords.rx = rx.call(this, d, i);
           d.coords.ry = ry.call(this, d, i);
-
-          return d;
         });
 
         j++; // increment thru stack layers
@@ -12936,14 +12970,16 @@ define('src/modules/d3_components/layout/bars/vertical',['require','d3','src/mod
       return data;
     }
 
-    function X(d, i) {
+    function negValue(y0) { return yScale(y0); }
+
+    function X(d, i, j) {
       if (group) return xScale(x.call(this, d, i)) + groupScale(j);
       return xScale(x.call(this, d, i));
     }
 
     function Y(d, i) {
-      if (group) return yScale(y.call(this, d, i));
-      return yScale(d.y0 + Math.abs(y.call(this, d, i)));
+      if (group) return (d.y < 0) ? negValue(d.y0) : yScale(y.call(this, d, i));
+      return (d.y < 0) ? negValue(d.y0) : yScale(d.y0 + y.call(this, d, i));
     }
 
     function width() {
@@ -13037,9 +13073,9 @@ define('src/modules/d3_components/layout/bars/horizontal',['require','d3','src/m
     var timePadding = 0.1;
     var groupScale = d3.scale.ordinal();
     var timeScale = d3.scale.ordinal();
+    var j = 0; // stack layer counter
 
     function layout(data) {
-      var j = 0; // stack layer counter
       var groupRange;
       var timeNotation;
       var extent;
@@ -13063,18 +13099,16 @@ define('src/modules/d3_components/layout/bars/horizontal',['require','d3','src/m
       groupScale.domain(d3.range(data.length))
         .rangeRoundBands(groupRange, groupPadding, 0);
 
-      data = data.map(function (arr) {
-        return arr.map(function (d, i) {
+      data.forEach(function (arr) {
+        arr.forEach(function (d, i) {
           if (!d.coords) d.coords = {};
 
           d.coords.x = X.call(this, d, i);
-          d.coords.y = Y.call(this, d, i);
+          d.coords.y = Y.call(this, d, i, j);
           d.coords.width = width.call(this, d, i);
           d.coords.height = height.call(this, d, i);
           d.coords.rx = rx.call(this, d, i);
           d.coords.ry = ry.call(this, d, i);
-
-          return d;
         });
 
         j++; // increment thru stack layers
@@ -13084,11 +13118,11 @@ define('src/modules/d3_components/layout/bars/horizontal',['require','d3','src/m
     }
 
     function X(d) {
-      if (group) return xScale(0);
-      return xScale(d.y0);
+      if (group) return (d.y < 0) ? xScale(d.y) : xScale(0);
+      return (d.y < 0) ? xScale(d.y) : xScale(d.y0);
     }
 
-    function Y(d, i) {
+    function Y(d, i, j) {
       if (group) {
         if (timeInterval) return yScale(x.call(this, d, i)) + groupScale(j);
         return yScale(x.call(this, d, i)) + groupScale(j) + groupScale.rangeBand();
@@ -13098,7 +13132,7 @@ define('src/modules/d3_components/layout/bars/horizontal',['require','d3','src/m
     }
 
     function width(d, i) {
-      return xScale(Math.abs(y.call(this, d, i)));
+      return xScale(d.y0 + Math.abs(y.call(this, d, i))) - xScale(d.y0);
     }
 
     function height() {
@@ -13212,6 +13246,7 @@ define('src/modules/d3_components/generator/bars',['require','d3','src/modules/d
         barLayout.x(x).y(y).rx(rx).ry(ry)
           .xScale(xScale)
           .yScale(yScale)
+          .group(group)
           .groupPadding(groupPadding)
           .timeInterval(timeInterval)
           .timePadding(timePadding);
@@ -13613,10 +13648,11 @@ define('src/modules/d3_components/generator/points',['require','d3','src/modules
   };
 });
 
-define('src/modules/charts/series',['require','d3','src/modules/d3_components/helpers/builder','src/modules/d3_components/helpers/valuator','src/modules/d3_components/generator/clippath','src/modules/d3_components/generator/axis/axis','src/modules/d3_components/control/brush','src/modules/d3_components/control/events','src/modules/d3_components/generator/element/svg/line','src/modules/d3_components/generator/path','src/modules/d3_components/generator/bars','src/modules/d3_components/generator/points'],function (require) {
+define('src/modules/charts/series',['require','d3','src/modules/d3_components/helpers/builder','src/modules/d3_components/helpers/valuator','src/modules/d3_components/helpers/stack_neg_pos','src/modules/d3_components/generator/clippath','src/modules/d3_components/generator/axis/axis','src/modules/d3_components/control/brush','src/modules/d3_components/control/events','src/modules/d3_components/generator/element/svg/line','src/modules/d3_components/generator/path','src/modules/d3_components/generator/bars','src/modules/d3_components/generator/points'],function (require) {
   var d3 = require('d3');
   var builder = require('src/modules/d3_components/helpers/builder');
   var valuator = require('src/modules/d3_components/helpers/valuator');
+  var stackOut = require('src/modules/d3_components/helpers/stack_neg_pos');
   var clipPathGenerator = require('src/modules/d3_components/generator/clippath');
   var axisGenerator = require('src/modules/d3_components/generator/axis/axis');
   var brushControl = require('src/modules/d3_components/control/brush');
@@ -13634,7 +13670,6 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
     var timeInterval = null;
-
     var brush = brushControl();
     var clippath = clipPathGenerator();
     var stack = d3.layout.stack();
@@ -13652,7 +13687,6 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
       line: pathGenerator().type('line'),
       points: pointsGenerator()
     };
-
     var listeners = {};
     var xAxes = [];
     var yAxes = [];
@@ -13660,7 +13694,6 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
     var stackOpts = {};
     var zeroLineOpts = {};
     var elements = { area: {}, bar: {}, line: [], points: [] };
-
     var svg;
     var g;
     var zeroLineG;
@@ -13674,13 +13707,12 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
         data = accessor.call(this, data, index);
 
         // Stack data
+        var out = stackOut().stackCount(data.length);
+
         stack.x(x).y(y)
           .offset(stackOpts.offset || 'zero')
           .order(stackOpts.order || 'default')
-          .out(stackOpts.out || function (d, y0, y) {
-            d.y0 = y0;
-            d.y = y;
-          });
+          .out(stackOpts.out || out);
 
         // Brush
         brush
@@ -13730,10 +13762,22 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
           if (!zeroLineG) zeroLineG = g.append('g').attr('class', 'zero-line');
 
           zeroLine
-            .x1(function () { return axisFunctions.bottom.scale().range()[0]; })
-            .x2(function () { return axisFunctions.bottom.scale().range()[1]; })
-            .y1(function () { return axisFunctions.left.scale()(0); })
-            .y2(function () { return axisFunctions.left.scale()(0); })
+            .x1(function () {
+              return axisFunctions.bottom.scale()(0);
+              //return axisFunctions.bottom.scale().range()[0];
+            })
+            .x2(function () {
+              return axisFunctions.bottom.scale()(0);
+              //return axisFunctions.bottom.scale().range()[1];
+            })
+            .y1(function () {
+              return axisFunctions.left.scale().range()[0];
+              //return axisFunctions.left.scale()(0);
+            })
+            .y2(function () {
+              return axisFunctions.left.scale().range()[1];
+              //return axisFunctions.left.scale()(0);
+            })
             .stroke(zeroLineOpts.stroke || "#000000")
             .strokeWidth(zeroLineOpts.strokeWidth || 1)
             .opacity(zeroLineOpts.opacity || 0.2);

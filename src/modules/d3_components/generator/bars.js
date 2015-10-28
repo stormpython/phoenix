@@ -39,6 +39,7 @@ define(function (require) {
         barLayout.x(x).y(y).rx(rx).ry(ry)
           .xScale(xScale)
           .yScale(yScale)
+          .group(group)
           .groupPadding(groupPadding)
           .timeInterval(timeInterval)
           .timePadding(timePadding);
