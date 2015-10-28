@@ -12978,7 +12978,7 @@ define('src/modules/d3_components/layout/bars/vertical',['require','d3','src/mod
     }
 
     function Y(d, i) {
-      if (group) return (d.y < 0) ? negValue(d.y0) : yScale(y.call(this, d, i));
+      if (group) return (d.y < 0) ? yScale(0) : yScale(y.call(this, d, i));
       return (d.y < 0) ? negValue(d.y0) : yScale(d.y0 + y.call(this, d, i));
     }
 
@@ -13125,7 +13125,7 @@ define('src/modules/d3_components/layout/bars/horizontal',['require','d3','src/m
     function Y(d, i, j) {
       if (group) {
         if (timeInterval) return yScale(x.call(this, d, i)) + groupScale(j);
-        return yScale(x.call(this, d, i)) + groupScale(j) + groupScale.rangeBand();
+        return yScale(x.call(this, d, i)) + groupScale(j);
       }
       if (timeInterval) return yScale(x.call(this, d, i));
       return yScale(x.call(this, d, i));

@@ -67,7 +67,7 @@ define(function (require) {
     }
 
     function Y(d, i) {
-      if (group) return (d.y < 0) ? negValue(d.y0) : yScale(y.call(this, d, i));
+      if (group) return (d.y < 0) ? yScale(0) : yScale(y.call(this, d, i));
       return (d.y < 0) ? negValue(d.y0) : yScale(d.y0 + y.call(this, d, i));
     }
 

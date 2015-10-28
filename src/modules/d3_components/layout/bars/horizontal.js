@@ -67,7 +67,7 @@ define(function (require) {
     function Y(d, i, j) {
       if (group) {
         if (timeInterval) return yScale(x.call(this, d, i)) + groupScale(j);
-        return yScale(x.call(this, d, i)) + groupScale(j) + groupScale.rangeBand();
+        return yScale(x.call(this, d, i)) + groupScale(j);
       }
       if (timeInterval) return yScale(x.call(this, d, i));
       return yScale(x.call(this, d, i));
