@@ -17,14 +17,25 @@ define(function (require) {
         .map(function (d, i) {
           if (!d.coords) d.coords = {};
 
-          d.coords.cx = xScale(x.call(this, d, i));
-          d.coords.cy = yScale(y.call(this, d, i));
+          d.coords.cx = X.call(this, d, i);
+          d.coords.cy = Y.call(this, d, i);
           d.coords.radius = radius.call(this, d, i);
 
           return d;
         });
 
       return data;
+    }
+
+    function X(d, i) {
+      if (typeof xScale.rangeRoundBands === 'function') {
+        return xScale(x.call(this, d, i)) + xScale.rangeBand() / 2;
+      }
+      return xScale(x.call(this, d, i));
+    }
+
+    function Y(d, i) {
+      return yScale(y.call(this, d, i));
     }
 
     // Public API

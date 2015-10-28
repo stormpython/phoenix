@@ -9,11 +9,10 @@ define(function (require) {
     var yScale = d3.scale.ordinal();
     var rx = d3.functor(0);
     var ry = d3.functor(0);
-    var padding = 0;
     var group = false;
     var groupPadding = 0;
     var timeInterval = null;
-    var timePadding = 0;
+    var timePadding = 0.1;
     var groupScale = d3.scale.ordinal();
     var timeScale = d3.scale.ordinal();
 
@@ -83,7 +82,7 @@ define(function (require) {
     function height() {
       if (group) return groupScale.rangeBand();
       if (timeInterval) return timeScale.rangeBand();
-      return yScale.rangeBand() - padding;
+      return yScale.rangeBand();
     }
 
     // Public API
@@ -126,12 +125,6 @@ define(function (require) {
     layout.group = function (_) {
       if (!arguments.length) return group;
       group = typeof _ === 'boolean' ? _ : group;
-      return layout;
-    };
-
-    layout.padding = function (_) {
-      if (!arguments.length) return padding;
-      padding = typeof _ === 'number' ? _ : padding;
       return layout;
     };
 

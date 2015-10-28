@@ -43,12 +43,7 @@ define(function (require) {
     var brushOpts = {};
     var stackOpts = {};
     var zeroLineOpts = {};
-    var elements = {
-      area: {},
-      bar: {},
-      line: [],
-      points: []
-    };
+    var elements = { area: {}, bar: {}, line: [], points: [] };
 
     var svg;
     var g;

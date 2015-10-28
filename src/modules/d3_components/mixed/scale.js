@@ -1,16 +1,15 @@
 define(function (require) {
   var d3 = require('d3');
   var parseTime = require('src/modules/d3_components/helpers/timeparser');
-  var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function scale() {
     var type = null;
-    var accessor = function (d) { return d.y; };
+    var accessor = null;
     var categories = [];
     var range = [0, 1];
     var min = null;
     var max = null;
-    var padding = 0;
+    var padding = 0.1;
     var clamp = false;
     var utc = false;
     var timeInterval = null;
@@ -30,16 +29,31 @@ define(function (require) {
           .rangeRoundBands(range, padding, 0);
       }
 
+      if (type === 'logarithmic') {
+        return d3.scale.log()
+          .domain([
+            min ? Math.max(1, min) : Math.max(1, d3.min(data, accessor || Y)),
+            max ? Math.max(1, max) : Math.max(1, d3.max(data, accessor || Y))
+          ])
+          .range(range);
+      }
+
       if (type === 'datetime') {
         var scale = utc ? d3.time.scale.utc() : d3.time.scale();
-        timeNotation = parseTime(timeInterval);
-        step = parseFloat(timeInterval);
+        var maxDatum = d3.max(data, accessor || X);
+        var timeNotation;
+        var step;
+        var timeOffset;
 
-        return scale
-          .domain([
-            d3.min(data, accessor),
-            d3.max(data, accessor)
-            //d3.time[timeNotation].offset(d3.max(data, accessor), step)
+        if (timeInterval) {
+          timeNotation = parseTime(timeInterval);
+          step = parseFloat(timeInterval);
+          timeOffset = d3.time[timeNotation].offset(maxDatum, step);
+        }
+
+        return scale.domain([
+            d3.min(data, accessor || X),
+            timeOffset ? timeOffset : maxDatum
           ])
           .range(range);
       }
@@ -47,8 +61,8 @@ define(function (require) {
       if (typeof d3.scale[type] === 'function') {
         return d3.scale[type]()
           .domain([
-            min ? min : Math.min(0, d3.min(data, accessor)),
-            max ? max : Math.max(0, d3.max(data, accessor))
+            min ? min : Math.min(0, d3.min(data, accessor || Y)),
+            max ? max : Math.max(0, d3.max(data, accessor || Y))
           ])
           .range(range)
           .clamp(clamp)
@@ -56,6 +70,10 @@ define(function (require) {
       }
     }
 
+    function X(d) { return d.x; }
+    function Y(d) { return d.y; }
+
+    // Public API
     mixed.type = function (_) {
       if (!arguments.length) return type;
       type = _;
@@ -64,7 +82,7 @@ define(function (require) {
 
     mixed.accessor = function (_) {
       if (!arguments.length) return accessor;
-      accessor = valuator(_);
+      accessor = _;
       return mixed;
     };
 

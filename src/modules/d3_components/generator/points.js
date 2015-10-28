@@ -15,14 +15,9 @@ define(function (require) {
     var stroke = colorFill;
     var strokeWidth = 0;
     var opacity = null;
-
     var scatterLayout = layout();
     var circles = circle();
     var g;
-
-    function colorFill (d, i) {
-      return color(i);
-    }
 
     function generator(selection) {
       selection.each(function (data) {
@@ -37,11 +32,16 @@ define(function (require) {
           .strokeWidth(strokeWidth)
           .opacity(opacity);
 
-        if (!g) g = d3.select(this).append("g").attr('class', 'points-group');
+        if (!g) {
+          g = d3.select(this).append("g")
+            .attr('class', 'points-group');
+        }
 
         g.datum(scatterLayout(data)).call(circles);
       });
     }
+
+    function colorFill (d, i) { return color(i); }
 
     // Public API
     generator.x = function (_) {

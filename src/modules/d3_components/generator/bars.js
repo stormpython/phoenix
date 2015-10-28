@@ -1,6 +1,5 @@
 define(function (require) {
   var d3 = require('d3');
-  var builder = require('src/modules/d3_components/helpers/builder');
   var vertical = require('src/modules/d3_components/layout/bars/vertical');
   var horizontal = require('src/modules/d3_components/layout/bars/horizontal');
   var rect = require('src/modules/d3_components/generator/element/svg/rect');
@@ -13,10 +12,9 @@ define(function (require) {
     var yScale = d3.scale.ordinal();
     var rx = d3.functor(0);
     var ry = d3.functor(0);
-    var padding = 0;
     var group = false;
-    var groupPadding = 0;
     var timeInterval = null;
+    var groupPadding = 0;
     var timePadding = 0;
     var cssClass = 'bar';
     var fill = colorFill;
@@ -41,7 +39,6 @@ define(function (require) {
         barLayout.x(x).y(y).rx(rx).ry(ry)
           .xScale(xScale)
           .yScale(yScale)
-          .padding(padding)
           .groupPadding(groupPadding)
           .timeInterval(timeInterval)
           .timePadding(timePadding);
@@ -103,12 +100,6 @@ define(function (require) {
     generator.group = function (_) {
       if (!arguments.length) return group;
       group = typeof _ === 'boolean' ? _ : group;
-      return generator;
-    };
-
-    generator.padding = function (_) {
-      if (!arguments.length) return padding;
-      padding = typeof _ === 'number' ? _ : padding;
       return generator;
     };
 

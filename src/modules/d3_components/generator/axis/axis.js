@@ -3,14 +3,23 @@ define(function (require) {
   var builder = require('src/modules/d3_components/helpers/builder');
   var rotate = require('src/modules/d3_components/generator/axis/rotate');
   var scaleGenerator = require('src/modules/d3_components/mixed/scale');
+  var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function axes() {
+    var type = null;
+    var accessor = null;
+    var categories = [];
+    var min = null;
+    var max = null;
+    var padding = 0.1;
+    var clamp = false;
+    var utc = false;
+    var timeInterval = null;
     var position = 'bottom'; // `top`, `left`, `right`, `bottom`
     var size = [0, 1]; // [width, height]
     var tick = {};
     var rotateLabels = {};
     var title = {};
-    var scaleOpts = {};
     var axis = d3.svg.axis();
     var rotation = rotate();
     var g;
@@ -18,9 +27,18 @@ define(function (require) {
 
     function generator(selection) {
       selection.each(function (data) {
-        var scaleRange = getScaleRange(position, size, scaleOpts.categories);
+        var scaleRange = getScaleRange(position, size, categories);
 
-        var scale = builder(scaleOpts, scaleGenerator())
+        var scale = scaleGenerator()
+          .type(type)
+          .accessor(accessor)
+          .categories(categories)
+          .min(min)
+          .max(max)
+          .padding(padding)
+          .clamp(clamp)
+          .utc(utc)
+          .timeInterval(timeInterval)
           .range(scaleRange)(data);
 
         axis.orient(position)
@@ -80,22 +98,69 @@ define(function (require) {
       var width = size[0];
       var height = size[1];
 
-      if (position === 'bottom' || position === 'top') {
-        return [0, width];
-      } else if (categories) {
-        return [0, height];
-      } else if (scaleOpts.type === 'datetime') {
-        return [0, height]
-      } else {
-        return [height, 0]
-      }
+      if (position === 'bottom' || position === 'top') return [0, width];
+      if (!type && categories) return [0, height];
+      if (type === 'datetime') return [0, height];
+      return [height, 0]
     }
-
 
     // Public API
     generator.scale = function (_) {
       if (!arguments.length) return axis.scale();
-      scaleOpts = typeof _ === 'object' ? _ : scaleOpts;
+      return generator;
+    };
+
+    generator.type = function (_) {
+      if (!arguments.length) return type;
+      type = _;
+      return generator;
+    };
+
+    generator.accessor = function (_) {
+      if (!arguments.length) return accessor;
+      accessor = valuator(_);
+      return generator;
+    };
+
+    generator.categories = function (_) {
+      if (!arguments.length) return categories;
+      categories = Array.isArray(_) ? _ : categories;
+      return generator;
+    };
+
+    generator.min = function (_) {
+      if (!arguments.length) return min;
+      min = _;
+      return generator;
+    };
+
+    generator.max = function (_) {
+      if (!arguments.length) return max;
+      max = _;
+      return generator;
+    };
+
+    generator.padding = function (_) {
+      if (!arguments.length) return padding;
+      padding = _;
+      return generator;
+    };
+
+    generator.clamp = function (_) {
+      if (!arguments.length) return clamp;
+      clamp = _;
+      return generator;
+    };
+
+    generator.timeInterval = function (_) {
+      if (!arguments.length) return timeInterval;
+      timeInterval = _;
+      return generator;
+    };
+
+    generator.utc = function (_) {
+      if (!arguments.length) return utc;
+      utc = _;
       return generator;
     };
 

@@ -5,7 +5,6 @@ define(function (require) {
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function paths() {
-    var color = d3.scale.category10();
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
     var label = function (d) { return d.label; };
@@ -19,10 +18,9 @@ define(function (require) {
     var cssClass = 'path';
     var transform = 'translate(0,0)';
     var fill = 'none';
-    var stroke = function (d, i) { return color(i); };
+    var stroke = colorFill;
     var strokeWidth = 1;
     var opacity = 1;
-
     var pathLayout = layout();
     var paths = pathGenerator();
     var g;
@@ -40,7 +38,7 @@ define(function (require) {
 
         paths.class(cssClass)
           .transform(transform)
-          .fill(fill)
+          .fill(type === 'area' && fill === 'none' ? colorFill : fill)
           .stroke(stroke)
           .strokeWidth(strokeWidth)
           .opacity(opacity);
@@ -53,6 +51,8 @@ define(function (require) {
         g.data(pathLayout(data)).call(paths);
       });
     }
+
+    function colorFill(d, i) { return color(i); }
 
     // Public API
     generator.x = function (_) {

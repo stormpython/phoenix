@@ -25,10 +25,10 @@ define(function (require) {
         pathFunction.x(X).y(Y);
       }
 
-      data = data.map(function (d) {
+      data = data.map(function (d, i) {
         return {
           d: pathFunction(d),
-          label: label.call(this, d[0]),
+          label: label.call(this, d[0], i),
           values: d
         };
       });
