@@ -15,6 +15,21 @@ define(function (require) {
     if (!self._opts) throw new Error('No options given');
   }
 
+  function removeBrush(selection) {
+    var brushEvents = [
+      'mousedown.brush', 'touchstart.brush',
+      'mousemove.brush', 'mouseup.brush',
+      'touchmove.brush', 'touchend.brush',
+      'keydown.brush', 'keyup.brush'
+    ];
+
+    selection.selectAll('svg').each(function () {
+      brushEvents.forEach(function (event) {
+        d3.select(this).on(event, null);
+      });
+    });
+  }
+
   /**
    * D3 Charting Library wrapper
    *
@@ -232,6 +247,7 @@ define(function (require) {
 
     if (!selection) throw new Error('A valid element is required');
 
+    removeBrush(selection);
     Object.keys(this._listeners).forEach(function (key) {
       selection.selectAll('svg').each(function () {
         d3.select(this).on(key, null);

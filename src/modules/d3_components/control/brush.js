@@ -38,11 +38,10 @@ define(function (require) {
         // Attach new brush
         brushG.attr('class', cssClass)
           .attr('opacity', opacity)
-          .call(brush)
-          .selectAll('rect');
+          .call(brush);
 
-        if (width) brushG.attr('width', width);
-        if (height) brushG.attr('height', height);
+        if (width) brushG.selectAll('rect').attr('width', width);
+        if (height) brushG.selectAll('rect').attr('height', height);
 
         function brushStart() {
           brushStartCallback.forEach(function (listener) {

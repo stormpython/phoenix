@@ -18,6 +18,7 @@ define(function (require) {
     var accessor = function (d) { return d.data; };
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
+    var timeInterval = null;
 
     var brush = brushControl();
     var clippath = clipPathGenerator();
@@ -68,16 +69,13 @@ define(function (require) {
         // Brush
         brush
           .height(adjustedHeight)
-          .opacity(brushOpts.opacity)
-          .clamp(brushOpts.clamp)
-          .extent(brushOpts.extent)
+          .opacity(brushOpts.opacity || 0.1)
           .brushstart(listeners.brushstart)
           .brush(listeners.brush)
           .brushend(listeners.brushend);
 
         // ClipPath
         clippath.width(adjustedWidth).height(adjustedHeight);
-
         /* ************************************************** */
         // SVG - create/update the svg
         if (!svg && !g) {
@@ -96,7 +94,8 @@ define(function (require) {
         [xAxes, yAxes].forEach(function (axis) {
           axis.forEach(function (opts) {
             var generator = axisFunctions[opts.position]
-              .size([adjustedWidth, adjustedHeight]);
+              .size([adjustedWidth, adjustedHeight])
+              .timeInterval(timeInterval);
 
             g.call(builder(opts, generator));
           });
@@ -104,9 +103,9 @@ define(function (require) {
 
         // Brush
         if (listeners.brushstart || listeners.brush || listeners.brushend) {
-          brush.xScale(axisFunctions.bottom.scale())
-            .yScale(axisFunctions.left.scale());
+          if (brushOpts.y) brush.yScale(axisFunctions.left.scale());
 
+          brush.xScale(axisFunctions.bottom.scale());
           g.call(brush);
         }
 
@@ -129,10 +128,10 @@ define(function (require) {
 
         // Elements - bars, area, line, points
         d3.entries(elements).forEach(function (d) {
-          if (Object.keys(d.value).length) {
-            if (!Array.isArray(d.value)) d.value = [d.value];
+          if (!Array.isArray(d.value)) d.value = [d.value];
 
-            d.value.forEach(function (e) {
+          d.value.forEach(function (e) {
+            if (e.show) {
               var xAxisPosition = e.xAxis || 'bottom';
               var yAxisPosition = e.yAxis || 'left';
               var xScale = axisFunctions.bottom.scale();
@@ -145,9 +144,13 @@ define(function (require) {
                 generator.offset(stackOpts.offset);
               }
 
+              if (typeof generator.timeInterval === 'function') {
+                generator.timeInterval(timeInterval);
+              }
+
               clippedG.call(builder(e, generator));
-            });
-          }
+            }
+          });
         });
       });
     }
@@ -183,6 +186,12 @@ define(function (require) {
     chart.stack = function (_) {
       if (!arguments.length) return stackOpts;
       stackOpts = _;
+      return chart;
+    };
+
+    chart.timeInterval = function (_) {
+      if (!arguments.length) return timeInterval;
+      timeInterval = _;
       return chart;
     };
 

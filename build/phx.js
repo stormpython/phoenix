@@ -12377,11 +12377,10 @@ define('src/modules/d3_components/control/brush',['require','d3'],function (requ
         // Attach new brush
         brushG.attr('class', cssClass)
           .attr('opacity', opacity)
-          .call(brush)
-          .selectAll('rect');
+          .call(brush);
 
-        if (width) brushG.attr('width', width);
-        if (height) brushG.attr('height', height);
+        if (width) brushG.selectAll('rect').attr('width', width);
+        if (height) brushG.selectAll('rect').attr('height', height);
 
         function brushStart() {
           brushStartCallback.forEach(function (listener) {
@@ -13634,6 +13633,7 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
     var accessor = function (d) { return d.data; };
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
+    var timeInterval = null;
 
     var brush = brushControl();
     var clippath = clipPathGenerator();
@@ -13684,16 +13684,13 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
         // Brush
         brush
           .height(adjustedHeight)
-          .opacity(brushOpts.opacity)
-          .clamp(brushOpts.clamp)
-          .extent(brushOpts.extent)
+          .opacity(brushOpts.opacity || 0.1)
           .brushstart(listeners.brushstart)
           .brush(listeners.brush)
           .brushend(listeners.brushend);
 
         // ClipPath
         clippath.width(adjustedWidth).height(adjustedHeight);
-
         /* ************************************************** */
         // SVG - create/update the svg
         if (!svg && !g) {
@@ -13712,7 +13709,8 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
         [xAxes, yAxes].forEach(function (axis) {
           axis.forEach(function (opts) {
             var generator = axisFunctions[opts.position]
-              .size([adjustedWidth, adjustedHeight]);
+              .size([adjustedWidth, adjustedHeight])
+              .timeInterval(timeInterval);
 
             g.call(builder(opts, generator));
           });
@@ -13720,9 +13718,9 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
 
         // Brush
         if (listeners.brushstart || listeners.brush || listeners.brushend) {
-          brush.xScale(axisFunctions.bottom.scale())
-            .yScale(axisFunctions.left.scale());
+          if (brushOpts.y) brush.yScale(axisFunctions.left.scale());
 
+          brush.xScale(axisFunctions.bottom.scale());
           g.call(brush);
         }
 
@@ -13745,10 +13743,10 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
 
         // Elements - bars, area, line, points
         d3.entries(elements).forEach(function (d) {
-          if (Object.keys(d.value).length) {
-            if (!Array.isArray(d.value)) d.value = [d.value];
+          if (!Array.isArray(d.value)) d.value = [d.value];
 
-            d.value.forEach(function (e) {
+          d.value.forEach(function (e) {
+            if (e.show) {
               var xAxisPosition = e.xAxis || 'bottom';
               var yAxisPosition = e.yAxis || 'left';
               var xScale = axisFunctions.bottom.scale();
@@ -13761,9 +13759,13 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
                 generator.offset(stackOpts.offset);
               }
 
+              if (typeof generator.timeInterval === 'function') {
+                generator.timeInterval(timeInterval);
+              }
+
               clippedG.call(builder(e, generator));
-            });
-          }
+            }
+          });
         });
       });
     }
@@ -13799,6 +13801,12 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
     chart.stack = function (_) {
       if (!arguments.length) return stackOpts;
       stackOpts = _;
+      return chart;
+    };
+
+    chart.timeInterval = function (_) {
+      if (!arguments.length) return timeInterval;
+      timeInterval = _;
       return chart;
     };
 
@@ -14391,6 +14399,21 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
     if (!self._opts) throw new Error('No options given');
   }
 
+  function removeBrush(selection) {
+    var brushEvents = [
+      'mousedown.brush', 'touchstart.brush',
+      'mousemove.brush', 'mouseup.brush',
+      'touchmove.brush', 'touchend.brush',
+      'keydown.brush', 'keyup.brush'
+    ];
+
+    selection.selectAll('svg').each(function () {
+      brushEvents.forEach(function (event) {
+        d3.select(this).on(event, null);
+      });
+    });
+  }
+
   /**
    * D3 Charting Library wrapper
    *
@@ -14608,6 +14631,7 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
 
     if (!selection) throw new Error('A valid element is required');
 
+    removeBrush(selection);
     Object.keys(this._listeners).forEach(function (key) {
       selection.selectAll('svg').each(function () {
         d3.select(this).on(key, null);
