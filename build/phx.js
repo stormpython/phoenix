@@ -13663,6 +13663,7 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
 
     var svg;
     var g;
+    var zeroLineG;
     var clippedG;
 
     function chart(selection)  {
@@ -13726,13 +13727,18 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
 
         // Zero line
         if (zeroLineOpts.show) {
+          if (!zeroLineG) zeroLineG = g.append('g').attr('class', 'zero-line');
+
           zeroLine
             .x1(function () { return axisFunctions.bottom.scale().range()[0]; })
             .x2(function () { return axisFunctions.bottom.scale().range()[1]; })
             .y1(function () { return axisFunctions.left.scale()(0); })
-            .y2(function () { return axisFunctions.left.scale()(0); });
+            .y2(function () { return axisFunctions.left.scale()(0); })
+            .stroke(zeroLineOpts.stroke || "#000000")
+            .strokeWidth(zeroLineOpts.strokeWidth || 1)
+            .opacity(zeroLineOpts.opacity || 0.2);
 
-          g.call(builder(zeroLineOpts, zeroLine));
+          zeroLineG.datum([{}]).call(zeroLine);
         }
 
         // Clippath
@@ -13826,13 +13832,13 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
 
     chart.brush = function (_) {
       if (!arguments.length) return brushOpts;
-      brushOpts = _;
+      brushOpts = typeof _ === 'object' ? _ : brushOpts;
       return chart;
     };
 
     chart.zeroLine = function (_) {
       if (!arguments.length) return zeroLineOpts;
-      zeroLineOpts = _;
+      zeroLineOpts = typeof _ === 'object' ? _ : zeroLineOpts;
       return chart;
     };
 
