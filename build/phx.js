@@ -10058,12 +10058,13 @@ define('src/modules/d3_components/generator/boxplot',['require','d3'],function (
         var medianX2 = box.width / 2;
 
         var g = d3.select(this).selectAll('g.box')
-          .data(function (d) { return d; })
-          .enter().append('g')
-          .attr('class', gClass);
+          .data(function (d) { return d; });
 
-        g.attr('transform', transform)
-          .each(function (d, i) {
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('class', gClass)
+          .attr('transform', transform)
+          .each(function () {
             var g = d3.select(this);
 
             g.append('line')
@@ -12308,20 +12309,24 @@ define('src/modules/d3_components/generator/clippath',['require','d3'],function 
     var y = 0;
     var width = 0;
     var height = 0;
-    var g;
-    var rect;
 
     function generator(selection) {
-      selection.each(function () {
-        if (!g) {
-          g = d3.select(this).append('clipPath')
-            .attr('id', id);
-          rect = g.append('rect');
-        }
+      selection.each(function (data) {
+        var g = d3.select(this).selectAll('.clip-path')
+          .data([data]);
 
-        g.attr('transform', transform);
+        g.exit().remove();
+        g.enter().append('clipPath');
+        g.attr('id', id)
+          .attr('transform', transform);
 
-        rect.attr('x', x)
+        var rect = g.selectAll('.clip-path-rect')
+          .data([data]);
+
+        rect.exit().remove();
+        rect.enter().append('rect');
+        rect.attr('class', 'clip-path-rect')
+          .attr('x', x)
           .attr('y', y)
           .attr('width', width)
           .attr('height', height);
@@ -12774,7 +12779,6 @@ define('src/modules/d3_components/generator/path',['require','d3','src/modules/d
     var opacity = 1;
     var pathLayout = layout();
     var paths = pathGenerator();
-    var g;
 
     function generator(selection) {
       selection.each(function (data) {
@@ -12794,12 +12798,13 @@ define('src/modules/d3_components/generator/path',['require','d3','src/modules/d
           .strokeWidth(strokeWidth)
           .opacity(opacity);
 
-        if (!g) {
-          g = d3.select(this).append('g')
-            .attr('class', 'path-layers')
-        }
+        var g = d3.select(this).selectAll('.path-layers')
+          .data(pathLayout(data));
 
-        g.data(pathLayout(data)).call(paths);
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('class', 'path-layers')
+          .call(paths);
       });
     }
 
@@ -13232,11 +13237,6 @@ define('src/modules/d3_components/generator/bars',['require','d3','src/modules/d
     var rects = rect();
     var verticalLayout = vertical();
     var horizontalLayout = horizontal();
-    var g;
-
-    function colorFill(d, i) {
-      return color(i);
-    }
 
     function generator(selection) {
       selection.each(function (data) {
@@ -13257,15 +13257,18 @@ define('src/modules/d3_components/generator/bars',['require','d3','src/modules/d
           .strokeWidth(strokeWidth)
           .opacity(opacity);
 
-        if (!g) g = d3.select(this).append('g').attr('class', 'bar-layers');
-
-        var layers = g.selectAll('g')
+        var g = d3.select(this).selectAll('.bar-layers')
           .data(barLayout(data));
 
-        layers.exit().remove();
-        layers.enter().append('g');
-        layers.call(rects);
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('class', 'bar-layers')
+          .call(rects);
       });
+    }
+
+    function colorFill(d, i) {
+      return color(i);
     }
 
     // Public API
@@ -13557,7 +13560,6 @@ define('src/modules/d3_components/generator/points',['require','d3','src/modules
     var opacity = null;
     var scatterLayout = layout();
     var circles = circle();
-    var g;
 
     function generator(selection) {
       selection.each(function (data) {
@@ -13572,12 +13574,13 @@ define('src/modules/d3_components/generator/points',['require','d3','src/modules
           .strokeWidth(strokeWidth)
           .opacity(opacity);
 
-        if (!g) {
-          g = d3.select(this).append("g")
-            .attr('class', 'points-group');
-        }
+        var g = d3.select(this).selectAll('.points-group')
+          .data([scatterLayout(data)]);
 
-        g.datum(scatterLayout(data)).call(circles);
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('class', 'points-group')
+          .call(circles);
       });
     }
 

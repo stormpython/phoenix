@@ -25,11 +25,6 @@ define(function (require) {
     var rects = rect();
     var verticalLayout = vertical();
     var horizontalLayout = horizontal();
-    var g;
-
-    function colorFill(d, i) {
-      return color(i);
-    }
 
     function generator(selection) {
       selection.each(function (data) {
@@ -50,15 +45,18 @@ define(function (require) {
           .strokeWidth(strokeWidth)
           .opacity(opacity);
 
-        if (!g) g = d3.select(this).append('g').attr('class', 'bar-layers');
-
-        var layers = g.selectAll('g')
+        var g = d3.select(this).selectAll('.bar-layers')
           .data(barLayout(data));
 
-        layers.exit().remove();
-        layers.enter().append('g');
-        layers.call(rects);
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('class', 'bar-layers')
+          .call(rects);
       });
+    }
+
+    function colorFill(d, i) {
+      return color(i);
     }
 
     // Public API

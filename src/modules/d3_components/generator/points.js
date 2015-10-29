@@ -17,7 +17,6 @@ define(function (require) {
     var opacity = null;
     var scatterLayout = layout();
     var circles = circle();
-    var g;
 
     function generator(selection) {
       selection.each(function (data) {
@@ -32,12 +31,13 @@ define(function (require) {
           .strokeWidth(strokeWidth)
           .opacity(opacity);
 
-        if (!g) {
-          g = d3.select(this).append("g")
-            .attr('class', 'points-group');
-        }
+        var g = d3.select(this).selectAll('.points-group')
+          .data([scatterLayout(data)]);
 
-        g.datum(scatterLayout(data)).call(circles);
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('class', 'points-group')
+          .call(circles);
       });
     }
 

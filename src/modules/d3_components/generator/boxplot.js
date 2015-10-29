@@ -65,12 +65,13 @@ define(function (require) {
         var medianX2 = box.width / 2;
 
         var g = d3.select(this).selectAll('g.box')
-          .data(function (d) { return d; })
-          .enter().append('g')
-          .attr('class', gClass);
+          .data(function (d) { return d; });
 
-        g.attr('transform', transform)
-          .each(function (d, i) {
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('class', gClass)
+          .attr('transform', transform)
+          .each(function () {
             var g = d3.select(this);
 
             g.append('line')

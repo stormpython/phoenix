@@ -23,7 +23,6 @@ define(function (require) {
     var opacity = 1;
     var pathLayout = layout();
     var paths = pathGenerator();
-    var g;
 
     function generator(selection) {
       selection.each(function (data) {
@@ -43,12 +42,13 @@ define(function (require) {
           .strokeWidth(strokeWidth)
           .opacity(opacity);
 
-        if (!g) {
-          g = d3.select(this).append('g')
-            .attr('class', 'path-layers')
-        }
+        var g = d3.select(this).selectAll('.path-layers')
+          .data(pathLayout(data));
 
-        g.data(pathLayout(data)).call(paths);
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('class', 'path-layers')
+          .call(paths);
       });
     }
 
