@@ -61,10 +61,10 @@ define(function (require) {
           .attr('width', width)
           .attr('height', height)
           .call(svgEvents)
-          .append('g')
-          .datum(partition.nodes)
-          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
-          .call(arcPath);
+            .append('g')
+            .datum(partition.nodes)
+            .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+            .call(arcPath);
       });
     }
 
