@@ -6,6 +6,8 @@ define(function (require) {
 
   return function sunburst() {
     // Private variables
+    var accessor = function (d) { return d; };
+    var margin = {top: 0, right: 0, bottom: 0, left: 0};
     var width = 500;
     var height = 500;
     var color = d3.scale.category10();
@@ -30,30 +32,24 @@ define(function (require) {
     var pieClass = 'slice';
     var stroke = '#ffffff';
     var fill = function (d, i) {
-      if (d.depth === 0) { return 'none'; }
+      if (d.depth === 0) return 'none';
       return color(i);
     };
-
     var listeners = {};
 
     function chart (selection) {
-      selection.each(function (data) {
-        var radius = Math.min(width, height) / 2;
+      selection.each(function (data, index) {
+        data = accessor.call(this, data, index);
+
+        var adjustedWidth = width - margin.right - margin.left;
+        var adjustedHeight = height - margin.top - margin.bottom;
+        var radius = Math.min(adjustedWidth, adjustedHeight) / 2;
+
+        yScale.range([0, radius]);
 
         var partition = d3.layout.partition()
           .sort(sort)
           .value(value);
-
-        var svgEvents = events().listeners(listeners);
-
-        var svg = d3.select(this).append('svg')
-          .attr('width', width)
-          .attr('height', height)
-          .append('g')
-          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
-          .call(svgEvents);
-
-        yScale.range([0, radius]);
 
         var arc = d3.svg.arc()
           .startAngle(startAngle)
@@ -62,103 +58,126 @@ define(function (require) {
           .outerRadius(outerRadius);
 
         var arcPath = path()
-          .pathGenerator(arc)
-          .accessor(partition.nodes)
+          .path(function (d) { return arc(d); })
           .class(pieClass)
           .stroke(stroke)
           .fill(fill);
 
-        svg.datum(data).call(arcPath);
+        var svgEvents = events().listeners(listeners);
+
+        var svg = d3.select(this).selectAll('svg')
+          .data([data]);
+
+        svg.exit().remove();
+        svg.enter().append('svg');
+
+        svg
+          .attr('width', width)
+          .attr('height', height)
+          .call(svgEvents)
+          .append('g')
+          .datum(partition.nodes)
+          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+          .call(arcPath);
       });
     }
 
     // Public API
+    chart.accessor = function (_) {
+      if (!arguments.length) return accessor;
+      accessor = valuator(_);
+      return chart;
+    };
+
+    chart.margin = function (_) {
+      if (!arguments.length) return margin;
+      margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
+      margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
+      margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
+      margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
+      return chart;
+    };
+
     chart.width = function (_) {
-      if (!arguments.length) { return width; }
+      if (!arguments.length) return width;
       width = _;
       return chart;
     };
 
     chart.height = function (_) {
-      if (!arguments.length) { return height; }
+      if (!arguments.length) return height;
       height = _;
       return chart;
     };
 
-    chart.color = function (_) {
-      if (!arguments.length) { return color; }
-      color = typeof _ !== 'function' ? color : _;
-      return chart;
-    };
-
     chart.sort = function (_) {
-      if (!arguments.length) { return sort; }
+      if (!arguments.length) return sort;
       sort = _;
       return chart;
     };
 
     chart.value = function (_) {
-      if (!arguments.length) { return value; }
+      if (!arguments.length) return value;
       value = valuator(_);
       return chart;
     };
 
     chart.xScale = function (_) {
-      if (!arguments.length) { return xScale; }
+      if (!arguments.length) return xScale;
       xScale = _;
       return chart;
     };
 
     chart.yScale = function (_) {
-      if (!arguments.length) { return yScale; }
+      if (!arguments.length) return yScale;
       yScale = _;
       return chart;
     };
 
     chart.startAngle = function (_) {
-      if (!arguments.length) { return startAngle; }
+      if (!arguments.length) return startAngle;
       startAngle = d3.functor(_);
       return chart;
     };
 
     chart.endAngle = function (_) {
-      if (!arguments.length) { return endAngle; }
+      if (!arguments.length) return endAngle;
       endAngle = d3.functor(_);
       return chart;
     };
 
     chart.innerRadius = function (_) {
-      if (!arguments.length) { return innerRadius; }
+      if (!arguments.length) return innerRadius;
       innerRadius = d3.functor(_);
       return chart;
     };
 
     chart.outerRadius = function (_) {
-      if (!arguments.length) { return outerRadius; }
+      if (!arguments.length) return outerRadius;
       outerRadius = d3.functor(_);
       return chart;
    };
 
     chart.class = function (_) {
-      if (!arguments.length) { return pieClass; }
+      if (!arguments.length) return pieClass;
       pieClass = typeof _ !== 'string' ? pieClass : _;
       return chart;
     };
 
     chart.stroke = function (_) {
-      if (!arguments.length) { return stroke; }
+      if (!arguments.length) return stroke;
       stroke = _;
       return chart;
     };
 
     chart.fill = function (_) {
-      if (!arguments.length) { return fill; }
+      if (!arguments.length) return fill;
       fill= _;
       return chart;
     };
 
     chart.listeners = function (_) {
-      if (!arguments.length) { return listeners; }
+      if (!arguments.length) return listeners;
       listeners = typeof _ !== 'object' ? listeners : _;
       return chart;
     };

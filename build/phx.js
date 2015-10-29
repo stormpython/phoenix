@@ -11919,350 +11919,6 @@ define('src/modules/charts/histogram',['require','d3','src/modules/d3_components
 });
 define('src/modules/charts/horizon',['require'],function (require) {});
 
-define('src/modules/d3_components/generator/element/svg/path',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function path() {
-    var color = d3.scale.category10();
-    var value = function (d) { return d.d; };
-    var cssClass = 'path';
-    var transform = 'translate(0,0)';
-    var fill = 'none';
-    var stroke = function (d, i) { return color(i); };
-    var strokeWidth = 1;
-    var opacity = 1;
-
-    function element(selection) {
-      selection.each(function (data) {
-        var path = d3.select(this).selectAll('path')
-          .data(data);
-
-        path.exit().remove();
-
-        path.enter().append('path');
-
-        path
-          .attr('transform', transform)
-          .attr('class', cssClass)
-          .attr('fill', fill)
-          .attr('stroke', stroke)
-          .attr('stroke-width', strokeWidth)
-          .attr('d', value)
-          .style('opacity', opacity);
-      });
-    }
-
-    // Public API
-    element.path = function (_) {
-      if (!arguments.length) return value;
-      value = d3.functor(_);
-      return element;
-    };
-
-    element.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
-      return element;
-    };
-
-    element.transform = function (_) {
-      if (!arguments.length) return transform;
-      transform = _;
-      return element;
-    };
-
-    element.fill = function (_) {
-      if (!arguments.length) return fill;
-      fill = _;
-      return element;
-    };
-
-    element.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
-      return element;
-    };
-
-    element.stroke = function (_) {
-      if (!arguments.length) return stroke;
-      stroke = d3.functor(_);
-      return element;
-    };
-
-    element.strokeWidth = function (_) {
-      if (!arguments.length) return strokeWidth;
-      strokeWidth = _;
-      return element;
-    };
-
-    return element;
-  };
-});
-
-define('src/modules/d3_components/generator/element/svg/text',['require','d3'],function (require) {
-  var d3 = require('d3');
-
-  return function text() {
-    var x = function (d) { return d.x; };
-    var y = function (d) { return d.y; };
-    var dx = function (d) { return d.dx || 0; };
-    var dy = function (d) { return d.dy || 0; };
-    var transform = null;
-    var cssClass = 'text';
-    var fill = '#ffffff';
-    var anchor = 'middle';
-    var texts = '';
-
-    function element(selection) {
-      selection.each(function (data) {
-        var text = d3.select(this).selectAll('text')
-          .data(data);
-
-        text.exit().remove();
-
-        text.enter().append('text');
-
-        text
-          .attr('class', cssClass)
-          .attr('transform', transform)
-          .attr('x', x)
-          .attr('y', y)
-          .attr('dx', dx)
-          .attr('dy', dy)
-          .attr('fill', fill)
-          .style('text-anchor', anchor)
-          .text(texts);
-      });
-    }
-
-    // Public API
-    element.x = function (_) {
-      if (!arguments.length) return x;
-      x = d3.functor(_);
-      return element;
-    };
-
-    element.y = function (_) {
-      if (!arguments.length) return y;
-      y = d3.functor(_);
-      return element;
-    };
-
-    element.dx = function (_) {
-      if (!arguments.length) return dx;
-      dx = d3.functor(_);
-      return element;
-    };
-
-    element.dy = function (_) {
-      if (!arguments.length) return dy;
-      dy = d3.functor(_);
-      return element;
-    };
-
-    element.transform = function (_) {
-      if (!arguments.length) return transform;
-      transform = _;
-      return element;
-    };
-
-    element.class= function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
-      return element;
-    };
-
-    element.anchor = function (_) {
-      if (!arguments.length) return anchor;
-      anchor = _;
-      return element;
-    };
-
-    element.fill = function (_) {
-      if (!arguments.length) return fill;
-      fill = _;
-      return element;
-    };
-
-    element.text = function (_) {
-      if (!arguments.length) return texts;
-      texts = _;
-      return element;
-    };
-
-    return element;
-  };
-});
-
-define('src/modules/charts/pie',['require','d3','src/modules/d3_components/generator/element/svg/path','src/modules/d3_components/generator/element/svg/text','src/modules/d3_components/control/events','src/modules/d3_components/helpers/valuator'],function (require) {
-  var d3 = require('d3');
-  var path = require('src/modules/d3_components/generator/element/svg/path');
-  var textElement = require('src/modules/d3_components/generator/element/svg/text');
-  var events = require('src/modules/d3_components/control/events');
-  var valuator = require('src/modules/d3_components/helpers/valuator');
-
-  return function pieChart() {
-    var width = 300;
-    var height = 300;
-    var color = d3.scale.category10();
-    var outerRadius = null;
-    var innerRadius = 0;
-    var sort = null;
-    var value = function (d) { return d.x; };
-    var label = function (d) { return d.name; };
-
-    var pieClass = 'pie';
-    var fill = function (d, i) {
-      return color(label.call(this, d.data, i));
-    };
-    var stroke = '#ffffff';
-
-    // Text options
-    var text = {
-      fill: '#ffffff',
-      dy: '.35em',
-      anchor: 'middle',
-      transform: null
-    };
-
-    var listeners = {};
-
-    function chart (selection) {
-      selection.each(function (data, index) {
-        var pie = d3.layout.pie()
-          .sort(sort)
-          .value(value);
-
-        data = pie(data).map(function (d) {
-          return [d];
-        });
-
-        var radius = Math.min(width, height) / 2;
-
-        var svgEvents = events().listeners(listeners);
-
-        var svg = d3.select(this).append('svg')
-          .attr('width', width)
-          .attr('height', height)
-          .call(svgEvents);
-
-        var g = svg.append('g')
-          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
-
-        var arc = d3.svg.arc()
-          .outerRadius(outerRadius || radius)
-          .innerRadius(innerRadius);
-
-        var piePath = path()
-          .pathGenerator(arc)
-          .class(pieClass)
-          .fill(fill)
-          .stroke(stroke);
-
-        var pieText = textElement()
-          .transform(text.transform || function (d) {
-            return 'translate(' + arc.centroid(d) + ')';
-          })
-          .dy(text.dy)
-          .anchor(text.anchor)
-          .fill(text.fill)
-          .text(function (d, i) {
-            return label.call(this, d.data, i);
-          });
-
-        g.selectAll('groups')
-          .data(data)
-          .enter().append('g')
-          .call(piePath)
-          .call(pieText);
-      });
-    }
-
-    // Public API
-    chart.width = function (_) {
-      if (!arguments.length) { return width; }
-      width = _;
-      return chart;
-    };
-
-    chart.height = function (_) {
-      if (!arguments.length) { return height; }
-      height = _;
-      return chart;
-    };
-
-    chart.color = function (_) {
-      if (!arguments.length) { return color; }
-      color = _;
-      return chart;
-    };
-
-    chart.outerRadius = function (_) {
-      if (!arguments.length) { return outerRadius; }
-      outerRadius = _;
-      return chart;
-    };
-
-    chart.innerRadius = function (_) {
-      if (!arguments.length) { return innerRadius; }
-      innerRadius = _;
-      return chart;
-    };
-
-    chart.sort = function (_) {
-      if (!arguments.length) { return sort; }
-      sort = _;
-      return chart;
-    };
-
-    chart.value = function (_) {
-      if (!arguments.length) { return value; }
-      value = valuator(_);
-      return chart;
-    };
-
-    chart.label = function (_) {
-      if (!arguments.length) { return label; }
-      label = valuator(_);
-      return chart;
-    };
-
-    chart.class = function (_) {
-      if (!arguments.length) { return pieClass; }
-      pieClass = _;
-      return chart;
-    };
-
-    chart.fill = function (_) {
-      if (!arguments.length) { return fill; }
-      fill = _;
-      return chart;
-    };
-
-    chart.stroke = function (_) {
-      if (!arguments.length) { return stroke; }
-      stroke = _;
-      return chart;
-    };
-
-    chart.text = function (_) {
-      if (!arguments.length) { return text; }
-      text.fill = typeof _.fill !== 'undefined' ? _.fill : text.fill;
-      text.anchor = typeof _.anchor !== 'undefined' ? _.anchor: text.anchor;
-      text.dy = typeof _.dy !== 'undefined' ? _.dy : text.dy;
-      text.transform = typeof _.transform !== 'undefined' ? _.transform : text.transform;
-      return chart;
-    };
-
-    chart.listeners = function (_) {
-      if (!arguments.length) { return listeners; }
-      listeners = typeof _ !== 'object' ? listeners : _;
-      return chart;
-    };
-
-    return chart;
-  };
-});
 define('src/modules/d3_components/helpers/stack_neg_pos',[],function () {
   return function stackNegPos() {
     var placement = [0, 0];
@@ -12754,6 +12410,86 @@ define('src/modules/d3_components/layout/path',['require','d3'],function (requir
     return layout;
   };
 });
+define('src/modules/d3_components/generator/element/svg/path',['require','d3'],function (require) {
+  var d3 = require('d3');
+
+  return function path() {
+    var color = d3.scale.category10();
+    var value = function (d) { return d.d; };
+    var cssClass = 'path';
+    var transform = 'translate(0,0)';
+    var fill = 'none';
+    var stroke = function (d, i) { return color(i); };
+    var strokeWidth = 1;
+    var opacity = 1;
+
+    function element(selection) {
+      selection.each(function (data) {
+        var path = d3.select(this).selectAll('path')
+          .data(data);
+
+        path.exit().remove();
+
+        path.enter().append('path');
+
+        path
+          .attr('transform', transform)
+          .attr('class', cssClass)
+          .attr('fill', fill)
+          .attr('stroke', stroke)
+          .attr('stroke-width', strokeWidth)
+          .attr('d', value)
+          .style('opacity', opacity);
+      });
+    }
+
+    // Public API
+    element.path = function (_) {
+      if (!arguments.length) return value;
+      value = d3.functor(_);
+      return element;
+    };
+
+    element.class = function (_) {
+      if (!arguments.length) return cssClass;
+      cssClass = _;
+      return element;
+    };
+
+    element.transform = function (_) {
+      if (!arguments.length) return transform;
+      transform = _;
+      return element;
+    };
+
+    element.fill = function (_) {
+      if (!arguments.length) return fill;
+      fill = _;
+      return element;
+    };
+
+    element.opacity = function (_) {
+      if (!arguments.length) return opacity;
+      opacity = _;
+      return element;
+    };
+
+    element.stroke = function (_) {
+      if (!arguments.length) return stroke;
+      stroke = d3.functor(_);
+      return element;
+    };
+
+    element.strokeWidth = function (_) {
+      if (!arguments.length) return strokeWidth;
+      strokeWidth = _;
+      return element;
+    };
+
+    return element;
+  };
+});
+
 define('src/modules/d3_components/generator/path',['require','d3','src/modules/d3_components/layout/path','src/modules/d3_components/generator/element/svg/path','src/modules/d3_components/helpers/valuator'],function (require) {
   var d3 = require('d3');
   var layout = require('src/modules/d3_components/layout/path');
@@ -13938,6 +13674,8 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
 
   return function sunburst() {
     // Private variables
+    var accessor = function (d) { return d; };
+    var margin = {top: 0, right: 0, bottom: 0, left: 0};
     var width = 500;
     var height = 500;
     var color = d3.scale.category10();
@@ -13962,30 +13700,24 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
     var pieClass = 'slice';
     var stroke = '#ffffff';
     var fill = function (d, i) {
-      if (d.depth === 0) { return 'none'; }
+      if (d.depth === 0) return 'none';
       return color(i);
     };
-
     var listeners = {};
 
     function chart (selection) {
-      selection.each(function (data) {
-        var radius = Math.min(width, height) / 2;
+      selection.each(function (data, index) {
+        data = accessor.call(this, data, index);
+
+        var adjustedWidth = width - margin.right - margin.left;
+        var adjustedHeight = height - margin.top - margin.bottom;
+        var radius = Math.min(adjustedWidth, adjustedHeight) / 2;
+
+        yScale.range([0, radius]);
 
         var partition = d3.layout.partition()
           .sort(sort)
           .value(value);
-
-        var svgEvents = events().listeners(listeners);
-
-        var svg = d3.select(this).append('svg')
-          .attr('width', width)
-          .attr('height', height)
-          .append('g')
-          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
-          .call(svgEvents);
-
-        yScale.range([0, radius]);
 
         var arc = d3.svg.arc()
           .startAngle(startAngle)
@@ -13994,103 +13726,126 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
           .outerRadius(outerRadius);
 
         var arcPath = path()
-          .pathGenerator(arc)
-          .accessor(partition.nodes)
+          .path(function (d) { return arc(d); })
           .class(pieClass)
           .stroke(stroke)
           .fill(fill);
 
-        svg.datum(data).call(arcPath);
+        var svgEvents = events().listeners(listeners);
+
+        var svg = d3.select(this).selectAll('svg')
+          .data([data]);
+
+        svg.exit().remove();
+        svg.enter().append('svg');
+
+        svg
+          .attr('width', width)
+          .attr('height', height)
+          .call(svgEvents)
+          .append('g')
+          .datum(partition.nodes)
+          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+          .call(arcPath);
       });
     }
 
     // Public API
+    chart.accessor = function (_) {
+      if (!arguments.length) return accessor;
+      accessor = valuator(_);
+      return chart;
+    };
+
+    chart.margin = function (_) {
+      if (!arguments.length) return margin;
+      margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
+      margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
+      margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
+      margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
+      return chart;
+    };
+
     chart.width = function (_) {
-      if (!arguments.length) { return width; }
+      if (!arguments.length) return width;
       width = _;
       return chart;
     };
 
     chart.height = function (_) {
-      if (!arguments.length) { return height; }
+      if (!arguments.length) return height;
       height = _;
       return chart;
     };
 
-    chart.color = function (_) {
-      if (!arguments.length) { return color; }
-      color = typeof _ !== 'function' ? color : _;
-      return chart;
-    };
-
     chart.sort = function (_) {
-      if (!arguments.length) { return sort; }
+      if (!arguments.length) return sort;
       sort = _;
       return chart;
     };
 
     chart.value = function (_) {
-      if (!arguments.length) { return value; }
+      if (!arguments.length) return value;
       value = valuator(_);
       return chart;
     };
 
     chart.xScale = function (_) {
-      if (!arguments.length) { return xScale; }
+      if (!arguments.length) return xScale;
       xScale = _;
       return chart;
     };
 
     chart.yScale = function (_) {
-      if (!arguments.length) { return yScale; }
+      if (!arguments.length) return yScale;
       yScale = _;
       return chart;
     };
 
     chart.startAngle = function (_) {
-      if (!arguments.length) { return startAngle; }
+      if (!arguments.length) return startAngle;
       startAngle = d3.functor(_);
       return chart;
     };
 
     chart.endAngle = function (_) {
-      if (!arguments.length) { return endAngle; }
+      if (!arguments.length) return endAngle;
       endAngle = d3.functor(_);
       return chart;
     };
 
     chart.innerRadius = function (_) {
-      if (!arguments.length) { return innerRadius; }
+      if (!arguments.length) return innerRadius;
       innerRadius = d3.functor(_);
       return chart;
     };
 
     chart.outerRadius = function (_) {
-      if (!arguments.length) { return outerRadius; }
+      if (!arguments.length) return outerRadius;
       outerRadius = d3.functor(_);
       return chart;
    };
 
     chart.class = function (_) {
-      if (!arguments.length) { return pieClass; }
+      if (!arguments.length) return pieClass;
       pieClass = typeof _ !== 'string' ? pieClass : _;
       return chart;
     };
 
     chart.stroke = function (_) {
-      if (!arguments.length) { return stroke; }
+      if (!arguments.length) return stroke;
       stroke = _;
       return chart;
     };
 
     chart.fill = function (_) {
-      if (!arguments.length) { return fill; }
+      if (!arguments.length) return fill;
       fill= _;
       return chart;
     };
 
     chart.listeners = function (_) {
-      if (!arguments.length) { return listeners; }
+      if (!arguments.length) return listeners;
       listeners = typeof _ !== 'object' ? listeners : _;
       return chart;
     };
@@ -14178,16 +13933,15 @@ define('src/modules/charts/treemap',['require','d3'],function (require) {
   };
 });
 
-define('src/modules/charts/index',['require','src/modules/charts/boxplot','src/modules/charts/dendrogram','src/modules/charts/heatmap','src/modules/charts/histogram','src/modules/charts/horizon','src/modules/charts/pie','src/modules/charts/series','src/modules/charts/sunburst','src/modules/charts/treemap'],function (require) {
+define('src/modules/charts/index',['require','src/modules/charts/boxplot','src/modules/charts/dendrogram','src/modules/charts/heatmap','src/modules/charts/histogram','src/modules/charts/horizon','src/modules/charts/series','src/modules/charts/sunburst','src/modules/charts/treemap'],function (require) {
   return {
     boxplot: require('src/modules/charts/boxplot'),
     dendrogram: require('src/modules/charts/dendrogram'),
     heatmap: require('src/modules/charts/heatmap'),
     histogram: require('src/modules/charts/histogram'),
     horizon: require('src/modules/charts/horizon'),
-    pie: require('src/modules/charts/pie'),
     series: require('src/modules/charts/series'),
-    sunburst: require('src/modules/charts/sunburst'),
+    pie: require('src/modules/charts/sunburst'),
     treemap: require('src/modules/charts/treemap')
   };
 });
