@@ -5,7 +5,6 @@ define(function (require) {
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function sunburst() {
-    // Private variables
     var accessor = function (d) { return d; };
     var margin = {top: 0, right: 0, bottom: 0, left: 0};
     var width = 500;
@@ -27,8 +26,6 @@ define(function (require) {
     var outerRadius = function (d) {
       return Math.max(0, yScale(d.y + d.dy));
     };
-
-    // Pie options
     var pieClass = 'slice';
     var stroke = '#ffffff';
     var fill = function (d, i) {
