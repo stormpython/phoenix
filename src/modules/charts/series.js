@@ -51,10 +51,10 @@ define(function (require) {
 
     function chart(selection)  {
       selection.each(function (data, index) {
+        data = accessor.call(this, data, index);
+
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
-
-        data = accessor.call(this, data, index);
 
         // Stack data
         var out = elements.bar.show ?
@@ -177,6 +177,12 @@ define(function (require) {
     }
 
     // Public API
+    chart.accessor = function (_) {
+      if (!arguments.length) return accessor;
+      accessor = valuator(_);
+      return chart;
+    };
+
     chart.margin = function (_) {
       if (!arguments.length) return margin;
       margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
@@ -195,12 +201,6 @@ define(function (require) {
     chart.height = function (_) {
       if (!arguments.length) return height;
       height = typeof _ === 'number' ? _ : height;
-      return chart;
-    };
-
-    chart.accessor = function (_) {
-      if (!arguments.length) return accessor;
-      accessor = valuator(_);
       return chart;
     };
 

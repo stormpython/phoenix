@@ -14,18 +14,7 @@ define(function (require) {
     var value = function (d) { return d.size; };
     var xScale = d3.scale.linear().range([0, 2 * Math.PI]);
     var yScale = d3.scale.sqrt();
-    var startAngle = function (d) {
-      return Math.max(0, Math.min(2 * Math.PI, xScale(d.x)));
-    };
-    var endAngle = function (d) {
-      return Math.max(0, Math.min(2 * Math.PI, xScale(d.x + d.dx)));
-    };
-    var innerRadius = function (d) {
-      return Math.max(0, yScale(d.y));
-    };
-    var outerRadius = function (d) {
-      return Math.max(0, yScale(d.y + d.dy));
-    };
+    var donut = false;
     var pieClass = 'slice';
     var stroke = '#ffffff';
     var fill = function (d, i) {
@@ -79,6 +68,23 @@ define(function (require) {
       });
     }
 
+    function startAngle(d) {
+      return Math.max(0, Math.min(2 * Math.PI, xScale(d.x)));
+    }
+
+    function endAngle(d) {
+      return Math.max(0, Math.min(2 * Math.PI, xScale(d.x + d.dx)));
+    }
+
+    function innerRadius(d) {
+      if (d.depth === 1 && !donut) return 0;
+      return Math.max(0, yScale(d.y));
+    }
+
+    function outerRadius(d) {
+      return Math.max(0, yScale(d.y + d.dy));
+    }
+
     // Public API
     chart.accessor = function (_) {
       if (!arguments.length) return accessor;
@@ -119,6 +125,12 @@ define(function (require) {
       return chart;
     };
 
+    chart.donut = function (_) {
+      if (!arguments.length) return donut;
+      donut = typeof _ === 'boolean' ? _ : donut;
+      return chart;
+    };
+
     chart.xScale = function (_) {
       if (!arguments.length) return xScale;
       xScale = _;
@@ -130,30 +142,6 @@ define(function (require) {
       yScale = _;
       return chart;
     };
-
-    chart.startAngle = function (_) {
-      if (!arguments.length) return startAngle;
-      startAngle = d3.functor(_);
-      return chart;
-    };
-
-    chart.endAngle = function (_) {
-      if (!arguments.length) return endAngle;
-      endAngle = d3.functor(_);
-      return chart;
-    };
-
-    chart.innerRadius = function (_) {
-      if (!arguments.length) return innerRadius;
-      innerRadius = d3.functor(_);
-      return chart;
-    };
-
-    chart.outerRadius = function (_) {
-      if (!arguments.length) return outerRadius;
-      outerRadius = d3.functor(_);
-      return chart;
-   };
 
     chart.class = function (_) {
       if (!arguments.length) return pieClass;

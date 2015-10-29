@@ -13440,10 +13440,10 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
 
     function chart(selection)  {
       selection.each(function (data, index) {
+        data = accessor.call(this, data, index);
+
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
-
-        data = accessor.call(this, data, index);
 
         // Stack data
         var out = elements.bar.show ?
@@ -13566,6 +13566,12 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
     }
 
     // Public API
+    chart.accessor = function (_) {
+      if (!arguments.length) return accessor;
+      accessor = valuator(_);
+      return chart;
+    };
+
     chart.margin = function (_) {
       if (!arguments.length) return margin;
       margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
@@ -13584,12 +13590,6 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
     chart.height = function (_) {
       if (!arguments.length) return height;
       height = typeof _ === 'number' ? _ : height;
-      return chart;
-    };
-
-    chart.accessor = function (_) {
-      if (!arguments.length) return accessor;
-      accessor = valuator(_);
       return chart;
     };
 
@@ -13673,7 +13673,6 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function sunburst() {
-    // Private variables
     var accessor = function (d) { return d; };
     var margin = {top: 0, right: 0, bottom: 0, left: 0};
     var width = 500;
@@ -13683,20 +13682,7 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
     var value = function (d) { return d.size; };
     var xScale = d3.scale.linear().range([0, 2 * Math.PI]);
     var yScale = d3.scale.sqrt();
-    var startAngle = function (d) {
-      return Math.max(0, Math.min(2 * Math.PI, xScale(d.x)));
-    };
-    var endAngle = function (d) {
-      return Math.max(0, Math.min(2 * Math.PI, xScale(d.x + d.dx)));
-    };
-    var innerRadius = function (d) {
-      return Math.max(0, yScale(d.y));
-    };
-    var outerRadius = function (d) {
-      return Math.max(0, yScale(d.y + d.dy));
-    };
-
-    // Pie options
+    var donut = false;
     var pieClass = 'slice';
     var stroke = '#ffffff';
     var fill = function (d, i) {
@@ -13750,6 +13736,23 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
       });
     }
 
+    function startAngle(d) {
+      return Math.max(0, Math.min(2 * Math.PI, xScale(d.x)));
+    }
+
+    function endAngle(d) {
+      return Math.max(0, Math.min(2 * Math.PI, xScale(d.x + d.dx)));
+    }
+
+    function innerRadius(d) {
+      if (d.depth === 1 && !donut) return 0;
+      return Math.max(0, yScale(d.y));
+    }
+
+    function outerRadius(d) {
+      return Math.max(0, yScale(d.y + d.dy));
+    }
+
     // Public API
     chart.accessor = function (_) {
       if (!arguments.length) return accessor;
@@ -13790,6 +13793,12 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
       return chart;
     };
 
+    chart.donut = function (_) {
+      if (!arguments.length) return donut;
+      donut = typeof _ === 'boolean' ? _ : donut;
+      return chart;
+    };
+
     chart.xScale = function (_) {
       if (!arguments.length) return xScale;
       xScale = _;
@@ -13801,30 +13810,6 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
       yScale = _;
       return chart;
     };
-
-    chart.startAngle = function (_) {
-      if (!arguments.length) return startAngle;
-      startAngle = d3.functor(_);
-      return chart;
-    };
-
-    chart.endAngle = function (_) {
-      if (!arguments.length) return endAngle;
-      endAngle = d3.functor(_);
-      return chart;
-    };
-
-    chart.innerRadius = function (_) {
-      if (!arguments.length) return innerRadius;
-      innerRadius = d3.functor(_);
-      return chart;
-    };
-
-    chart.outerRadius = function (_) {
-      if (!arguments.length) return outerRadius;
-      outerRadius = d3.functor(_);
-      return chart;
-   };
 
     chart.class = function (_) {
       if (!arguments.length) return pieClass;
