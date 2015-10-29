@@ -13707,7 +13707,8 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
         data = accessor.call(this, data, index);
 
         // Stack data
-        var out = stackOut().stackCount(data.length);
+        var out = elements.bar.show ?
+          stackOut().stackCount(data.length) : defaultOut;
 
         stack.x(x).y(y)
           .offset(stackOpts.offset || 'zero')
@@ -13818,6 +13819,11 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
           });
         });
       });
+    }
+
+    function defaultOut(d, y0, y) {
+      d.y0 = y0;
+      d.y = y;
     }
 
     // Public API
