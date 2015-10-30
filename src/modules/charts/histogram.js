@@ -3,7 +3,7 @@ define(function (require) {
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function histogram() {
-    // Private variables
+    var accessor = function (d) { return d; };
     var margin = { top: 20, right: 20, bottom: 20, left: 50 };
     var width = 900;
     var height = 500;
@@ -11,21 +11,8 @@ define(function (require) {
     var range = null;
     var frequency = 'frequency';
     var value = function (d) { return d.y; };
-
-    var bars = {
-      class: 'rect',
-      fill: 'blue',
-      stroke: 'white',
-      strokeWidth: 1,
-      opacity: 1
-    };
-
-    var text = {
-      class: 'text',
-      dy: '0.71em',
-      textAnchor: 'middle',
-      fill: 'black'
-    };
+    var properties = {};
+    var text = {};
 
     function chart(selection) {
       selection.each(function (data, index) {
@@ -45,57 +32,73 @@ define(function (require) {
           .range([0, width]);
 
         var yScale = d3.scale.linear()
-          .domain([0, d3.max(data, yValue)])
+          .domain([0, d3.max(data, value)])
           .range([height, 0]);
 
-        var svg = d3.select(this).append('svg')
+        var svg = d3.select(this).selectAll('svg')
+          .data([data]);
+
+        svg.exit().remove();
+        svg.enter().append('svg');
+        svg
           .attr('width', width + margin.left + margin.right)
-          .attr('height', height + margin.top + margin.bottom)
-          .append('g')
-          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+          .attr('height', height + margin.top + margin.bottom);
+
+        var g = svg.selectAll('g')
+          .data([data]);
+
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
         var xAxis = d3.svg.axis().scale(xScale).orient('bottom');
         var yAxis = d3.svg.axis().scale(yScale).orient('left');
 
-        svg.append('g')
+        g.append('g')
           .attr('class', 'x axis')
           .attr('transform', 'translate(0,' + yScale.range()[0] + ')')
           .call(xAxis);
 
-        var group = svg.selectAll('groups')
+        g.append('g')
+          .attr('class', 'y axis')
+          .call(yAxis);
+
+        var group = g.selectAll('g')
           .data(data);
 
-        // Exit
         group.exit().remove();
-
-        // Enter
         group.enter().append('g');
-
-        // Update
         group.append('rect')
-          .attr('class', bars.class)
-          .attr('fill', bars.fill)
-          .attr('stroke', bars.stroke)
-          .attr('stroke-width', bars.strokeWidth)
+          .attr('class', properties.class || 'rect')
+          .attr('fill', properties.fill || 'blue')
+          .attr('stroke', properties.stroke || 'white')
+          .attr('stroke-width', properties.strokeWidth || 1)
+          .style('opacity', properties.opacity || 1)
           .attr('x', function (d) { return xScale(d.x); })
           .attr('y', function (d) { return yScale(d.y); })
           .attr('width', function (d) { return xScale(d.dx); })
           .attr('height', function (d) { return yScale.range()[0] - yScale(d.y); });
 
         group.append('text')
-          .attr('class', text.class)
-          .attr('dy', text.dy)
+          .attr('class', text.class || 'label')
+          .attr('dy', text.dy || '.71em')
           .attr('y', function (d) { return yScale(d.y - 0.1); })
           .attr('x', function (d) { return xScale(d.x) + (xScale(d.dx) / 2); })
-          .attr('text-anchor', text.textAnchor)
-          .attr('fill', text.fill)
+          .attr('text-anchor', text.textAnchor || 'middle')
+          .attr('fill', text.fill || 'black')
           .text(function (d) { return !d.y ? '' : d.y; });
       });
     }
 
     // Public API
+    chart.accessor = function (_) {
+      if (!arguments.length) return accessor;
+      accessor = valuator(_);
+      return chart;
+    };
+
     chart.margin = function (_) {
-      if (!arguments.length) { return margin; }
+      if (!arguments.length) return margin;
       margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
       margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
       margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
@@ -104,31 +107,31 @@ define(function (require) {
     };
 
     chart.width = function (_) {
-      if (!arguments.length) { return width; }
+      if (!arguments.length) return width;
       width = typeof _ !== 'number' ? width : _;
       return chart;
     };
 
     chart.height = function (_) {
-      if (!arguments.length) { return height; }
+      if (!arguments.length) return height;
       height = typeof _ !== 'number' ? height : _;
       return chart;
     };
 
     chart.value = function (_) {
-      if (!arguments.length) { return value; }
+      if (!arguments.length) return value;
       value = valuator(_);
       return chart;
     };
 
     chart.bins = function (_) {
-      if (!arguments.length) { return bins; }
+      if (!arguments.length) return bins;
       bins = _;
       return chart;
     };
 
     chart.frequency = function (_) {
-      if (!arguments.length) { return frequency; }
+      if (!arguments.length) return frequency;
       frequency = typeof _ !== 'string' ? frequency : _;
       return chart;
     };
@@ -139,12 +142,12 @@ define(function (require) {
       return chart;
     };
 
-    chart.bars = function (_) {
-      if (!arguments.length) { return bars; }
-      bars.class = typeof _.class !== 'undefined' ? _.class : bars.class;
-      bars.fill = typeof _.fill !== 'undefined' ? _.fill : bars.fill;
-      bars.stroke = typeof _.stroke !== 'undefined' ? _.stroke : bars.stroke;
-      bars.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : bars.strokeWidth;
+    chart.properties = function (_) {
+      if (!arguments.length) return properties;
+      properties.class = typeof _.class !== 'undefined' ? _.class : properties.class;
+      properties.fill = typeof _.fill !== 'undefined' ? _.fill : properties.fill;
+      properties.stroke = typeof _.stroke !== 'undefined' ? _.stroke : properties.stroke;
+      properties.strokeWidth = typeof _.strokeWidth !== 'undefined' ? _.strokeWidth : properties.strokeWidth;
       return chart;
     };
 

@@ -7,15 +7,16 @@ define(function (require) {
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function heatmap() {
-    // Private variables
+    var accessor = function (d) { return d; };
     var margin = { top: 20, right: 20, bottom: 20, left: 50 };
     var width = 960;
     var height = 500;
     var xValue = function (d) { return d.x; };
     var yValue = function (d) { return d.y; };
-    var rectPadding = 0.1;
+    var padding = 0.1;
     var isCanvas = false;
-
+    var sort = { x: false, y: false };
+    var reverse = { x: false, y: false };
     var xScale = {
       domain: null,
       reverse: false,
@@ -68,6 +69,8 @@ define(function (require) {
 
     function chart(selection) {
       selection.each(function (data, index) {
+        data = accessor.call(this, data, index);
+
         var canvas;
 
         width = width - margin.left - margin.right;
@@ -76,22 +79,24 @@ define(function (require) {
         var xDomain = xScale.domain || getDomain(data, xValue);
         var yDomain = yScale.domain || getDomain(data, yValue);
 
-        if (xScale.sort) {
+        if (sort.x) {
           xDomain.sort(typeof xScale.sort === 'function' ? xScale.sort : ascending);
         }
-        if (yScale.sort) {
+
+        if (sort.y) {
           yDomain.sort(typeof yScale.sort === 'function' ? yScale.sort : ascending);
         }
-        if (xScale.reverse) { xDomain.reverse(); }
-        if (yScale.reverse) { yDomain.reverse(); }
+
+        if (reverse.x) xDomain.reverse();
+        if (reverse.y) yDomain.reverse();
 
         var x = d3.scale.ordinal()
           .domain(xDomain)
-          .rangeBands([0, width], rectPadding);
+          .rangeBands([0, width], padding);
 
         var y = d3.scale.ordinal()
           .domain(yDomain)
-          .rangeBands([0, height], rectPadding);
+          .rangeBands([0, height], padding);
 
         data.forEach(function (d, i) {
           d.dx = xValue.call(data, d, i);
@@ -100,7 +105,7 @@ define(function (require) {
           d.opacity = rect.opacity.call(data, d, i);
         });
 
-        var padding = Object.keys(margin)
+        var canvasPadding = Object.keys(margin)
           .map(function (key) {
             return margin[key];
           }).join('px ') + 'px';
@@ -120,20 +125,26 @@ define(function (require) {
           canvas = d3.select(this).append('canvas')
             .attr('width', width)
             .attr('height', height)
-            .style('padding', padding);
+            .style('padding', canvasPadding);
 
           canvas.datum(data).call(canvasRects);
         }
 
         var svgEvents = events().listeners(listeners);
 
-        var svg = d3.select(this).append('svg')
+        var svg = d3.select(this).selectAll('svg').data([data]);
+        svg.exit().remove();
+        svg.enter().append('svg');
+        svg
           .attr('width', width)
           .attr('height', height)
           .style('padding', padding)
           .call(svgEvents);
 
-        var g = svg.append('g').attr('transform', 'translate(0,0)');
+        var g = svg.selectAll('g').data([data]);
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('transform', 'translate(0,0)');
 
         if (!isCanvas) {
           var svgRects = svgRect()
@@ -214,6 +225,12 @@ define(function (require) {
     }
 
     // Public API
+    chart.accessor = function (_) {
+      if (!arguments.length) return accessor;
+      accessor = valuator(_);
+      return chart;
+    };
+
     chart.margin = function (_) {
       if (!arguments.length) { return margin; }
       margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
@@ -263,9 +280,23 @@ define(function (require) {
       return chart;
     };
 
+    chart.sort = function (_) {
+      if (!arguments.length) return sort;
+      sort.x = typeof _.x !== 'undefined' ? _.x : sort.x;
+      sort.y = typeof _.y !== 'undefined' ? _.y : sort.y;
+      return chart;
+    };
+
+    chart.reverse = function (_) {
+      if (!arguments.length) return reverse;
+      reverse.x = typeof _.x !== 'undefined' ? _.x : reverse.x;
+      reverse.y = typeof _.y !== 'undefined' ? _.y : reverse.y;
+      return chart;
+    };
+
     chart.padding = function (_) {
-      if (!arguments.length) { return rectPadding; }
-      rectPadding = typeof _ !== 'number' ? rectPadding : _;
+      if (!arguments.length) { return padding; }
+      padding = typeof _ !== 'number' ? padding : _;
       return chart;
     };
 
