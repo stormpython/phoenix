@@ -15,16 +15,17 @@ define(function (require) {
 
     function generator(selection) {
       selection.each(function (data) {
-        var div;
-
         layout.type(type).size(size); // Appends divs based on the data array
 
-        div = d3.select(this).selectAll('div')
+        var div = d3.select(this).selectAll('div')
           .data(layout(data));
 
         div.exit().remove();
+
         div.enter().append('div');
-        div.attr('class', cssClass)
+
+        div
+          .attr('class', cssClass)
           .style('position', 'absolute')
           .style('left', function (d) { return d.dx + 'px'; })
           .style('top', function (d) { return d.dy + 'px'; })

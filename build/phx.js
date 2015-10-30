@@ -13434,10 +13434,6 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
     var stackOpts = {};
     var zeroLineOpts = {};
     var elements = { area: {}, bar: {}, line: [], points: [] };
-    var svg;
-    var g;
-    var zeroLineG;
-    var clippedG;
 
     function chart(selection)  {
       selection.each(function (data, index) {
@@ -13464,20 +13460,25 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
           .brushend(listeners.brushend);
 
         // ClipPath
-        clippath.width(adjustedWidth).height(adjustedHeight);
         /* ************************************************** */
         // SVG - create/update the svg
-        if (!svg && !g) {
-          svg = d3.select(this).append('svg');
-          g = svg.append('g')
-        }
+        data = stack(data);
 
+        var svg = d3.select(this).selectAll('svg')
+          .data([data]);
+
+        svg.exit().remove();
+        svg.enter().append('svg');
         svg.attr('width', width)
           .attr('height', height)
           .call(svgEvents.listeners(listeners));
 
-        g.data([stack(data)])
-          .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+        var g = svg.selectAll('g')
+          .data([data]);
+
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
         // Axes
         [xAxes, yAxes].forEach(function (axis) {
@@ -13500,8 +13501,6 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
 
         // Zero line
         if (zeroLineOpts.show) {
-          if (!zeroLineG) zeroLineG = g.append('g').attr('class', 'zero-line');
-
           zeroLine
             .x1(function () {
               return axisFunctions.bottom.scale()(0);
@@ -13523,14 +13522,27 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
             .strokeWidth(zeroLineOpts.strokeWidth || 1)
             .opacity(zeroLineOpts.opacity || 0.2);
 
-          zeroLineG.datum([{}]).call(zeroLine);
+          var zeroLineG = g.selectAll('.zero-line')
+            .data([data]);
+
+          zeroLineG.exit().remove();
+          zeroLineG.enter().append('g');
+          zeroLineG
+            .attr('class', 'zero-line')
+            .call(zeroLine);
         }
 
         // Clippath
-        if (!clippedG) {
-          clippedG = g.call(clippath).append('g')
-            .attr('clip-path', 'url(#' + clippath.id() + ')');
-        }
+        clippath.width(adjustedWidth).height(adjustedHeight);
+
+        var clippedG = g.call(clippath)
+          .selectAll('g.clip-path')
+          .data([data]);
+
+        clippedG.exit().remove();
+        clippedG.enter().append('g');
+        clippedG.attr('class', 'clip-path')
+          .attr('clip-path', 'url(#' + clippath.id() + ')');
 
         // Elements - bars, area, line, points
         d3.entries(elements).forEach(function (d) {
@@ -14400,16 +14412,17 @@ define('src/modules/d3_components/generator/element/html/div',['require','src/mo
 
     function generator(selection) {
       selection.each(function (data) {
-        var div;
-
         layout.type(type).size(size); // Appends divs based on the data array
 
-        div = d3.select(this).selectAll('div')
+        var div = d3.select(this).selectAll('div')
           .data(layout(data));
 
         div.exit().remove();
+
         div.enter().append('div');
-        div.attr('class', cssClass)
+
+        div
+          .attr('class', cssClass)
           .style('position', 'absolute')
           .style('left', function (d) { return d.dx + 'px'; })
           .style('top', function (d) { return d.dy + 'px'; })

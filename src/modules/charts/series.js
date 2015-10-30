@@ -44,10 +44,6 @@ define(function (require) {
     var stackOpts = {};
     var zeroLineOpts = {};
     var elements = { area: {}, bar: {}, line: [], points: [] };
-    var svg;
-    var g;
-    var zeroLineG;
-    var clippedG;
 
     function chart(selection)  {
       selection.each(function (data, index) {
@@ -76,18 +72,20 @@ define(function (require) {
         // ClipPath
         clippath.width(adjustedWidth).height(adjustedHeight);
         /* ************************************************** */
-        // SVG - create/update the svg
-        if (!svg && !g) {
-          svg = d3.select(this).append('svg');
-          g = svg.append('g')
-        }
+        data = stack(data);
 
+        // SVG - create/update the svg
+        var svg = d3.select(this).selectAll('svg').data([data]);
+        svg.exit().remove();
+        svg.enter().append('svg');
         svg.attr('width', width)
           .attr('height', height)
           .call(svgEvents.listeners(listeners));
 
-        g.data([stack(data)])
-          .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+        var g = svg.selectAll('g').data([data]);
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
         // Axes
         [xAxes, yAxes].forEach(function (axis) {
@@ -110,8 +108,6 @@ define(function (require) {
 
         // Zero line
         if (zeroLineOpts.show) {
-          if (!zeroLineG) zeroLineG = g.append('g').attr('class', 'zero-line');
-
           zeroLine
             .x1(function () {
               return axisFunctions.bottom.scale()(0);
@@ -133,14 +129,21 @@ define(function (require) {
             .strokeWidth(zeroLineOpts.strokeWidth || 1)
             .opacity(zeroLineOpts.opacity || 0.2);
 
-          zeroLineG.datum([{}]).call(zeroLine);
+          var zeroLineG = g.selectAll('.zero-line').data([data]);
+          zeroLineG.exit().remove();
+          zeroLineG.enter().append('g');
+          zeroLineG
+            .attr('class', 'zero-line')
+            .call(zeroLine);
         }
 
         // Clippath
-        if (!clippedG) {
-          clippedG = g.call(clippath).append('g')
-            .attr('clip-path', 'url(#' + clippath.id() + ')');
-        }
+        var clippedG = g.call(clippath)
+          .selectAll('g.clip-path').data([data]);
+        clippedG.exit().remove();
+        clippedG.enter().append('g');
+        clippedG.attr('class', 'clip-path')
+          .attr('clip-path', 'url(#' + clippath.id() + ')');
 
         // Elements - bars, area, line, points
         d3.entries(elements).forEach(function (d) {
