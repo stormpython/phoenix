@@ -16,6 +16,8 @@ define(function (require) {
 
     function chart(selection) {
       selection.each(function (data, index) {
+        data = accessor.call(this, data, index);
+
         width = width - margin.left - margin.right;
         height = height - margin.top - margin.bottom;
 
