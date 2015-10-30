@@ -6,33 +6,32 @@ define(function (require) {
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function pieChart() {
+    var accessor = function (d) { return d; };
+    var margin = {top: 0, right: 0, bottom: 0, left: 0};
+    var color = d3.scale.category10();
     var width = 300;
     var height = 300;
-    var color = d3.scale.category10();
     var outerRadius = null;
-    var innerRadius = 0;
+    var innerRadius = null;
+    var donut = false;
     var sort = null;
-    var value = function (d) { return d.x; };
+    var value = function (d) { return d.y; };
     var label = function (d) { return d.name; };
-
     var pieClass = 'pie';
     var fill = function (d, i) {
       return color(label.call(this, d.data, i));
     };
     var stroke = '#ffffff';
-
-    // Text options
-    var text = {
-      fill: '#ffffff',
-      dy: '.35em',
-      anchor: 'middle',
-      transform: null
-    };
-
+    var text = {};
     var listeners = {};
 
     function chart (selection) {
       selection.each(function (data, index) {
+        data = accessor.call(this, data, index);
+
+        var adjustedWidth = width - margin.left - margin.right;
+        var adjustedHeight = height - margin.top - margin.bottom;
+
         var pie = d3.layout.pie()
           .sort(sort)
           .value(value);
@@ -41,24 +40,17 @@ define(function (require) {
           return [d];
         });
 
-        var radius = Math.min(width, height) / 2;
-
+        var radius = Math.min(adjustedWidth, adjustedHeight) / 2;
         var svgEvents = events().listeners(listeners);
-
-        var svg = d3.select(this).append('svg')
-          .attr('width', width)
-          .attr('height', height)
-          .call(svgEvents);
-
-        var g = svg.append('g')
-          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
-
         var arc = d3.svg.arc()
           .outerRadius(outerRadius || radius)
-          .innerRadius(innerRadius);
+          .innerRadius(innerRadius || function () {
+            if (donut) return Math.max(0, radius / 2);
+            return 0;
+          });
 
         var piePath = path()
-          .pathGenerator(arc)
+          .path(function (d) { return arc(d); })
           .class(pieClass)
           .fill(fill)
           .stroke(stroke);
@@ -67,22 +59,60 @@ define(function (require) {
           .transform(text.transform || function (d) {
             return 'translate(' + arc.centroid(d) + ')';
           })
-          .dy(text.dy)
-          .anchor(text.anchor)
-          .fill(text.fill)
+          .dy(text.dy || '.35em')
+          .anchor(text.anchor || 'middle')
+          .fill(text.fill || '#ffffff')
           .text(function (d, i) {
             return label.call(this, d.data, i);
           });
 
-        g.selectAll('groups')
-          .data(data)
-          .enter().append('g')
+        var svg = d3.select(this).selectAll('svg')
+          .data([data]);
+
+        svg.exit().remove();
+        svg.enter().append('svg');
+
+        svg
+          .attr('width', width)
+          .attr('height', height)
+          .call(svgEvents);
+
+        var g = svg.selectAll('g.pie')
+          .data([data]);
+
+        g.exit().remove();
+        g.enter().append('g');
+        g.attr('class', 'pie')
+          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+
+        var slice = g.selectAll('g.slice')
+          .data(function (d) { return d; });
+
+        slice.exit().remove();
+        slice.enter().append('g');
+        slice
+          .attr('class', 'slice')
           .call(piePath)
           .call(pieText);
       });
     }
 
     // Public API
+    chart.accessor = function (_) {
+      if (!arguments.length) return accessor;
+      accessor = valuator(_);
+      return chart;
+    };
+
+    chart.margin = function (_) {
+      if (!arguments.length) return margin;
+      margin.top = typeof _.top !== 'undefined' ? _.top : margin.top;
+      margin.right = typeof _.right !== 'undefined' ? _.right : margin.right;
+      margin.bottom = typeof _.bottom !== 'undefined' ? _.bottom : margin.bottom;
+      margin.left = typeof _.left !== 'undefined' ? _.left : margin.left;
+      return chart;
+    };
+
     chart.width = function (_) {
       if (!arguments.length) { return width; }
       width = _;
@@ -92,12 +122,6 @@ define(function (require) {
     chart.height = function (_) {
       if (!arguments.length) { return height; }
       height = _;
-      return chart;
-    };
-
-    chart.color = function (_) {
-      if (!arguments.length) { return color; }
-      color = _;
       return chart;
     };
 
@@ -116,6 +140,12 @@ define(function (require) {
     chart.sort = function (_) {
       if (!arguments.length) { return sort; }
       sort = _;
+      return chart;
+    };
+
+    chart.donut = function (_) {
+      if (!arguments.length) return donut;
+      donut = typeof _ === 'boolean' ? _ : donut;
       return chart;
     };
 

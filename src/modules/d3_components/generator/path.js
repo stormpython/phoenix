@@ -5,6 +5,7 @@ define(function (require) {
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function paths() {
+    var color = d3.scale.category10();
     var x = function (d) { return d.x; };
     var y = function (d) { return d.y; };
     var label = function (d) { return d.label; };

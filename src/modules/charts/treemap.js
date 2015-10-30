@@ -2,21 +2,27 @@ define(function (require) {
   var d3 = require('d3');
 
   return function treemap() {
-    var margin = {top: 40, right: 10, bottom: 10, left: 10};
-    var width = 960 - margin.left - margin.right;
-    var height = 500 - margin.top - margin.bottom;
     var color = d3.scale.category20c();
+    var margin = {top: 40, right: 10, bottom: 10, left: 10};
+    var width = 960;
+    var height = 500;
     var sticky = true;
     var value = function (d) { return d.size; };
     var children = function (d) { return d.children; };
-
     var nodeClass = 'node';
-    var nodeColor = function (d, i) { return d.children ? color(i) : null; };
-    var label = function (d) { return d.children ? null : d.name; };
+    var nodeColor = function (d, i) {
+      return d.children ? color(i) : null;
+    };
+    var label = function (d) {
+      return d.children ? null : d.name;
+    };
 
     function chart(selection) {
       selection.each(function (data) {
-        var treemap = d3.layout.treemap()
+        width = width - margin.left - margin.right;
+        height = height - margin.top - margin.bottom;
+
+        var treeMap = d3.layout.treemap()
           .size([width, height])
           .sticky(sticky)
           .children(children)
