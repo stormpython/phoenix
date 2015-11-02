@@ -13473,7 +13473,7 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
 
     function chart(selection)  {
       selection.each(function (data, index) {
-        data = accessor.call(this, data, index);
+        data = formatData(accessor.call(this, data, index));
 
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
@@ -13598,6 +13598,14 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
           });
         });
       });
+    }
+
+    function formatData(data) {
+      var isArrayOfObjects = data.every(function (d) {
+        return typeof d === 'object' && !Array.isArray(d);
+      });
+
+      return isArrayOfObjects ? [data] : data;
     }
 
     function defaultOut(d, y0, y) {
