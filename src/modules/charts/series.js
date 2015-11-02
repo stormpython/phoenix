@@ -45,9 +45,17 @@ define(function (require) {
     var zeroLineOpts = {};
     var elements = { area: {}, bar: {}, line: [], points: [] };
 
+    function formatData(data) {
+      var isArrayOfObjects = data.every(function (d) {
+        return typeof d === 'object' && !Array.isArray(d);
+      });
+
+      return isArrayOfObjects ? [data] : data;
+    }
+
     function chart(selection)  {
       selection.each(function (data, index) {
-        data = accessor.call(this, data, index);
+        data = formatData(accessor.call(this, data, index));
 
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
