@@ -45,14 +45,6 @@ define(function (require) {
     var zeroLineOpts = {};
     var elements = { area: {}, bar: {}, line: [], points: [] };
 
-    function formatData(data) {
-      var isArrayOfObjects = data.every(function (d) {
-        return typeof d === 'object' && !Array.isArray(d);
-      });
-
-      return isArrayOfObjects ? [data] : data;
-    }
-
     function chart(selection)  {
       selection.each(function (data, index) {
         data = formatData(accessor.call(this, data, index));
@@ -180,6 +172,14 @@ define(function (require) {
           });
         });
       });
+    }
+
+    function formatData(data) {
+      var isArrayOfObjects = data.every(function (d) {
+        return typeof d === 'object' && !Array.isArray(d);
+      });
+
+      return isArrayOfObjects ? [data] : data;
     }
 
     function defaultOut(d, y0, y) {
