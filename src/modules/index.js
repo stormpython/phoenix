@@ -77,9 +77,9 @@ define(function (require) {
    */
   Phx.prototype.data = function (datum) {
     if (!arguments.length) return this._datum; // => Getter
-    if (!(datum instanceof Array)) {
-      throw new Error('data expects an array as input');
-    }
+
+    // Allow for a single chart objects to be passed in directly.
+    if (typeof datum === 'object' && !Array.isArray(datum)) datum = [datum];
 
     datum.every(function (obj) {
       if (!(obj instanceof Object)) {
