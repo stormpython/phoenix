@@ -10360,7 +10360,7 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
   return function scale() {
     var type = null;
     var accessor = null;
-    var categories = [];
+    var categories = null;
     var range = [0, 1];
     var min = null;
     var max = null;
@@ -10379,8 +10379,13 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
       }, []);
 
       if (categories.length) {
+        var ordinalDomain = categories.call(this, data)
+          .filter(function (item, index, array) {
+            return array.indexOf(item) === index;
+          });
+
         return d3.scale.ordinal()
-          .domain(categories)
+          .domain(ordinalDomain)
           .rangeRoundBands(range, padding, 0);
       }
 
@@ -10443,7 +10448,7 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
 
     mixed.categories = function (_) {
       if (!arguments.length) return categories;
-      categories = Array.isArray(_) ? _ : categories;
+      categories = d3.functor(_);
       return mixed;
     };
 
@@ -14590,12 +14595,13 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
   Phx.prototype.element = function (el) {
     if (!arguments.length) return this._el; // => Getter
     if (!(el instanceof HTMLElement) && !(el instanceof String) &&
-      !(d3.select(el).node())) {
+      !(el instanceof d3.selection) && !(d3.select(el).node())) {
       throw new Error('Phx requires a valid HTML element');
     }
 
     this._el = el; // => Setter
-    this._selection = d3.select(el); // Create d3 selection
+    // Create d3 selection
+    this._selection = el instanceof d3.selection ? el : d3.select(el);
     if (this._datum) this.data(this._datum);
     return this;
   };

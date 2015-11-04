@@ -5,7 +5,7 @@ define(function (require) {
   return function scale() {
     var type = null;
     var accessor = null;
-    var categories = [];
+    var categories = null;
     var range = [0, 1];
     var min = null;
     var max = null;
@@ -24,8 +24,13 @@ define(function (require) {
       }, []);
 
       if (categories.length) {
+        var ordinalDomain = categories.call(this, data)
+          .filter(function (item, index, array) {
+            return array.indexOf(item) === index;
+          });
+
         return d3.scale.ordinal()
-          .domain(categories)
+          .domain(ordinalDomain)
           .rangeRoundBands(range, padding, 0);
       }
 
@@ -88,7 +93,7 @@ define(function (require) {
 
     mixed.categories = function (_) {
       if (!arguments.length) return categories;
-      categories = Array.isArray(_) ? _ : categories;
+      categories = d3.functor(_);
       return mixed;
     };
 

@@ -58,12 +58,13 @@ define(function (require) {
   Phx.prototype.element = function (el) {
     if (!arguments.length) return this._el; // => Getter
     if (!(el instanceof HTMLElement) && !(el instanceof String) &&
-      !(d3.select(el).node())) {
+      !(el instanceof d3.selection) && !(d3.select(el).node())) {
       throw new Error('Phx requires a valid HTML element');
     }
 
     this._el = el; // => Setter
-    this._selection = d3.select(el); // Create d3 selection
+    // Create d3 selection
+    this._selection = el instanceof d3.selection ? el : d3.select(el);
     if (this._datum) this.data(this._datum);
     return this;
   };
