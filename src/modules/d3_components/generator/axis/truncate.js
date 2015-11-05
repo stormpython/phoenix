@@ -20,7 +20,7 @@ define(function (require) {
     // Public API
     component.maxCharLength = function (_) {
       if (!arguments.length) return maxCharLength;
-      maxCharLength = typeof _ !== 'number' ? maxCharLength : _;
+      maxCharLength = typeof _ === 'number' ? _ : maxCharLength;
       return component;
     };
 
