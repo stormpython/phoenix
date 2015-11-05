@@ -44,13 +44,13 @@ define(function (require) {
 
         axis.orient(position)
           .scale(scale)
-          .ticks(tick.number)
-          .tickValues(tick.values)
-          .tickSize(tick.size)
-          .innerTickSize(tick.innerTickSize)
-          .outerTickSize(tick.outerTickSize)
-          .tickPadding(tick.padding)
-          .tickFormat(tick.format);
+          .ticks(tick.number || 10)
+          .tickValues(tick.values || null)
+          .tickSize(tick.size || 6)
+          .innerTickSize(tick.innerTickSize || 6)
+          .outerTickSize(tick.outerTickSize || 6)
+          .tickPadding(tick.padding || 3)
+          .tickFormat(tick.format || null);
 
         if (!g) g = d3.select(this).append('g');
 
@@ -68,14 +68,14 @@ define(function (require) {
 
         if (!text) text = g.append('text');
 
-        text.attr('class', title.class)
-          .attr('x', title.x)
-          .attr('y', title.y)
-          .attr('dx', title.dx)
-          .attr('dy', title.dy)
-          .attr('transform', title.transform)
-          .style('title-anchor', title.anchor)
-          .text(title.text);
+        text.attr('class', title.class || 'axis title')
+          .attr('x', title.x || 6)
+          .attr('y', title.y || 6)
+          .attr('dx', title.dx || '')
+          .attr('dy', title.dy || '.71em')
+          .attr('transform', title.transform || 'translate(0,0)')
+          .style('title-anchor', title.anchor || 'end')
+          .text(title.text || '');
       });
     }
 
@@ -191,13 +191,13 @@ define(function (require) {
 
     generator.tick = function (_) {
       if (!arguments.length) return tick;
-      tick.number = typeof _.number !== 'undefined' ? _.number : 10;
-      tick.values = typeof _.values !== 'undefined' ? _.values : null;
-      tick.size = typeof _.size !== 'undefined' ? _.size : 6;
-      tick.padding = typeof _.padding !== 'undefined' ? _.padding : 3;
-      tick.format = typeof _.format !== 'undefined' ? _.format : null;
-      tick.innerTickSize = typeof _.innerTickSize !== 'undefined' ? _.innerTickSize : 6;
-      tick.outerTickSize = typeof _.outerTickSize !== 'undefined' ? _.outerTickSize : 6;
+      tick.number = typeof _.number !== 'undefined' ? _.number : tick.number;
+      tick.values = typeof _.values !== 'undefined' ? _.values : tick.values;
+      tick.size = typeof _.size !== 'undefined' ? _.size : tick.size;
+      tick.padding = typeof _.padding !== 'undefined' ? _.padding : tick.padding;
+      tick.format = typeof _.format !== 'undefined' ? _.format : tick.format;
+      tick.innerTickSize = typeof _.innerTickSize !== 'undefined' ? _.innerTickSize : tick.innerTickSize;
+      tick.outerTickSize = typeof _.outerTickSize !== 'undefined' ? _.outerTickSize : tick.outerTickSize;
       return generator;
     };
 
@@ -209,14 +209,14 @@ define(function (require) {
 
     generator.title = function (_) {
       if (!arguments.length) return title;
-      title.class = typeof _.class !== 'undefined' ? _.class : 'axis title';
-      title.x = typeof _.x !== 'undefined' ? _.x : 6;
-      title.y = typeof _.y !== 'undefined' ? _.y : 6;
-      title.dx = typeof _.dx !== 'undefined' ? _.dx : '';
-      title.dy = typeof _.dy !== 'undefined' ? _.dy : '.71em';
-      title.transform = typeof _.transform !== 'undefined' ? _.transform : 'translate(0,0)';
-      title.anchor = typeof _.anchor !== 'undefined' ? _.anchor : 'end';
-      title.text = typeof _.text !== 'undefined' ? _.text : '';
+      title.class = typeof _.class !== 'undefined' ? _.class : title.class;
+      title.x = typeof _.x !== 'undefined' ? _.x : title.x;
+      title.y = typeof _.y !== 'undefined' ? _.y : title.y;
+      title.dx = typeof _.dx !== 'undefined' ? _.dx : title.dx;
+      title.dy = typeof _.dy !== 'undefined' ? _.dy : title.dy;
+      title.transform = typeof _.transform !== 'undefined' ? _.transform : title.transform;
+      title.anchor = typeof _.anchor !== 'undefined' ? _.anchor : title.anchor;
+      title.text = typeof _.text !== 'undefined' ? _.text : title.text;
       return generator;
     };
 

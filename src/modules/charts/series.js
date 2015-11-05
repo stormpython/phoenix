@@ -90,11 +90,11 @@ define(function (require) {
         // Axes
         [xAxes, yAxes].forEach(function (axis) {
           axis.forEach(function (opts) {
-            var generator = axisFunctions[opts.position]
+            var generator = builder(opts, axisFunctions[opts.position])
               .size([adjustedWidth, adjustedHeight])
               .timeInterval(timeInterval);
 
-            g.call(builder(opts, generator));
+            g.call(generator);
           });
         });
 

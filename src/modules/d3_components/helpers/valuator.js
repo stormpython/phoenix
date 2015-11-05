@@ -10,6 +10,5 @@ define(function () {
     if (typeof val === 'string') {
       return function (d) { return d[val]; };
     }
-    return function () { return val; };
   };
 });

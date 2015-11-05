@@ -10353,15 +10353,31 @@ define('src/modules/d3_components/helpers/timeparser',[],function () {
     return timeNotation[abbr];
   };
 });
-define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_components/helpers/timeparser'],function (require) {
+define('src/modules/d3_components/helpers/valuator',[],function () {
+  /**
+   * Wrapper function that returns a function
+   * that returns the argument or an object key.
+   * If argument is a function, returns the function.
+   */
+
+  return function (val) {
+    if (typeof val === 'function') { return val; }
+    if (typeof val === 'string') {
+      return function (d) { return d[val]; };
+    }
+  };
+});
+define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_components/helpers/timeparser','src/modules/d3_components/helpers/valuator'],function (require) {
   var d3 = require('d3');
   var parseTime = require('src/modules/d3_components/helpers/timeparser');
+  var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function scale() {
     var type = null;
     var accessor = null;
     var categories = null;
     var range = [0, 1];
+    var extent = false;
     var min = null;
     var max = null;
     var padding = 0.1;
@@ -10398,7 +10414,9 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
             min ? Math.max(1, min) : Math.max(1, d3.min(data, accessor || Y)),
             max ? Math.max(1, max) : Math.max(1, d3.max(data, accessor || Y))
           ])
-          .range(range);
+          .range(range)
+          .clamp(clamp)
+          .nice();
       }
 
       if (type === 'datetime') {
@@ -10418,12 +10436,14 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
             d3.min(data, accessor || X),
             timeOffset ? timeOffset : maxDatum
           ])
-          .range(range);
+          .range(range)
+          .clamp(clamp)
+          .nice();
       }
 
       if (typeof d3.scale[type] === 'function') {
         return d3.scale[type]()
-          .domain([
+          .domain(extent ? d3.extent(data, accessor || Y) : [
             min ? min : Math.min(0, d3.min(data, accessor || Y)),
             max ? max : Math.max(0, d3.max(data, accessor || Y))
           ])
@@ -10439,104 +10459,99 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
     // Public API
     mixed.type = function (_) {
       if (!arguments.length) return type;
-      type = _;
+      type = typeof _ === 'string' ? _ : type;
       return mixed;
     };
 
     mixed.accessor = function (_) {
       if (!arguments.length) return accessor;
-      accessor = _;
+      accessor = valuator(_);
       return mixed;
     };
 
     mixed.categories = function (_) {
       if (!arguments.length) return categories;
-      categories = _;
+      categories = typeof _ === 'function' || Array.isArray(_) ? _ : categories;
+      return mixed;
+    };
+
+    mixed.extent = function (_) {
+      if (!arguments.length) return extent;
+      extent = typeof _ === 'boolean' ? _ : extent;
       return mixed;
     };
 
     mixed.min = function (_) {
       if (!arguments.length) return min;
-      min = _;
+      min = typeof _ === 'number' ? _ : min;
       return mixed;
     };
 
     mixed.max = function (_) {
       if (!arguments.length) return max;
-      max = _;
+      max = typeof _ === 'number' ? _ : max;
       return mixed;
     };
 
     mixed.padding = function (_) {
       if (!arguments.length) return padding;
-      padding = _;
+      padding = typeof _ === 'number' ? _ : padding;
       return mixed;
     };
 
     mixed.range = function (_) {
+      function isNumber(val) {
+        return typeof val === 'number';
+      }
+
       if (!arguments.length) return range;
-      range = _;
+      range = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : range;
       return mixed;
     };
 
     mixed.clamp = function (_) {
       if (!arguments.length) return clamp;
-      clamp = _;
+      clamp = typeof _ === 'boolean' ? _ : clamp;
       return mixed;
     };
 
     mixed.timeInterval = function (_) {
       if (!arguments.length) return timeInterval;
-      timeInterval = _;
+      timeInterval = typeof _ === 'string' ? _ : timeInterval;
       return mixed;
     };
 
     mixed.utc = function (_) {
       if (!arguments.length) return utc;
-      utc = _;
+      utc = typeof _ === 'boolean' ? _ : utc;
       return mixed;
     };
 
     return mixed;
   };
 });
-define('src/modules/d3_components/helpers/valuator',[],function () {
-  /**
-   * Wrapper function that returns a function
-   * that returns the argument or an object key.
-   * If argument is a function, returns the function.
-   */
-
-  return function (val) {
-    if (typeof val === 'function') { return val; }
-    if (typeof val === 'string') {
-      return function (d) { return d[val]; };
-    }
-    return function () { return val; };
-  };
-});
-define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modules/d3_components/helpers/builder','src/modules/d3_components/generator/axis/rotate','src/modules/d3_components/mixed/scale','src/modules/d3_components/helpers/valuator'],function (require) {
+define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modules/d3_components/helpers/builder','src/modules/d3_components/generator/axis/rotate','src/modules/d3_components/mixed/scale'],function (require) {
   var d3 = require('d3');
   var builder = require('src/modules/d3_components/helpers/builder');
   var rotate = require('src/modules/d3_components/generator/axis/rotate');
   var scaleGenerator = require('src/modules/d3_components/mixed/scale');
-  var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function axes() {
     var type = null;
     var accessor = null;
     var categories = null;
+    var extent = false;
     var min = null;
     var max = null;
     var padding = 0.1;
     var clamp = false;
     var utc = false;
     var timeInterval = null;
-    var position = 'bottom'; // `top`, `left`, `right`, `bottom`
-    var size = [0, 1]; // [width, height]
+    var position = 'bottom';
     var tick = {};
     var rotateLabels = {};
     var title = {};
+    var size = [0, 1]; // [width, height]
     var axis = d3.svg.axis();
     var rotation = rotate();
     var g;
@@ -10550,6 +10565,7 @@ define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modu
           .type(type)
           .accessor(accessor)
           .categories(categories)
+          .extent(extent)
           .min(min)
           .max(max)
           .padding(padding)
@@ -10616,15 +10632,14 @@ define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modu
       var height = size[1];
 
       if (position === 'bottom' || position === 'top') return [0, width];
-      if (!type && categories) return [0, height];
+      if (categories) return [0, height];
       if (type === 'datetime') return [0, height];
       return [height, 0]
     }
 
     // Public API
-    generator.scale = function (_) {
-      if (!arguments.length) return axis.scale();
-      return generator;
+    generator.scale = function () {
+      return axis.scale();
     };
 
     generator.type = function (_) {
@@ -10635,13 +10650,19 @@ define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modu
 
     generator.accessor = function (_) {
       if (!arguments.length) return accessor;
-      accessor = valuator(_);
+      accessor = _;
       return generator;
     };
 
     generator.categories = function (_) {
       if (!arguments.length) return categories;
       categories = _;
+      return generator;
+    };
+
+    generator.extent = function (_) {
+      if (!arguments.length) return extent;
+      extent = _;
       return generator;
     };
 
@@ -10691,8 +10712,12 @@ define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modu
     };
 
     generator.size = function (_) {
+      function isNumber(val) {
+        return typeof val === 'number';
+      }
+
       if (!arguments.length) return size;
-      size = _;
+      size = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : size;
       return generator;
     };
 
@@ -13524,11 +13549,11 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
         // Axes
         [xAxes, yAxes].forEach(function (axis) {
           axis.forEach(function (opts) {
-            var generator = axisFunctions[opts.position]
+            var generator = builder(opts, axisFunctions[opts.position])
               .size([adjustedWidth, adjustedHeight])
               .timeInterval(timeInterval);
 
-            g.call(builder(opts, generator));
+            g.call(generator);
           });
         });
 
@@ -14287,7 +14312,8 @@ define('src/modules/charts/index',['require','src/modules/charts/boxplot','src/m
     treemap: require('src/modules/charts/treemap')
   };
 });
-define('src/modules/d3_components/mixed/chart',['require','src/modules/charts/index'],function (require) {
+define('src/modules/d3_components/mixed/chart',['require','d3','src/modules/charts/index'],function (require) {
+  var d3 = require('d3');
   var charts = require('src/modules/charts/index');
 
   return function chart() {
@@ -14302,6 +14328,7 @@ define('src/modules/d3_components/mixed/chart',['require','src/modules/charts/in
         var chart = charts[chartType]()
           .width(data.width)
           .height(data.height)
+          .accessor(accessor)
           .listeners(listeners);
 
         [opts, dataOpts].forEach(function (o) {
@@ -14312,21 +14339,19 @@ define('src/modules/d3_components/mixed/chart',['require','src/modules/charts/in
           });
         });
 
-        if (typeof chart.accessor) chart.accessor(accessor);
-
         d3.select(this).call(chart); // Draw Chart
       });
     }
 
     generator.options = function (_) {
       if (!arguments.length) return opts;
-      opts = _;
+      opts = typeof _ === 'object' && !Array.isArray(_) ? _ : opts;
       return generator;
     };
 
     generator.listeners = function (_) {
       if (!arguments.length) return listeners;
-      listeners = _;
+      listeners = typeof _ === 'object' && !Array.isArray(_) ? _ : listeners;
       return generator;
     };
 
@@ -14555,6 +14580,16 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
     if (!self._opts) throw new Error('No options given');
   }
 
+  function validateSize(arr) {
+    var width = arr[0];
+    var height = arr[1];
+
+    if (width <= 0 || height <= 0) {
+      throw new Error('Unable to render chart(s), the parent DOM element has no' +
+        'width ' + width + ' and/or height ' + height);
+    }
+  }
+
   function removeBrush(selection) {
     var brushEvents = [
       'mousedown.brush', 'touchstart.brush',
@@ -14567,6 +14602,12 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
       brushEvents.forEach(function (event) {
         d3.select(this).on(event, null);
       });
+    });
+  }
+
+  function removeListeners(selection, event) {
+    selection.selectAll('svg').each(function () {
+      d3.select(this).on(event, null);
     });
   }
 
@@ -14605,6 +14646,7 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
     this._el = el; // => Setter
     // Create d3 selection
     this._selection = el instanceof d3.selection ? el : d3.select(el);
+    // Bind datum to selection if datum exists
     if (this._datum) this.data(this._datum);
     return this;
   };
@@ -14613,7 +14655,7 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
    * Binds data to the d3 selection,
    * or returns the bound data array.
    *
-   * @param {Array} [datum] - Array of objects
+   * @param {Array} [datum] - Single object or Array of objects
    * @returns {*}
    */
   Phx.prototype.data = function (datum) {
@@ -14641,7 +14683,7 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
    */
   Phx.prototype.options = function (opts) {
     if (!arguments.length) return this._opts; // => Getter
-    if (!(opts instanceof Object) || opts instanceof Array) {
+    if (!(opts instanceof Object) || Array.isArray(opts)) {
       throw new Error('The options method expects a valid object');
     }
 
@@ -14686,11 +14728,11 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
     evaluate(this);
     layout = this._layout.layout(this._opts.layout || 'rows');
     chart = this._chart.options(this._opts);
-    size = sizeFunc(this._selection, width, height);
-    if (size[0] <= 0 || size[1] <= 0) return this;
+    size = validateSize(sizeFunc(this._selection, width, height));
 
     this._selection.call(layout.size(size))
       .selectAll('.' + layout.class()).call(chart);
+    return this;
   };
 
   /**
@@ -14763,9 +14805,7 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
     if (!this._selection) throw new Error('A valid element is required');
     if (this._listeners[event]) {
       if (!listener) {
-        this._selection.selectAll('svg').each(function () {
-          d3.select(this).on(event, null);
-        });
+        removeListeners(this._selection, event);
         delete this._listeners[event];
         this._chart.listeners(this._listeners);
       }
@@ -14789,10 +14829,8 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
     if (!selection) throw new Error('A valid element is required');
 
     removeBrush(selection);
-    Object.keys(this._listeners).forEach(function (key) {
-      selection.selectAll('svg').each(function () {
-        d3.select(this).on(key, null);
-      });
+    Object.keys(this._listeners).forEach(function (event) {
+      removeListeners(selection, event);
     });
 
     this._chart.listeners(this._listeners = {});
@@ -14820,7 +14858,7 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
   Phx.prototype.listenerCount = function (event) {
     if (!arguments.length) return sumListeners(this._listeners);
     if (event && this._listeners[event]) return this._listeners[event].length;
-    if (event && !this._listeners[event]) return 0;
+    return 0;
   };
 
   /**
