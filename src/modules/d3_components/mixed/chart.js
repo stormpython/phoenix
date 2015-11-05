@@ -31,13 +31,13 @@ define(function (require) {
 
     generator.options = function (_) {
       if (!arguments.length) return opts;
-      opts = typeof _ === 'object' ? _ : opts;
+      opts = typeof _ === 'object' && !Array.isArray(_) ? _ : opts;
       return generator;
     };
 
     generator.listeners = function (_) {
       if (!arguments.length) return listeners;
-      listeners = typeof _ === 'object' ? _ : listeners;
+      listeners = typeof _ === 'object' && !Array.isArray(_) ? _ : listeners;
       return generator;
     };
 
