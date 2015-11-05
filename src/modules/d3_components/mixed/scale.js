@@ -1,12 +1,14 @@
 define(function (require) {
   var d3 = require('d3');
   var parseTime = require('src/modules/d3_components/helpers/timeparser');
+  var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function scale() {
     var type = null;
     var accessor = null;
     var categories = null;
     var range = [0, 1];
+    var extent = false;
     var min = null;
     var max = null;
     var padding = 0.1;
@@ -43,7 +45,9 @@ define(function (require) {
             min ? Math.max(1, min) : Math.max(1, d3.min(data, accessor || Y)),
             max ? Math.max(1, max) : Math.max(1, d3.max(data, accessor || Y))
           ])
-          .range(range);
+          .range(range)
+          .clamp(clamp)
+          .nice();
       }
 
       if (type === 'datetime') {
@@ -63,12 +67,14 @@ define(function (require) {
             d3.min(data, accessor || X),
             timeOffset ? timeOffset : maxDatum
           ])
-          .range(range);
+          .range(range)
+          .clamp(clamp)
+          .nice();
       }
 
       if (typeof d3.scale[type] === 'function') {
         return d3.scale[type]()
-          .domain([
+          .domain(extent ? d3.extent(data, accessor || Y) : [
             min ? min : Math.min(0, d3.min(data, accessor || Y)),
             max ? max : Math.max(0, d3.max(data, accessor || Y))
           ])
@@ -84,61 +90,71 @@ define(function (require) {
     // Public API
     mixed.type = function (_) {
       if (!arguments.length) return type;
-      type = _;
+      type = typeof _ === 'string' ? _ : type;
       return mixed;
     };
 
     mixed.accessor = function (_) {
       if (!arguments.length) return accessor;
-      accessor = _;
+      accessor = valuator(_);
       return mixed;
     };
 
     mixed.categories = function (_) {
       if (!arguments.length) return categories;
-      categories = _;
+      categories = typeof _ === 'function' || Array.isArray(_) ? _ : categories;
+      return mixed;
+    };
+
+    mixed.extent = function (_) {
+      if (!arguments.length) return extent;
+      extent = typeof _ === 'boolean' ? _ : extent;
       return mixed;
     };
 
     mixed.min = function (_) {
       if (!arguments.length) return min;
-      min = _;
+      min = typeof _ === 'number' ? _ : min;
       return mixed;
     };
 
     mixed.max = function (_) {
       if (!arguments.length) return max;
-      max = _;
+      max = typeof _ === 'number' ? _ : max;
       return mixed;
     };
 
     mixed.padding = function (_) {
       if (!arguments.length) return padding;
-      padding = _;
+      padding = typeof _ === 'number' ? _ : padding;
       return mixed;
     };
 
     mixed.range = function (_) {
+      function isNumber(val) {
+        return typeof val === 'number';
+      }
+
       if (!arguments.length) return range;
-      range = _;
+      range = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : range;
       return mixed;
     };
 
     mixed.clamp = function (_) {
       if (!arguments.length) return clamp;
-      clamp = _;
+      clamp = typeof _ === 'boolean' ? _ : clamp;
       return mixed;
     };
 
     mixed.timeInterval = function (_) {
       if (!arguments.length) return timeInterval;
-      timeInterval = _;
+      timeInterval = typeof _ === 'string' ? _ : timeInterval;
       return mixed;
     };
 
     mixed.utc = function (_) {
       if (!arguments.length) return utc;
-      utc = _;
+      utc = typeof _ === 'boolean' ? _ : utc;
       return mixed;
     };
 
