@@ -167,6 +167,7 @@ define(function (require) {
 
     this._selection.call(layout.size(size))
       .selectAll('.' + layout.class()).call(chart);
+    return this;
   };
 
   /**
