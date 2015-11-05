@@ -15,6 +15,16 @@ define(function (require) {
     if (!self._opts) throw new Error('No options given');
   }
 
+  function validateSize(arr) {
+    var width = arr[0];
+    var height = arr[1];
+
+    if (width <= 0 || height <= 0) {
+      throw new Error('Unable to render chart(s), the parent DOM element has no' +
+        'width ' + width + ' and/or height ' + height);
+    }
+  }
+
   function removeBrush(selection) {
     var brushEvents = [
       'mousedown.brush', 'touchstart.brush',
@@ -27,6 +37,12 @@ define(function (require) {
       brushEvents.forEach(function (event) {
         d3.select(this).on(event, null);
       });
+    });
+  }
+
+  function removeListeners(selection, event) {
+    selection.selectAll('svg').each(function () {
+      d3.select(this).on(event, null);
     });
   }
 
@@ -65,6 +81,7 @@ define(function (require) {
     this._el = el; // => Setter
     // Create d3 selection
     this._selection = el instanceof d3.selection ? el : d3.select(el);
+    // Bind datum to selection if datum exists
     if (this._datum) this.data(this._datum);
     return this;
   };
@@ -73,7 +90,7 @@ define(function (require) {
    * Binds data to the d3 selection,
    * or returns the bound data array.
    *
-   * @param {Array} [datum] - Array of objects
+   * @param {Array} [datum] - Single object or Array of objects
    * @returns {*}
    */
   Phx.prototype.data = function (datum) {
@@ -101,7 +118,7 @@ define(function (require) {
    */
   Phx.prototype.options = function (opts) {
     if (!arguments.length) return this._opts; // => Getter
-    if (!(opts instanceof Object) || opts instanceof Array) {
+    if (!(opts instanceof Object) || Array.isArray(opts)) {
       throw new Error('The options method expects a valid object');
     }
 
@@ -146,8 +163,7 @@ define(function (require) {
     evaluate(this);
     layout = this._layout.layout(this._opts.layout || 'rows');
     chart = this._chart.options(this._opts);
-    size = sizeFunc(this._selection, width, height);
-    if (size[0] <= 0 || size[1] <= 0) return this;
+    size = validateSize(sizeFunc(this._selection, width, height));
 
     this._selection.call(layout.size(size))
       .selectAll('.' + layout.class()).call(chart);
@@ -223,9 +239,7 @@ define(function (require) {
     if (!this._selection) throw new Error('A valid element is required');
     if (this._listeners[event]) {
       if (!listener) {
-        this._selection.selectAll('svg').each(function () {
-          d3.select(this).on(event, null);
-        });
+        removeListeners(this._selection, event);
         delete this._listeners[event];
         this._chart.listeners(this._listeners);
       }
@@ -249,10 +263,8 @@ define(function (require) {
     if (!selection) throw new Error('A valid element is required');
 
     removeBrush(selection);
-    Object.keys(this._listeners).forEach(function (key) {
-      selection.selectAll('svg').each(function () {
-        d3.select(this).on(key, null);
-      });
+    Object.keys(this._listeners).forEach(function (event) {
+      removeListeners(selection, event);
     });
 
     this._chart.listeners(this._listeners = {});
@@ -280,7 +292,7 @@ define(function (require) {
   Phx.prototype.listenerCount = function (event) {
     if (!arguments.length) return sumListeners(this._listeners);
     if (event && this._listeners[event]) return this._listeners[event].length;
-    if (event && !this._listeners[event]) return 0;
+    return 0;
   };
 
   /**
