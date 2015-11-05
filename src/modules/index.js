@@ -161,7 +161,9 @@ define(function (require) {
     var size;
 
     evaluate(this);
-    layout = this._layout.layout(this._opts.layout || 'rows');
+    layout = this._layout
+      .layout(this._opts.layout || 'rows')
+      .columns(this._opts.numOfColumns || 0);
     chart = this._chart.options(this._opts);
     size = validateSize(sizeFunc(this._selection, width, height));
 

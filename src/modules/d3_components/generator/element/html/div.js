@@ -1,4 +1,5 @@
 define(function (require) {
+  var d3 = require('d3');
   var base = require('src/modules/d3_components/layout/base');
 
   /**
@@ -12,10 +13,12 @@ define(function (require) {
     var type = 'rows';
     var size = [500, 500];
     var layout = base();
+    var columns = 0;
 
     function generator(selection) {
       selection.each(function (data) {
-        layout.type(type).size(size); // Appends divs based on the data array
+        // Appends divs based on the data array
+        layout.type(type).columns(columns).size(size);
 
         var div = d3.select(this).selectAll('div')
           .data(layout(data));
@@ -44,14 +47,20 @@ define(function (require) {
     // Layout types => 'rows', 'columns', 'grid'
     generator.layout = function (_) {
       if (!arguments.length) return type;
-      type = typeof _ === 'string' ? _ : type;
+      type = _;
+      return generator;
+    };
+
+    generator.columns = function (_) {
+      if (!arguments.length) return columns;
+      columns = _;
       return generator;
     };
 
     // Parent element size, [width, height]
     generator.size = function (_) {
       if (!arguments.length) return size;
-      size = _ instanceof Array && _.length === 2 ? _ : size;
+      size = _;
       return generator;
     };
 
