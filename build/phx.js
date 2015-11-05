@@ -10378,6 +10378,7 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
     var type = null;
     var accessor = null;
     var categories = null;
+    var sort = null;
     var range = [0, 1];
     var extent = false;
     var min = null;
@@ -10399,7 +10400,7 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
         if (Array.isArray(categories)) {
           ordinalDomain = categories;
         } else if (typeof categories === 'function') {
-          ordinalDomain = data.map(categories)
+          ordinalDomain = data.sort(sort).map(categories)
             .filter(function (item, index, array) {
               return array.indexOf(item) === index;
             });
@@ -10477,6 +10478,12 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
       return mixed;
     };
 
+    mixed.sort = function (_) {
+      if (!arguments.length) return sort;
+      sort = typeof _ === 'function' ? _ : sort;
+      return mixed;
+    };
+
     mixed.extent = function (_) {
       if (!arguments.length) return extent;
       extent = typeof _ === 'boolean' ? _ : extent;
@@ -10539,6 +10546,7 @@ define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modu
     var type = null;
     var accessor = null;
     var categories = null;
+    var sort = null;
     var extent = false;
     var min = null;
     var max = null;
@@ -10564,6 +10572,7 @@ define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modu
           .type(type)
           .accessor(accessor)
           .categories(categories)
+          .sort(sort)
           .extent(extent)
           .min(min)
           .max(max)
@@ -10656,6 +10665,12 @@ define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modu
     generator.categories = function (_) {
       if (!arguments.length) return categories;
       categories = _;
+      return generator;
+    };
+
+    generator.sort = function (_) {
+      if (!arguments.length) return sort;
+      sort = _;
       return generator;
     };
 
