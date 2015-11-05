@@ -124,7 +124,7 @@ define(function (require) {
 
     generator.categories = function (_) {
       if (!arguments.length) return categories;
-      categories = Array.isArray(_) ? _ : categories;
+      categories = _;
       return generator;
     };
 
