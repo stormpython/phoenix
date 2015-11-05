@@ -1,6 +1,6 @@
 {
   "name": "phx",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "D3 Charting Library",
   "main": "src/index.js",
   "directories": {
