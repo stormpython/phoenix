@@ -9953,8 +9953,23 @@ define("src/require.config", function(){});
   if (typeof define === "function" && define.amd) define('d3',d3); else if (typeof module === "object" && module.exports) module.exports = d3;
   this.d3 = d3;
 }();
-define('src/modules/d3_components/layout/box',['require','d3'],function (require) {
+define('src/modules/d3_components/helpers/valuator',[],function () {
+  /**
+   * Wrapper function that returns a function
+   * that returns the argument or an object key.
+   * If argument is a function, returns the function.
+   */
+
+  return function (val) {
+    if (typeof val === 'function') { return val; }
+    if (typeof val === 'string') {
+      return function (d) { return d[val]; };
+    }
+  };
+});
+define('src/modules/d3_components/layout/box',['require','d3','src/modules/d3_components/helpers/valuator'],function (require) {
   var d3 = require('d3');
+  var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function box() {
     // Private variables
@@ -9978,13 +9993,13 @@ define('src/modules/d3_components/layout/box',['require','d3'],function (require
     // Public API
     layout.values = function (_) {
       if (!arguments.length) return values;
-      values = _;
+      values = valuator(_);
       return layout;
     };
 
     layout.accessor = function (_) {
       if (!arguments.length) return accessor;
-      accessor = _;
+      accessor = valuator(_);
       return layout;
     };
 
@@ -10348,24 +10363,16 @@ define('src/modules/d3_components/helpers/timeparser',[],function () {
     return timeNotation[abbr];
   };
 });
-define('src/modules/d3_components/helpers/valuator',[],function () {
-  /**
-   * Wrapper function that returns a function
-   * that returns the argument or an object key.
-   * If argument is a function, returns the function.
-   */
-
-  return function (val) {
-    if (typeof val === 'function') { return val; }
-    if (typeof val === 'string') {
-      return function (d) { return d[val]; };
-    }
-  };
+define('src/modules/d3_components/helpers/is_number',[],function () {
+  return function isNumber(val) {
+    return typeof val === 'number';
+  }
 });
-define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_components/helpers/timeparser','src/modules/d3_components/helpers/valuator'],function (require) {
+define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_components/helpers/timeparser','src/modules/d3_components/helpers/valuator','src/modules/d3_components/helpers/is_number'],function (require) {
   var d3 = require('d3');
   var parseTime = require('src/modules/d3_components/helpers/timeparser');
   var valuator = require('src/modules/d3_components/helpers/valuator');
+  var isNumber = require('src/modules/d3_components/helpers/is_number');
 
   return function scale() {
     var type = null;
@@ -10495,10 +10502,6 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
     };
 
     mixed.range = function (_) {
-      function isNumber(val) {
-        return typeof val === 'number';
-      }
-
       if (!arguments.length) return range;
       range = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : range;
       return mixed;
@@ -10525,11 +10528,12 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
     return mixed;
   };
 });
-define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modules/d3_components/helpers/builder','src/modules/d3_components/generator/axis/rotate','src/modules/d3_components/mixed/scale'],function (require) {
+define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modules/d3_components/helpers/builder','src/modules/d3_components/generator/axis/rotate','src/modules/d3_components/mixed/scale','src/modules/d3_components/helpers/is_number'],function (require) {
   var d3 = require('d3');
   var builder = require('src/modules/d3_components/helpers/builder');
   var rotate = require('src/modules/d3_components/generator/axis/rotate');
   var scaleGenerator = require('src/modules/d3_components/mixed/scale');
+  var isNumber = require('src/modules/d3_components/helpers/is_number');
 
   return function axes() {
     var type = null;
@@ -10707,10 +10711,6 @@ define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modu
     };
 
     generator.size = function (_) {
-      function isNumber(val) {
-        return typeof val === 'number';
-      }
-
       if (!arguments.length) return size;
       size = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : size;
       return generator;
@@ -14373,8 +14373,9 @@ define('src/modules/d3_components/mixed/chart',['require','d3','src/modules/char
     return generator;
   };
 });
-define('src/modules/d3_components/layout/base',['require','d3'],function (require) {
+define('src/modules/d3_components/layout/base',['require','d3','src/modules/d3_components/helpers/is_number'],function (require) {
   var d3 = require('d3');
+  var isNumber = require('src/modules/d3_components/helpers/is_number');
 
   return function format() {
     // Private variables
@@ -14383,30 +14384,6 @@ define('src/modules/d3_components/layout/base',['require','d3'],function (requir
     var rowScale = d3.scale.linear();
     var columnScale = d3.scale.linear();
     var numOfCols = 0;
-
-    function formatType(length, type, cols) {
-      var output = {};
-
-      switch (type) {
-        case 'grid':
-          output.rows = cols ? Math.ceil(length / cols) :
-            Math.round(Math.sqrt(length));
-          output.columns = cols ? cols : Math.ceil(Math.sqrt(length));
-          break;
-
-        case 'columns':
-          output.rows = 1;
-          output.columns = length;
-          break;
-
-        default:
-          output.rows = length;
-          output.columns = 1;
-          break;
-      }
-
-      return output;
-    }
 
     function layout(data) {
       var format = formatType(data.length, type, numOfCols);
@@ -14434,6 +14411,30 @@ define('src/modules/d3_components/layout/base',['require','d3'],function (requir
       return data;
     }
 
+    function formatType(length, type, cols) {
+      var output = {};
+
+      switch (type) {
+        case 'grid':
+          output.rows = cols ? Math.ceil(length / cols) :
+            Math.round(Math.sqrt(length));
+          output.columns = cols ? cols : Math.ceil(Math.sqrt(length));
+          break;
+
+        case 'columns':
+          output.rows = 1;
+          output.columns = length;
+          break;
+
+        default:
+          output.rows = length;
+          output.columns = 1;
+          break;
+      }
+
+      return output;
+    }
+
     // Public API
     layout.type = function (_) {
       if (!arguments.length) return type;
@@ -14449,7 +14450,7 @@ define('src/modules/d3_components/layout/base',['require','d3'],function (requir
 
     layout.size = function (_) {
       if (!arguments.length) return size;
-      size = Array.isArray(_) && _.length === 2 ? _ : size;
+      size = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : size;
       return layout;
     };
 
