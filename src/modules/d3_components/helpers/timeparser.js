@@ -4,7 +4,7 @@ define(function () {
    * from its abbreviated form.
    * Valid str === [0-9][time abbr], e.g. '20s'
    */
-  return function (str) {
+  return function timeParser(str) {
     var timeNotation = {
       s: 'second',
       m: 'minute',
@@ -14,10 +14,13 @@ define(function () {
       M: 'month',
       y: 'year'
     };
+    var abbr;
 
-    if (typeof str !== 'string') { return; }
+    if (typeof str !== 'string') {
+      throw new Error('timeParser expects a string as input');
+    }
 
-    var abbr = str.split(parseFloat(str))[1];
+    abbr = str.split(parseFloat(str))[1];
 
     if (Object.keys(timeNotation).indexOf(abbr) === -1) {
       throw new Error('Invalid time string ' + str);
