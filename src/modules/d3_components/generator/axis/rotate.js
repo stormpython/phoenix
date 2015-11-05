@@ -7,14 +7,7 @@ define(function (require) {
     var measure = 'width';
     var labelPadding = 5;
     var truncateLength = 10;
-    var text = {
-      transform: 'translate(0,0)rotate(-45)',
-      x: 0,
-      y: 6,
-      dx: '',
-      dy: '.71em',
-      anchor: 'end'
-    };
+    var text = {};
 
     function component(g) {
       g.each(function () {
@@ -31,17 +24,16 @@ define(function (require) {
         // Rotate and truncate
         if (isRotated) {
           ticks
-            .attr('transform', text.transform)
-            .attr('x', text.x)
-            .attr('y', text.y)
-            .attr('dx', text.dx)
-            .attr('dy', text.dy)
-            .style('text-anchor', text.anchor);
+            .attr('transform', text.transform || 'translate(0,0)rotate(-45)')
+            .attr('x', text.x || 0)
+            .attr('y', text.y || 6)
+            .attr('dx', text.dx || '')
+            .attr('dy', text.dy || '.71em')
+            .style('text-anchor', text.anchor || 'end');
 
           // Truncation logic goes here
           ticks.each(function () {
-            d3.select(this)
-              .call(truncate().maxCharLength(truncateLength));
+            d3.select(this).call(truncate().maxCharLength(truncateLength));
           });
         }
       });
@@ -50,25 +42,25 @@ define(function (require) {
     // Public API
     component.axisLength = function (_) {
       if (!arguments.length) return axisLength;
-      axisLength = typeof _ !== 'number' ? axisLength : _;
+      axisLength = typeof _ === 'number' ? _ : axisLength;
       return component;
     };
 
     component.measure = function (_) {
       if (!arguments.length) return measure;
-      measure = typeof _ !== 'string' ? measure : _;
+      measure = typeof _ === 'string' ? _ : measure;
       return component;
     };
 
     component.labelPadding = function (_) {
       if (!arguments.length) return labelPadding;
-      labelPadding = typeof _ !== 'number' ? labelPadding : _;
+      labelPadding = typeof _ === 'number' ? _ : labelPadding;
       return component;
     };
 
     component.truncateLength = function (_) {
       if (!arguments.length) return truncateLength;
-      truncateLength = typeof _ !== 'number' ? truncateLength : _;
+      truncateLength = typeof _ === 'number' ? _ : truncateLength;
       return component;
     };
 
