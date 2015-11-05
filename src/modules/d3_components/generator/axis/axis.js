@@ -8,7 +8,7 @@ define(function (require) {
   return function axes() {
     var type = null;
     var accessor = null;
-    var categories = [];
+    var categories = null;
     var min = null;
     var max = null;
     var padding = 0.1;

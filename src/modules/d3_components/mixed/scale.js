@@ -15,19 +15,22 @@ define(function (require) {
     var timeInterval = null;
 
     function mixed(data) {
-      var timeNotation;
-      var step;
-
       // Flatten data
       data = data.reduce(function (a, b) {
         return a.concat(b);
       }, []);
 
-      if (categories.length) {
-        var ordinalDomain = categories.call(this, data)
-          .filter(function (item, index, array) {
-            return array.indexOf(item) === index;
-          });
+      if (categories) {
+        var ordinalDomain;
+
+        if (Array.isArray(categories)) {
+          ordinalDomain = categories;
+        } else if (typeof categories === 'function') {
+          ordinalDomain = data.map(categories)
+            .filter(function (item, index, array) {
+              return array.indexOf(item) === index;
+            });
+        }
 
         return d3.scale.ordinal()
           .domain(ordinalDomain)
@@ -93,7 +96,7 @@ define(function (require) {
 
     mixed.categories = function (_) {
       if (!arguments.length) return categories;
-      categories = d3.functor(_);
+      categories = _;
       return mixed;
     };
 

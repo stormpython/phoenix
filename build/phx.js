@@ -10370,19 +10370,22 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
     var timeInterval = null;
 
     function mixed(data) {
-      var timeNotation;
-      var step;
-
       // Flatten data
       data = data.reduce(function (a, b) {
         return a.concat(b);
       }, []);
 
-      if (categories.length) {
-        var ordinalDomain = categories.call(this, data)
-          .filter(function (item, index, array) {
-            return array.indexOf(item) === index;
-          });
+      if (categories) {
+        var ordinalDomain;
+
+        if (Array.isArray(categories)) {
+          ordinalDomain = categories;
+        } else if (typeof categories === 'function') {
+          ordinalDomain = data.map(categories)
+            .filter(function (item, index, array) {
+              return array.indexOf(item) === index;
+            });
+        }
 
         return d3.scale.ordinal()
           .domain(ordinalDomain)
@@ -10448,7 +10451,7 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
 
     mixed.categories = function (_) {
       if (!arguments.length) return categories;
-      categories = d3.functor(_);
+      categories = _;
       return mixed;
     };
 
@@ -10522,7 +10525,7 @@ define('src/modules/d3_components/generator/axis/axis',['require','d3','src/modu
   return function axes() {
     var type = null;
     var accessor = null;
-    var categories = [];
+    var categories = null;
     var min = null;
     var max = null;
     var padding = 0.1;
