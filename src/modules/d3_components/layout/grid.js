@@ -1,5 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
+  var isNumber = require('src/modules/d3_components/helpers/is_number');
 
   return function grid() {
     // Private variables
@@ -35,7 +36,7 @@ define(function (require) {
     // Public API
     layout.size = function (_) {
       if (!arguments.length) return gridSize;
-      gridSize = Array.isArray(_) && _.length === 2 ? _ : gridSize;
+      gridSize = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : gridSize;
       return layout;
     };
 

@@ -2,6 +2,7 @@ define(function (require) {
   var d3 = require('d3');
   var parseTime = require('src/modules/d3_components/helpers/timeparser');
   var valuator = require('src/modules/d3_components/helpers/valuator');
+  var isNumber = require('src/modules/d3_components/helpers/is_number');
 
   return function scale() {
     var type = null;
@@ -131,10 +132,6 @@ define(function (require) {
     };
 
     mixed.range = function (_) {
-      function isNumber(val) {
-        return typeof val === 'number';
-      }
-
       if (!arguments.length) return range;
       range = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : range;
       return mixed;

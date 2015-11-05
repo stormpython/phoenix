@@ -1,5 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
+  var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function box() {
     // Private variables
@@ -23,13 +24,13 @@ define(function (require) {
     // Public API
     layout.values = function (_) {
       if (!arguments.length) return values;
-      values = _;
+      values = valuator(_);
       return layout;
     };
 
     layout.accessor = function (_) {
       if (!arguments.length) return accessor;
-      accessor = _;
+      accessor = valuator(_);
       return layout;
     };
 

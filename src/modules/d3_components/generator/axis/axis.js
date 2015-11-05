@@ -3,6 +3,7 @@ define(function (require) {
   var builder = require('src/modules/d3_components/helpers/builder');
   var rotate = require('src/modules/d3_components/generator/axis/rotate');
   var scaleGenerator = require('src/modules/d3_components/mixed/scale');
+  var isNumber = require('src/modules/d3_components/helpers/is_number');
 
   return function axes() {
     var type = null;
@@ -180,10 +181,6 @@ define(function (require) {
     };
 
     generator.size = function (_) {
-      function isNumber(val) {
-        return typeof val === 'number';
-      }
-
       if (!arguments.length) return size;
       size = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : size;
       return generator;

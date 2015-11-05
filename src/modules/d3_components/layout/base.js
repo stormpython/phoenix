@@ -1,5 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
+  var isNumber = require('src/modules/d3_components/helpers/is_number');
 
   return function format() {
     // Private variables
@@ -73,10 +74,6 @@ define(function (require) {
     };
 
     layout.size = function (_) {
-      function isNumber(val) {
-        return typeof val === 'number';
-      }
-
       if (!arguments.length) return size;
       size = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : size;
       return layout;
