@@ -2,7 +2,7 @@ define(function () {
   return function stackNegPos() {
     var placement = [0, 0];
     var count = 0;
-    var stackCount;
+    var stackCount = 1;
 
     function out(d, y0, y) {
       if (count === stackCount) {
@@ -27,7 +27,7 @@ define(function () {
     // Public API
     out.stackCount = function(_) {
       if (!arguments.length) return stackCount;
-      stackCount = _;
+      stackCount = typeof _ === 'number' ? _ : stackCount;
       return out;
     };
 

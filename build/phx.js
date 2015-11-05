@@ -10228,7 +10228,7 @@ define('src/modules/d3_components/generator/axis/truncate',['require','d3'],func
     // Public API
     component.maxCharLength = function (_) {
       if (!arguments.length) return maxCharLength;
-      maxCharLength = typeof _ !== 'number' ? maxCharLength : _;
+      maxCharLength = typeof _ === 'number' ? _ : maxCharLength;
       return component;
     };
 
@@ -10245,14 +10245,7 @@ define('src/modules/d3_components/generator/axis/rotate',['require','d3','src/mo
     var measure = 'width';
     var labelPadding = 5;
     var truncateLength = 10;
-    var text = {
-      transform: 'translate(0,0)rotate(-45)',
-      x: 0,
-      y: 6,
-      dx: '',
-      dy: '.71em',
-      anchor: 'end'
-    };
+    var text = {};
 
     function component(g) {
       g.each(function () {
@@ -10269,17 +10262,16 @@ define('src/modules/d3_components/generator/axis/rotate',['require','d3','src/mo
         // Rotate and truncate
         if (isRotated) {
           ticks
-            .attr('transform', text.transform)
-            .attr('x', text.x)
-            .attr('y', text.y)
-            .attr('dx', text.dx)
-            .attr('dy', text.dy)
-            .style('text-anchor', text.anchor);
+            .attr('transform', text.transform || 'translate(0,0)rotate(-45)')
+            .attr('x', text.x || 0)
+            .attr('y', text.y || 6)
+            .attr('dx', text.dx || '')
+            .attr('dy', text.dy || '.71em')
+            .style('text-anchor', text.anchor || 'end');
 
           // Truncation logic goes here
           ticks.each(function () {
-            d3.select(this)
-              .call(truncate().maxCharLength(truncateLength));
+            d3.select(this).call(truncate().maxCharLength(truncateLength));
           });
         }
       });
@@ -10288,25 +10280,25 @@ define('src/modules/d3_components/generator/axis/rotate',['require','d3','src/mo
     // Public API
     component.axisLength = function (_) {
       if (!arguments.length) return axisLength;
-      axisLength = typeof _ !== 'number' ? axisLength : _;
+      axisLength = typeof _ === 'number' ? _ : axisLength;
       return component;
     };
 
     component.measure = function (_) {
       if (!arguments.length) return measure;
-      measure = typeof _ !== 'string' ? measure : _;
+      measure = typeof _ === 'string' ? _ : measure;
       return component;
     };
 
     component.labelPadding = function (_) {
       if (!arguments.length) return labelPadding;
-      labelPadding = typeof _ !== 'number' ? labelPadding : _;
+      labelPadding = typeof _ === 'number' ? _ : labelPadding;
       return component;
     };
 
     component.truncateLength = function (_) {
       if (!arguments.length) return truncateLength;
-      truncateLength = typeof _ !== 'number' ? truncateLength : _;
+      truncateLength = typeof _ === 'number' ? _ : truncateLength;
       return component;
     };
 
@@ -10331,7 +10323,7 @@ define('src/modules/d3_components/helpers/timeparser',[],function () {
    * from its abbreviated form.
    * Valid str === [0-9][time abbr], e.g. '20s'
    */
-  return function (str) {
+  return function timeParser(str) {
     var timeNotation = {
       s: 'second',
       m: 'minute',
@@ -10341,10 +10333,13 @@ define('src/modules/d3_components/helpers/timeparser',[],function () {
       M: 'month',
       y: 'year'
     };
+    var abbr;
 
-    if (typeof str !== 'string') { return; }
+    if (typeof str !== 'string') {
+      throw new Error('timeParser expects a string as input');
+    }
 
-    var abbr = str.split(parseFloat(str))[1];
+    abbr = str.split(parseFloat(str))[1];
 
     if (Object.keys(timeNotation).indexOf(abbr) === -1) {
       throw new Error('Invalid time string ' + str);
@@ -11992,7 +11987,7 @@ define('src/modules/d3_components/helpers/stack_neg_pos',[],function () {
   return function stackNegPos() {
     var placement = [0, 0];
     var count = 0;
-    var stackCount;
+    var stackCount = count;
 
     function out(d, y0, y) {
       if (count === stackCount) {
@@ -12017,7 +12012,7 @@ define('src/modules/d3_components/helpers/stack_neg_pos',[],function () {
     // Public API
     out.stackCount = function(_) {
       if (!arguments.length) return stackCount;
-      stackCount = _;
+      stackCount = typeof _ === 'number' ? _ : stackCount;
       return out;
     };
 
@@ -13512,8 +13507,7 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
         var adjustedHeight = height - margin.top - margin.bottom;
 
         // Stack data
-        var out = elements.bar.show ?
-          stackOut().stackCount(data.length) : defaultOut;
+        var out = elements.bar.show ? stackOut().stackCount(data.length) : defaultOut;
 
         stack.x(x).y(y)
           .offset(stackOpts.offset || 'zero')

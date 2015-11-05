@@ -53,8 +53,7 @@ define(function (require) {
         var adjustedHeight = height - margin.top - margin.bottom;
 
         // Stack data
-        var out = elements.bar.show ?
-          stackOut().stackCount(data.length) : defaultOut;
+        var out = elements.bar.show ? stackOut().stackCount(data.length) : defaultOut;
 
         stack.x(x).y(y)
           .offset(stackOpts.offset || 'zero')
