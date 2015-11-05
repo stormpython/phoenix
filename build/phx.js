@@ -14458,7 +14458,8 @@ define('src/modules/d3_components/layout/base',['require','d3','src/modules/d3_c
   };
 });
 
-define('src/modules/d3_components/generator/element/html/div',['require','src/modules/d3_components/layout/base'],function (require) {
+define('src/modules/d3_components/generator/element/html/div',['require','d3','src/modules/d3_components/layout/base'],function (require) {
+  var d3 = require('d3');
   var base = require('src/modules/d3_components/layout/base');
 
   /**
@@ -14472,10 +14473,12 @@ define('src/modules/d3_components/generator/element/html/div',['require','src/mo
     var type = 'rows';
     var size = [500, 500];
     var layout = base();
+    var columns = 0;
 
     function generator(selection) {
       selection.each(function (data) {
-        layout.type(type).size(size); // Appends divs based on the data array
+        // Appends divs based on the data array
+        layout.type(type).columns(columns).size(size);
 
         var div = d3.select(this).selectAll('div')
           .data(layout(data));
@@ -14504,14 +14507,20 @@ define('src/modules/d3_components/generator/element/html/div',['require','src/mo
     // Layout types => 'rows', 'columns', 'grid'
     generator.layout = function (_) {
       if (!arguments.length) return type;
-      type = typeof _ === 'string' ? _ : type;
+      type = _;
+      return generator;
+    };
+
+    generator.columns = function (_) {
+      if (!arguments.length) return columns;
+      columns = _;
       return generator;
     };
 
     // Parent element size, [width, height]
     generator.size = function (_) {
       if (!arguments.length) return size;
-      size = _ instanceof Array && _.length === 2 ? _ : size;
+      size = _;
       return generator;
     };
 
@@ -14721,7 +14730,9 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
     var size;
 
     evaluate(this);
-    layout = this._layout.layout(this._opts.layout || 'rows');
+    layout = this._layout
+      .layout(this._opts.layout || 'rows')
+      .columns(this._opts.numOfColumns || 0);
     chart = this._chart.options(this._opts);
     size = validateSize(sizeFunc(this._selection, width, height));
 
