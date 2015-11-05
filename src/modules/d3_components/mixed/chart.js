@@ -1,4 +1,5 @@
 define(function (require) {
+  var d3 = require('d3');
   var charts = require('src/modules/charts/index');
 
   return function chart() {
@@ -13,6 +14,7 @@ define(function (require) {
         var chart = charts[chartType]()
           .width(data.width)
           .height(data.height)
+          .accessor(accessor)
           .listeners(listeners);
 
         [opts, dataOpts].forEach(function (o) {
@@ -23,21 +25,19 @@ define(function (require) {
           });
         });
 
-        if (typeof chart.accessor) chart.accessor(accessor);
-
         d3.select(this).call(chart); // Draw Chart
       });
     }
 
     generator.options = function (_) {
       if (!arguments.length) return opts;
-      opts = _;
+      opts = typeof _ === 'object' ? _ : opts;
       return generator;
     };
 
     generator.listeners = function (_) {
       if (!arguments.length) return listeners;
-      listeners = _;
+      listeners = typeof _ === 'object' ? _ : listeners;
       return generator;
     };
 
