@@ -2,8 +2,8 @@ define(function (require) {
   var d3 = require('d3');
 
   return function builder(attrs, func) {
-    if (typeof attrs !== 'object') {
-      throw new Error('builder expects an object as its first argument');
+    if (typeof attrs !== 'object' || Array.isArray(attrs)) {
+      throw new Error('builder expects a javascript Object ({}) as its first argument');
     }
 
     if (typeof func !== 'function') {

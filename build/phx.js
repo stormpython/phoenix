@@ -11987,7 +11987,7 @@ define('src/modules/d3_components/helpers/stack_neg_pos',[],function () {
   return function stackNegPos() {
     var placement = [0, 0];
     var count = 0;
-    var stackCount = count;
+    var stackCount = 1;
 
     function out(d, y0, y) {
       if (count === stackCount) {
