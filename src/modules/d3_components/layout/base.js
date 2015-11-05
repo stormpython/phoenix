@@ -9,30 +9,6 @@ define(function (require) {
     var columnScale = d3.scale.linear();
     var numOfCols = 0;
 
-    function formatType(length, type, cols) {
-      var output = {};
-
-      switch (type) {
-        case 'grid':
-          output.rows = cols ? Math.ceil(length / cols) :
-            Math.round(Math.sqrt(length));
-          output.columns = cols ? cols : Math.ceil(Math.sqrt(length));
-          break;
-
-        case 'columns':
-          output.rows = 1;
-          output.columns = length;
-          break;
-
-        default:
-          output.rows = length;
-          output.columns = 1;
-          break;
-      }
-
-      return output;
-    }
-
     function layout(data) {
       var format = formatType(data.length, type, numOfCols);
       var rows = format.rows;
@@ -59,6 +35,30 @@ define(function (require) {
       return data;
     }
 
+    function formatType(length, type, cols) {
+      var output = {};
+
+      switch (type) {
+        case 'grid':
+          output.rows = cols ? Math.ceil(length / cols) :
+            Math.round(Math.sqrt(length));
+          output.columns = cols ? cols : Math.ceil(Math.sqrt(length));
+          break;
+
+        case 'columns':
+          output.rows = 1;
+          output.columns = length;
+          break;
+
+        default:
+          output.rows = length;
+          output.columns = 1;
+          break;
+      }
+
+      return output;
+    }
+
     // Public API
     layout.type = function (_) {
       if (!arguments.length) return type;
@@ -73,8 +73,12 @@ define(function (require) {
     };
 
     layout.size = function (_) {
+      function isNumber(val) {
+        return typeof val === 'number';
+      }
+
       if (!arguments.length) return size;
-      size = Array.isArray(_) && _.length === 2 ? _ : size;
+      size = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : size;
       return layout;
     };
 
