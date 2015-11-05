@@ -14592,6 +14592,8 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
       throw new Error('Unable to render chart(s), the parent DOM element has no' +
         'width ' + width + ' and/or height ' + height);
     }
+
+    return arr;
   }
 
   function removeBrush(selection) {

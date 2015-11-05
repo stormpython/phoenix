@@ -23,6 +23,8 @@ define(function (require) {
       throw new Error('Unable to render chart(s), the parent DOM element has no' +
         'width ' + width + ' and/or height ' + height);
     }
+
+    return arr;
   }
 
   function removeBrush(selection) {
