@@ -8,6 +8,7 @@ define(function (require) {
     var type = null;
     var accessor = null;
     var categories = null;
+    var sort = null;
     var range = [0, 1];
     var extent = false;
     var min = null;
@@ -29,7 +30,7 @@ define(function (require) {
         if (Array.isArray(categories)) {
           ordinalDomain = categories;
         } else if (typeof categories === 'function') {
-          ordinalDomain = data.map(categories)
+          ordinalDomain = data.sort(sort).map(categories)
             .filter(function (item, index, array) {
               return array.indexOf(item) === index;
             });
@@ -104,6 +105,12 @@ define(function (require) {
     mixed.categories = function (_) {
       if (!arguments.length) return categories;
       categories = typeof _ === 'function' || Array.isArray(_) ? _ : categories;
+      return mixed;
+    };
+
+    mixed.sort = function (_) {
+      if (!arguments.length) return sort;
+      sort = typeof _ === 'function' ? _ : sort;
       return mixed;
     };
 

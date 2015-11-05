@@ -9,6 +9,7 @@ define(function (require) {
     var type = null;
     var accessor = null;
     var categories = null;
+    var sort = null;
     var extent = false;
     var min = null;
     var max = null;
@@ -34,6 +35,7 @@ define(function (require) {
           .type(type)
           .accessor(accessor)
           .categories(categories)
+          .sort(sort)
           .extent(extent)
           .min(min)
           .max(max)
@@ -126,6 +128,12 @@ define(function (require) {
     generator.categories = function (_) {
       if (!arguments.length) return categories;
       categories = _;
+      return generator;
+    };
+
+    generator.sort = function (_) {
+      if (!arguments.length) return sort;
+      sort = _;
       return generator;
     };
 
