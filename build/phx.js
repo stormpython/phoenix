@@ -10440,8 +10440,7 @@ define('src/modules/d3_components/mixed/scale',['require','d3','src/modules/d3_c
             timeOffset ? timeOffset : maxDatum
           ])
           .range(range)
-          .clamp(clamp)
-          .nice();
+          .clamp(clamp);
       }
 
       if (typeof d3.scale[type] === 'function') {

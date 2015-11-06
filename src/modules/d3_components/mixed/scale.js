@@ -70,8 +70,7 @@ define(function (require) {
             timeOffset ? timeOffset : maxDatum
           ])
           .range(range)
-          .clamp(clamp)
-          .nice();
+          .clamp(clamp);
       }
 
       if (typeof d3.scale[type] === 'function') {
