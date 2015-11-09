@@ -20,7 +20,7 @@ define(function (require) {
     var fill = colorFill;
     var stroke = colorFill;
     var strokeWidth = 0;
-    var opacity = 1;
+    var fillOpacity = 1;
     var orientation = 'vertical';
     var rects = rect();
     var verticalLayout = vertical();
@@ -43,7 +43,7 @@ define(function (require) {
           .fill(fill)
           .stroke(stroke)
           .strokeWidth(strokeWidth)
-          .opacity(opacity);
+          .fillOpacity(fillOpacity);
 
         var g = d3.select(this).selectAll('.bar-layers')
           .data(barLayout(data));
@@ -138,9 +138,9 @@ define(function (require) {
       return generator;
     };
 
-    generator.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
+    generator.fillOpacity = function (_) {
+      if (!arguments.length) return fillOpacity;
+      fillOpacity = _;
       return generator;
     };
 

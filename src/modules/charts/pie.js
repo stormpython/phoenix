@@ -2,7 +2,6 @@ define(function (require) {
   var d3 = require('d3');
   var path = require('src/modules/d3_components/generator/element/svg/path');
   var textElement = require('src/modules/d3_components/generator/element/svg/text');
-  var events = require('src/modules/d3_components/control/events');
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function pieChart() {
@@ -23,31 +22,22 @@ define(function (require) {
     };
     var stroke = '#ffffff';
     var text = {};
-    var listeners = {};
 
-    function chart (selection) {
-      selection.each(function (data, index) {
-        data = accessor.call(this, data, index);
-
+    function chart (g) {
+      g.each(function (data, index) {
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
-
         var pie = d3.layout.pie()
           .sort(sort)
           .value(value);
 
-        data = pie(data).map(function (d) {
-          return [d];
-        });
-
         var radius = Math.min(adjustedWidth, adjustedHeight) / 2;
-        var svgEvents = events().listeners(listeners);
         var arc = d3.svg.arc()
           .outerRadius(outerRadius || radius)
           .innerRadius(innerRadius || function () {
-            if (donut) return Math.max(0, radius / 2);
-            return 0;
-          });
+              if (donut) return Math.max(0, radius / 2);
+              return 0;
+            });
 
         var piePath = path()
           .path(function (d) { return arc(d); })
@@ -57,8 +47,8 @@ define(function (require) {
 
         var pieText = textElement()
           .transform(text.transform || function (d) {
-            return 'translate(' + arc.centroid(d) + ')';
-          })
+              return 'translate(' + arc.centroid(d) + ')';
+            })
           .dy(text.dy || '.35em')
           .anchor(text.anchor || 'middle')
           .fill(text.fill || '#ffffff')
@@ -66,19 +56,10 @@ define(function (require) {
             return label.call(this, d.data, i);
           });
 
-        var svg = d3.select(this).selectAll('svg')
-          .data([data]);
+        data = pie(accessor.call(this, data, index))
+          .map(function (d) { return [d]; });
 
-        svg.exit().remove();
-        svg.enter().append('svg');
-
-        svg
-          .attr('width', width)
-          .attr('height', height)
-          .call(svgEvents);
-
-        var g = svg.selectAll('g.pie')
-          .data([data]);
+        var g = d3.select(this).selectAll('g.pie').data([data]);
 
         g.exit().remove();
         g.enter().append('g');
@@ -185,12 +166,6 @@ define(function (require) {
       text.anchor = typeof _.anchor !== 'undefined' ? _.anchor: text.anchor;
       text.dy = typeof _.dy !== 'undefined' ? _.dy : text.dy;
       text.transform = typeof _.transform !== 'undefined' ? _.transform : text.transform;
-      return chart;
-    };
-
-    chart.listeners = function (_) {
-      if (!arguments.length) { return listeners; }
-      listeners = typeof _ !== 'object' ? listeners : _;
       return chart;
     };
 

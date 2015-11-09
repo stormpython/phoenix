@@ -11203,8 +11203,8 @@ define('src/modules/d3_components/generator/element/svg/rect',['require','d3'],f
           .attr('ry', ry)
           .attr('width', width)
           .attr('height', height)
-          .style('fill-opacity', opacity)
-          .style('stroke-opacity', opacity);
+          .style('fill-opacity', fillOpacity)
+          .style('stroke-opacity', strokeOpacity);
       });
     }
 
@@ -13071,7 +13071,7 @@ define('src/modules/d3_components/generator/bars',['require','d3','src/modules/d
     var fill = colorFill;
     var stroke = colorFill;
     var strokeWidth = 0;
-    var opacity = 1;
+    var fillOpacity = 1;
     var orientation = 'vertical';
     var rects = rect();
     var verticalLayout = vertical();
@@ -13094,7 +13094,7 @@ define('src/modules/d3_components/generator/bars',['require','d3','src/modules/d
           .fill(fill)
           .stroke(stroke)
           .strokeWidth(strokeWidth)
-          .opacity(opacity);
+          .fillOpacity(fillOpacity);
 
         var g = d3.select(this).selectAll('.bar-layers')
           .data(barLayout(data));
@@ -13189,9 +13189,9 @@ define('src/modules/d3_components/generator/bars',['require','d3','src/modules/d
       return generator;
     };
 
-    generator.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
+    generator.fillOpacity = function (_) {
+      if (!arguments.length) return fillOpacity;
+      fillOpacity = _;
       return generator;
     };
 
@@ -13498,7 +13498,7 @@ define('src/modules/d3_components/generator/points',['require','d3','src/modules
   };
 });
 
-define('src/modules/charts/series',['require','d3','src/modules/d3_components/helpers/builder','src/modules/d3_components/helpers/valuator','src/modules/d3_components/helpers/stack_neg_pos','src/modules/d3_components/generator/clippath','src/modules/d3_components/generator/axis/axis','src/modules/d3_components/control/brush','src/modules/d3_components/control/events','src/modules/d3_components/generator/element/svg/line','src/modules/d3_components/generator/path','src/modules/d3_components/generator/bars','src/modules/d3_components/generator/points'],function (require) {
+define('src/modules/charts/series',['require','d3','src/modules/d3_components/helpers/builder','src/modules/d3_components/helpers/valuator','src/modules/d3_components/helpers/stack_neg_pos','src/modules/d3_components/generator/clippath','src/modules/d3_components/generator/axis/axis','src/modules/d3_components/control/brush','src/modules/d3_components/generator/element/svg/line','src/modules/d3_components/generator/path','src/modules/d3_components/generator/bars','src/modules/d3_components/generator/points'],function (require) {
   var d3 = require('d3');
   var builder = require('src/modules/d3_components/helpers/builder');
   var valuator = require('src/modules/d3_components/helpers/valuator');
@@ -13506,7 +13506,6 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
   var clipPathGenerator = require('src/modules/d3_components/generator/clippath');
   var axisGenerator = require('src/modules/d3_components/generator/axis/axis');
   var brushControl = require('src/modules/d3_components/control/brush');
-  var events = require('src/modules/d3_components/control/events');
   var lineElement = require('src/modules/d3_components/generator/element/svg/line');
   var pathGenerator = require('src/modules/d3_components/generator/path');
   var barGenerator = require('src/modules/d3_components/generator/bars');
@@ -13523,7 +13522,6 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
     var brush = brushControl();
     var clippath = clipPathGenerator();
     var stack = d3.layout.stack();
-    var svgEvents = events();
     var zeroLine = lineElement();
     var axisFunctions = {
       bottom: axisGenerator(),
@@ -13545,16 +13543,14 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
     var zeroLineOpts = {};
     var elements = { area: {}, bar: {}, line: [], points: [] };
 
-    function chart(selection)  {
-      selection.each(function (data, index) {
-        data = formatData(accessor.call(this, data, index));
-
+    function chart(g)  {
+      g.each(function (data, index) {
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
+        var out = elements.bar.show ? stackOut().stackCount(data.length) : defaultOut;
+        var g;
 
         // Stack data
-        var out = elements.bar.show ? stackOut().stackCount(data.length) : defaultOut;
-
         stack.x(x).y(y)
           .offset(stackOpts.offset || 'zero')
           .order(stackOpts.order || 'default')
@@ -13570,22 +13566,16 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
 
         // ClipPath
         clippath.width(adjustedWidth).height(adjustedHeight);
-        /* ************************************************** */
-        data = stack(data);
 
-        // SVG - create/update the svg
-        var svg = d3.select(this).selectAll('svg').data([data]);
-        svg.exit().remove();
-        svg.enter().append('svg');
-        svg.attr('width', width)
-          .attr('height', height)
-          .call(svgEvents.listeners(listeners));
+        data = stack(formatData(accessor.call(this, data, index)));
 
-        var g = svg.selectAll('g').data([data]);
+        g = d3.select(this).selectAll('g').data([data]);
+
         g.exit().remove();
         g.enter().append('g');
         g.attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
+        /* ************************************************** */
         // Axes
         [xAxes, yAxes].forEach(function (axis) {
           axis.forEach(function (opts) {
@@ -13637,8 +13627,8 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
         }
 
         // Clippath
-        var clippedG = g.call(clippath)
-          .selectAll('g.clip-path').data([data]);
+        var clippedG = g.call(clippath).selectAll('g.clip-path').data([data]);
+
         clippedG.exit().remove();
         clippedG.enter().append('g');
         clippedG.attr('class', 'clip-path')
@@ -13882,11 +13872,10 @@ define('src/modules/d3_components/generator/element/svg/text',['require','d3'],f
   };
 });
 
-define('src/modules/charts/pie',['require','d3','src/modules/d3_components/generator/element/svg/path','src/modules/d3_components/generator/element/svg/text','src/modules/d3_components/control/events','src/modules/d3_components/helpers/valuator'],function (require) {
+define('src/modules/charts/pie',['require','d3','src/modules/d3_components/generator/element/svg/path','src/modules/d3_components/generator/element/svg/text','src/modules/d3_components/helpers/valuator'],function (require) {
   var d3 = require('d3');
   var path = require('src/modules/d3_components/generator/element/svg/path');
   var textElement = require('src/modules/d3_components/generator/element/svg/text');
-  var events = require('src/modules/d3_components/control/events');
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function pieChart() {
@@ -13907,31 +13896,22 @@ define('src/modules/charts/pie',['require','d3','src/modules/d3_components/gener
     };
     var stroke = '#ffffff';
     var text = {};
-    var listeners = {};
 
-    function chart (selection) {
-      selection.each(function (data, index) {
-        data = accessor.call(this, data, index);
-
+    function chart (g) {
+      g.each(function (data, index) {
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
-
         var pie = d3.layout.pie()
           .sort(sort)
           .value(value);
 
-        data = pie(data).map(function (d) {
-          return [d];
-        });
-
         var radius = Math.min(adjustedWidth, adjustedHeight) / 2;
-        var svgEvents = events().listeners(listeners);
         var arc = d3.svg.arc()
           .outerRadius(outerRadius || radius)
           .innerRadius(innerRadius || function () {
-            if (donut) return Math.max(0, radius / 2);
-            return 0;
-          });
+              if (donut) return Math.max(0, radius / 2);
+              return 0;
+            });
 
         var piePath = path()
           .path(function (d) { return arc(d); })
@@ -13941,8 +13921,8 @@ define('src/modules/charts/pie',['require','d3','src/modules/d3_components/gener
 
         var pieText = textElement()
           .transform(text.transform || function (d) {
-            return 'translate(' + arc.centroid(d) + ')';
-          })
+              return 'translate(' + arc.centroid(d) + ')';
+            })
           .dy(text.dy || '.35em')
           .anchor(text.anchor || 'middle')
           .fill(text.fill || '#ffffff')
@@ -13950,19 +13930,10 @@ define('src/modules/charts/pie',['require','d3','src/modules/d3_components/gener
             return label.call(this, d.data, i);
           });
 
-        var svg = d3.select(this).selectAll('svg')
-          .data([data]);
+        data = pie(accessor.call(this, data, index))
+          .map(function (d) { return [d]; });
 
-        svg.exit().remove();
-        svg.enter().append('svg');
-
-        svg
-          .attr('width', width)
-          .attr('height', height)
-          .call(svgEvents);
-
-        var g = svg.selectAll('g.pie')
-          .data([data]);
+        var g = d3.select(this).selectAll('g.pie').data([data]);
 
         g.exit().remove();
         g.enter().append('g');
@@ -14072,19 +14043,12 @@ define('src/modules/charts/pie',['require','d3','src/modules/d3_components/gener
       return chart;
     };
 
-    chart.listeners = function (_) {
-      if (!arguments.length) { return listeners; }
-      listeners = typeof _ !== 'object' ? listeners : _;
-      return chart;
-    };
-
     return chart;
   };
 });
-define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/generator/element/svg/path','src/modules/d3_components/control/events','src/modules/d3_components/helpers/valuator'],function (require) {
+define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/generator/element/svg/path','src/modules/d3_components/helpers/valuator'],function (require) {
   var d3 = require('d3');
   var path = require('src/modules/d3_components/generator/element/svg/path');
-  var events = require('src/modules/d3_components/control/events');
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function sunburst() {
@@ -14104,10 +14068,9 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
       if (d.depth === 0) return 'none';
       return color(i);
     };
-    var listeners = {};
 
-    function chart (selection) {
-      selection.each(function (data, index) {
+    function chart (g) {
+      g.each(function (data, index) {
         data = accessor.call(this, data, index);
 
         var adjustedWidth = width - margin.right - margin.left;
@@ -14132,22 +14095,13 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
           .stroke(stroke)
           .fill(fill);
 
-        var svgEvents = events().listeners(listeners);
+        var g = d3.select(this).selectAll('g').data([data]);
 
-        var svg = d3.select(this).selectAll('svg')
-          .data([data]);
-
-        svg.exit().remove();
-        svg.enter().append('svg');
-
-        svg
-          .attr('width', width)
-          .attr('height', height)
-          .call(svgEvents)
-            .append('g')
-            .datum(partition.nodes)
-            .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
-            .call(arcPath);
+        g.exit().remove();
+        g.enter().append('g')
+          .datum(partition.nodes)
+          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+          .call(arcPath);
       });
     }
 
@@ -14241,12 +14195,6 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
     chart.fill = function (_) {
       if (!arguments.length) return fill;
       fill= _;
-      return chart;
-    };
-
-    chart.listeners = function (_) {
-      if (!arguments.length) return listeners;
-      listeners = typeof _ !== 'object' ? listeners : _;
       return chart;
     };
 
@@ -14358,7 +14306,6 @@ define('src/modules/d3_components/mixed/chart',['require','d3','src/modules/char
 
   return function chart() {
     var opts = {};
-    var listeners = {};
 
     function generator(selection) {
       selection.each(function (data) {
@@ -14368,8 +14315,7 @@ define('src/modules/d3_components/mixed/chart',['require','d3','src/modules/char
         var chart = charts[chartType]()
           .width(data.width)
           .height(data.height)
-          .accessor(accessor)
-          .listeners(listeners);
+          .accessor(accessor);
 
         [opts, dataOpts].forEach(function (o) {
           d3.entries(o).forEach(function (d) {
@@ -14386,33 +14332,6 @@ define('src/modules/d3_components/mixed/chart',['require','d3','src/modules/char
     generator.options = function (_) {
       if (!arguments.length) return opts;
       opts = typeof _ === 'object' && !Array.isArray(_) ? _ : opts;
-      return generator;
-    };
-
-    generator.listeners = function (_) {
-      if (!arguments.length) return listeners;
-      listeners = typeof _ === 'object' && !Array.isArray(_) ? _ : listeners;
-      return generator;
-    };
-
-    generator.on = function (event, listener) {
-      if (listener && typeof listener === 'function') {
-        if (!listeners[event]) listeners[event] = [];
-        listeners[event].push(listener);
-      }
-      return generator;
-    };
-
-    generator.off = function (event, listener) {
-      var handlers = listeners[event];
-
-      if (listener && typeof listener === 'function') {
-        if (handlers) {
-          listeners[event] = handlers.filter(function (handler) {
-            return handler !== listener;
-          });
-        }
-      }
       return generator;
     };
 
@@ -14504,19 +14423,12 @@ define('src/modules/d3_components/layout/base',['require','d3','src/modules/d3_c
   };
 });
 
-define('src/modules/d3_components/generator/element/html/div',['require','d3','src/modules/d3_components/layout/base'],function (require) {
+define('src/modules/d3_components/generator/layout',['require','d3','src/modules/d3_components/layout/base'],function (require) {
   var d3 = require('d3');
   var base = require('src/modules/d3_components/layout/base');
 
-  /**
-   * Returns a configurable function that sets attributes on
-   * data objects to create a layout for chart(s).
-   * Available layouts => 'rows', 'columns', 'grid'
-   */
-
-  return function div() {
-    var cssClass = 'chart';
-    var type = 'rows';
+  return function g() {
+    var type = 'grid';
     var size = [500, 500];
     var layout = base();
     var columns = 0;
@@ -14526,29 +14438,20 @@ define('src/modules/d3_components/generator/element/html/div',['require','d3','s
         // Appends divs based on the data array
         layout.type(type).columns(columns).size(size);
 
-        var div = d3.select(this).selectAll('div')
+        var g = d3.select(this).selectAll('g')
           .data(layout(data));
 
-        div.exit().remove();
-
-        div.enter().append('div');
-
-        div
-          .attr('class', cssClass)
-          .style('position', 'absolute')
-          .style('left', function (d) { return d.dx + 'px'; })
-          .style('top', function (d) { return d.dy + 'px'; })
-          .style('width', function (d) { return d.width + 'px'; })
-          .style('height', function (d) { return d.height + 'px'; });
+        g.exit().remove();
+        g.enter().append('g');
+        g
+          .attr('class', 'chart')
+          .attr('transform', function (d) {
+            return 'translate(' + d.dx + ',' + d.dy + ')';
+          });
       });
     }
 
-    // Sets css class on div(s)
-    generator.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
-      return generator;
-    };
+    // Public API
 
     // Layout types => 'rows', 'columns', 'grid'
     generator.layout = function (_) {
@@ -14563,7 +14466,7 @@ define('src/modules/d3_components/generator/element/html/div',['require','d3','s
       return generator;
     };
 
-    // Parent element size, [width, height]
+    // Parent generator size, [width, height]
     generator.size = function (_) {
       if (!arguments.length) return size;
       size = _;
@@ -14573,32 +14476,6 @@ define('src/modules/d3_components/generator/element/html/div',['require','d3','s
     return generator;
   };
 });
-define('src/modules/helpers/size',[],function () {
-  /**
-   * Returns a function that returns an array of
-   * the width and height of a DOM element.
-   * Accepts either a function that returns a
-   * number or a number as values for width and height.
-   * Or if width and height are undefined, it uses the
-   * clientWidth and clientHeight from the DOM element.
-   * Validates that the width and height are valid numbers.
-   */
-
-  return function size(selection, width, height) {
-    var node = selection.node();
-    var w = typeof width === 'function' ? width() : width || node.clientWidth;
-    var h = typeof height === 'function' ? height() : height || node.clientHeight;
-
-    if (typeof +w !== 'number' || isNaN(+w) ||
-      typeof +h !== 'number' || isNaN(+h)) {
-      throw new Error('width: ' + w + ' and height: ' + h +
-        ' must evaluate to a number.');
-    }
-
-    return [+w, +h];
-  }
-});
-
 define('src/modules/helpers/sum_listeners',[],function () {
   /**
    * Returns the sum of items in arrays
@@ -14613,11 +14490,11 @@ define('src/modules/helpers/sum_listeners',[],function () {
     }, 0);
   };
 });
-define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/modules/d3_components/generator/element/html/div','src/modules/helpers/size','src/modules/helpers/sum_listeners'],function (require) {
+define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/modules/d3_components/generator/layout','src/modules/d3_components/control/events','src/modules/helpers/sum_listeners'],function (require) {
   var d3 = require('d3');
   var chart = require('src/modules/d3_components/mixed/chart');
-  var layout = require('src/modules/d3_components/generator/element/html/div');
-  var sizeFunc = require('src/modules/helpers/size');
+  var layout = require('src/modules/d3_components/generator/layout');
+  var events = require('src/modules/d3_components/control/events');
   var sumListeners = require('src/modules/helpers/sum_listeners');
 
   function evaluate(self) {
@@ -14650,16 +14527,8 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
       'keydown.brush', 'keyup.brush'
     ];
 
-    selection.selectAll('svg').each(function () {
-      brushEvents.forEach(function (event) {
-        d3.select(this).on(event, null);
-      });
-    });
-  }
-
-  function removeListeners(selection, event) {
-    selection.selectAll('svg').each(function () {
-      d3.select(this).on(event, null);
+    brushEvents.forEach(function (event) {
+      selection.on(event, null);
     });
   }
 
@@ -14675,6 +14544,7 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
 
     this._chart = chart();
     this._layout = layout();
+    this._events = events();
     this._listeners = {};
     this.element(el || null);
     this._datum = [];
@@ -14686,18 +14556,25 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
    * or returns the current selected element.
    *
    * @param {HTMLElement} [el] - Reference to DOM element
+   * @param {Number|Function} [width] - Numerical value or function that evaluates to a numerical value
+   * @param {Number|Function} [height] - Numerical value or function that evaluates to a numerical value
    * @returns {*}
    */
-  Phx.prototype.element = function (el) {
+  Phx.prototype.element = function (el, width, height) {
     if (!arguments.length) return this._el; // => Getter
     if (!(el instanceof HTMLElement) && !(el instanceof String) &&
       !(el instanceof d3.selection) && !(d3.select(el).node())) {
       throw new Error('Phx requires a valid HTML element');
     }
 
+    var selection = el instanceof d3.selection ? el : d3.select(el);
+
     this._el = el; // => Setter
-    // Create d3 selection
-    this._selection = el instanceof d3.selection ? el : d3.select(el);
+    this._selection = selection.append('svg')
+      .attr('class', 'parent')
+      .attr('width', width || selection.node().clientWidth)
+      .attr('height', height || selection.node().clientHeight);
+
     // Bind datum to selection if datum exists
     if (this._datum) this.data(this._datum);
     return this;
@@ -14772,20 +14649,26 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
    * @param {Function|Number} [height] - Specifies height of DOM element
    * @returns {Phx}
    */
-  Phx.prototype.draw = function (width, height) {
-    var layout;
-    var chart;
+  Phx.prototype.draw = function () {
+    var node;
     var size;
 
-    evaluate(this);
-    layout = this._layout
-      .layout(this._opts.layout || 'rows')
-      .columns(this._opts.numOfColumns || 0);
-    chart = this._chart.options(this._opts);
-    size = validateSize(sizeFunc(this._selection, width, height));
+    evaluate(this); // Verify all needed vars are available
 
-    this._selection.call(layout.size(size))
-      .selectAll('.' + layout.class()).call(chart);
+    node = this._selection.node().parentNode;
+    size = validateSize([node.clientWidth, node.clientHeight]);
+
+    this._events.listeners(this._listeners);
+    this._layout
+      .layout(this._opts.layout || 'rows')
+      .columns(this._opts.numOfColumns || 0)
+      .size(size);
+    this._chart.options(this._opts);
+
+    this._selection
+      .call(this._events) // Add event listeners to svg
+      .call(this._layout) // Create layout of g elements
+      .selectAll('g.chart').call(this._chart); // Draw chart(s)
     return this;
   };
 
@@ -14825,6 +14708,7 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
     this._selection = null;
     this._chart = null;
     this._layout = null;
+    this._events = null;
     this._opts = null;
     this._datum = null;
     this._el = null;
@@ -14839,9 +14723,13 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
    * @returns {Phx}
    */
   Phx.prototype.on = function (event, listener) {
+    var listeners = this._listeners;
+
     if (!this._selection) throw new Error('A valid element is required');
-    this._chart.on(event, listener); // value => 'on' or 'off'
-    this._listeners = this._chart.listeners(); // Redefine listeners
+    if (listener && typeof listener === 'function') {
+      if (!listeners[event]) listeners[event] = [];
+      listeners[event].push(listener);
+    }
     return this;
   };
 
@@ -14856,16 +14744,20 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
    * @returns {Phx}
    */
   Phx.prototype.off = function (event, listener) {
+    var listeners = this._listeners;
+
     if (!this._selection) throw new Error('A valid element is required');
-    if (this._listeners[event]) {
+
+    if (listeners[event]) {
       if (!listener) {
-        removeListeners(this._selection, event);
+        this._selection.on(event, null);
         delete this._listeners[event];
-        this._chart.listeners(this._listeners);
       }
-      if (event && listener) {
-        this._chart.off(event, listener);
-        this._listeners = this._chart.listeners();
+
+      if (listener && typeof listener === 'function') {
+        listeners[event] = listeners[event].filter(function (handler) {
+          return handler !== listener;
+        });
       }
     }
     return this;
@@ -14884,10 +14776,10 @@ define('phx',['require','d3','src/modules/d3_components/mixed/chart','src/module
 
     removeBrush(selection);
     Object.keys(this._listeners).forEach(function (event) {
-      removeListeners(selection, event);
+      selection.on(event, null);
     });
 
-    this._chart.listeners(this._listeners = {});
+    this._listeners = {};
     return this;
   };
 

@@ -1,7 +1,7 @@
 define(function (require) {
   var d3 = require('d3');
   var chart = require('src/modules/d3_components/mixed/chart');
-  var layout = require('src/modules/d3_components/generator/element/html/div');
+  var layout = require('src/modules/d3_components/generator/layout');
   var events = require('src/modules/d3_components/control/events');
   var sumListeners = require('src/modules/helpers/sum_listeners');
 
@@ -163,7 +163,7 @@ define(function (require) {
 
     evaluate(this); // Verify all needed vars are available
 
-    node = this._selection.node();
+    node = this._selection.node().parentNode;
     size = validateSize([node.clientWidth, node.clientHeight]);
 
     this._events.listeners(this._listeners);
@@ -176,7 +176,7 @@ define(function (require) {
     this._selection
       .call(this._events) // Add event listeners to svg
       .call(this._layout) // Create layout of g elements
-      .selectAll('g.chart').call(chart); // Draw chart(s)
+      .selectAll('g.chart').call(this._chart); // Draw chart(s)
     return this;
   };
 

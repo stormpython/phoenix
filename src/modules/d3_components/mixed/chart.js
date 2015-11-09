@@ -33,19 +33,6 @@ define(function (require) {
       return generator;
     };
 
-    generator.off = function (event, listener) {
-      var handlers = listeners[event];
-
-      if (listener && typeof listener === 'function') {
-        if (handlers) {
-          listeners[event] = handlers.filter(function (handler) {
-            return handler !== listener;
-          });
-        }
-      }
-      return generator;
-    };
-
     return generator;
   };
 });

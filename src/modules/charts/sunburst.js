@@ -1,7 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
   var path = require('src/modules/d3_components/generator/element/svg/path');
-  var events = require('src/modules/d3_components/control/events');
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function sunburst() {
@@ -21,10 +20,9 @@ define(function (require) {
       if (d.depth === 0) return 'none';
       return color(i);
     };
-    var listeners = {};
 
-    function chart (selection) {
-      selection.each(function (data, index) {
+    function chart (g) {
+      g.each(function (data, index) {
         data = accessor.call(this, data, index);
 
         var adjustedWidth = width - margin.right - margin.left;
@@ -49,22 +47,13 @@ define(function (require) {
           .stroke(stroke)
           .fill(fill);
 
-        var svgEvents = events().listeners(listeners);
+        var g = d3.select(this).selectAll('g').data([data]);
 
-        var svg = d3.select(this).selectAll('svg')
-          .data([data]);
-
-        svg.exit().remove();
-        svg.enter().append('svg');
-
-        svg
-          .attr('width', width)
-          .attr('height', height)
-          .call(svgEvents)
-            .append('g')
-            .datum(partition.nodes)
-            .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
-            .call(arcPath);
+        g.exit().remove();
+        g.enter().append('g')
+          .datum(partition.nodes)
+          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+          .call(arcPath);
       });
     }
 
@@ -158,12 +147,6 @@ define(function (require) {
     chart.fill = function (_) {
       if (!arguments.length) return fill;
       fill= _;
-      return chart;
-    };
-
-    chart.listeners = function (_) {
-      if (!arguments.length) return listeners;
-      listeners = typeof _ !== 'object' ? listeners : _;
       return chart;
     };
 

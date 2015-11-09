@@ -6,7 +6,6 @@ define(function (require) {
   var clipPathGenerator = require('src/modules/d3_components/generator/clippath');
   var axisGenerator = require('src/modules/d3_components/generator/axis/axis');
   var brushControl = require('src/modules/d3_components/control/brush');
-  var events = require('src/modules/d3_components/control/events');
   var lineElement = require('src/modules/d3_components/generator/element/svg/line');
   var pathGenerator = require('src/modules/d3_components/generator/path');
   var barGenerator = require('src/modules/d3_components/generator/bars');
@@ -23,7 +22,6 @@ define(function (require) {
     var brush = brushControl();
     var clippath = clipPathGenerator();
     var stack = d3.layout.stack();
-    var svgEvents = events();
     var zeroLine = lineElement();
     var axisFunctions = {
       bottom: axisGenerator(),
@@ -45,16 +43,14 @@ define(function (require) {
     var zeroLineOpts = {};
     var elements = { area: {}, bar: {}, line: [], points: [] };
 
-    function chart(selection)  {
-      selection.each(function (data, index) {
-        data = formatData(accessor.call(this, data, index));
-
+    function chart(g)  {
+      g.each(function (data, index) {
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
+        var out = elements.bar.show ? stackOut().stackCount(data.length) : defaultOut;
+        var g;
 
         // Stack data
-        var out = elements.bar.show ? stackOut().stackCount(data.length) : defaultOut;
-
         stack.x(x).y(y)
           .offset(stackOpts.offset || 'zero')
           .order(stackOpts.order || 'default')
@@ -70,22 +66,16 @@ define(function (require) {
 
         // ClipPath
         clippath.width(adjustedWidth).height(adjustedHeight);
-        /* ************************************************** */
-        data = stack(data);
 
-        // SVG - create/update the svg
-        var svg = d3.select(this).selectAll('svg').data([data]);
-        svg.exit().remove();
-        svg.enter().append('svg');
-        svg.attr('width', width)
-          .attr('height', height)
-          .call(svgEvents.listeners(listeners));
+        data = stack(formatData(accessor.call(this, data, index)));
 
-        var g = svg.selectAll('g').data([data]);
+        g = d3.select(this).selectAll('g').data([data]);
+
         g.exit().remove();
         g.enter().append('g');
         g.attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
+        /* ************************************************** */
         // Axes
         [xAxes, yAxes].forEach(function (axis) {
           axis.forEach(function (opts) {
@@ -137,8 +127,8 @@ define(function (require) {
         }
 
         // Clippath
-        var clippedG = g.call(clippath)
-          .selectAll('g.clip-path').data([data]);
+        var clippedG = g.call(clippath).selectAll('g.clip-path').data([data]);
+
         clippedG.exit().remove();
         clippedG.enter().append('g');
         clippedG.attr('class', 'clip-path')
