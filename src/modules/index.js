@@ -2,7 +2,7 @@ define(function (require) {
   var d3 = require('d3');
   var chart = require('src/modules/d3_components/mixed/chart');
   var layout = require('src/modules/d3_components/generator/element/html/div');
-  var sizeFunc = require('src/modules/helpers/size');
+  var events = require('src/modules/d3_components/control/events');
   var sumListeners = require('src/modules/helpers/sum_listeners');
 
   function evaluate(self) {
@@ -35,16 +35,8 @@ define(function (require) {
       'keydown.brush', 'keyup.brush'
     ];
 
-    selection.selectAll('svg').each(function () {
-      brushEvents.forEach(function (event) {
-        d3.select(this).on(event, null);
-      });
-    });
-  }
-
-  function removeListeners(selection, event) {
-    selection.selectAll('svg').each(function () {
-      d3.select(this).on(event, null);
+    brushEvents.forEach(function (event) {
+      selection.on(event, null);
     });
   }
 
@@ -60,6 +52,7 @@ define(function (require) {
 
     this._chart = chart();
     this._layout = layout();
+    this._events = events();
     this._listeners = {};
     this.element(el || null);
     this._datum = [];
@@ -71,18 +64,25 @@ define(function (require) {
    * or returns the current selected element.
    *
    * @param {HTMLElement} [el] - Reference to DOM element
+   * @param {Number|Function} [width] - Numerical value or function that evaluates to a numerical value
+   * @param {Number|Function} [height] - Numerical value or function that evaluates to a numerical value
    * @returns {*}
    */
-  Phx.prototype.element = function (el) {
+  Phx.prototype.element = function (el, width, height) {
     if (!arguments.length) return this._el; // => Getter
     if (!(el instanceof HTMLElement) && !(el instanceof String) &&
       !(el instanceof d3.selection) && !(d3.select(el).node())) {
       throw new Error('Phx requires a valid HTML element');
     }
 
+    var selection = el instanceof d3.selection ? el : d3.select(el);
+
     this._el = el; // => Setter
-    // Create d3 selection
-    this._selection = el instanceof d3.selection ? el : d3.select(el);
+    this._selection = selection.append('svg')
+      .attr('class', 'parent')
+      .attr('width', width || selection.node().clientWidth)
+      .attr('height', height || selection.node().clientHeight);
+
     // Bind datum to selection if datum exists
     if (this._datum) this.data(this._datum);
     return this;
@@ -157,20 +157,26 @@ define(function (require) {
    * @param {Function|Number} [height] - Specifies height of DOM element
    * @returns {Phx}
    */
-  Phx.prototype.draw = function (width, height) {
-    var layout;
-    var chart;
+  Phx.prototype.draw = function () {
+    var node;
     var size;
 
-    evaluate(this);
-    layout = this._layout
-      .layout(this._opts.layout || 'rows')
-      .columns(this._opts.numOfColumns || 0);
-    chart = this._chart.options(this._opts);
-    size = validateSize(sizeFunc(this._selection, width, height));
+    evaluate(this); // Verify all needed vars are available
 
-    this._selection.call(layout.size(size))
-      .selectAll('.' + layout.class()).call(chart);
+    node = this._selection.node();
+    size = validateSize([node.clientWidth, node.clientHeight]);
+
+    this._events.listeners(this._listeners);
+    this._layout
+      .layout(this._opts.layout || 'rows')
+      .columns(this._opts.numOfColumns || 0)
+      .size(size);
+    this._chart.options(this._opts);
+
+    this._selection
+      .call(this._events) // Add event listeners to svg
+      .call(this._layout) // Create layout of g elements
+      .selectAll('g.chart').call(chart); // Draw chart(s)
     return this;
   };
 
@@ -210,6 +216,7 @@ define(function (require) {
     this._selection = null;
     this._chart = null;
     this._layout = null;
+    this._events = null;
     this._opts = null;
     this._datum = null;
     this._el = null;
@@ -224,9 +231,13 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.on = function (event, listener) {
+    var listeners = this._listeners;
+
     if (!this._selection) throw new Error('A valid element is required');
-    this._chart.on(event, listener); // value => 'on' or 'off'
-    this._listeners = this._chart.listeners(); // Redefine listeners
+    if (listener && typeof listener === 'function') {
+      if (!listeners[event]) listeners[event] = [];
+      listeners[event].push(listener);
+    }
     return this;
   };
 
@@ -241,16 +252,20 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.off = function (event, listener) {
+    var listeners = this._listeners;
+
     if (!this._selection) throw new Error('A valid element is required');
-    if (this._listeners[event]) {
+
+    if (listeners[event]) {
       if (!listener) {
-        removeListeners(this._selection, event);
+        this._selection.on(event, null);
         delete this._listeners[event];
-        this._chart.listeners(this._listeners);
       }
-      if (event && listener) {
-        this._chart.off(event, listener);
-        this._listeners = this._chart.listeners();
+
+      if (listener && typeof listener === 'function') {
+        listeners[event] = listeners[event].filter(function (handler) {
+          return handler !== listener;
+        });
       }
     }
     return this;
@@ -269,10 +284,10 @@ define(function (require) {
 
     removeBrush(selection);
     Object.keys(this._listeners).forEach(function (event) {
-      removeListeners(selection, event);
+      selection.on(event, null);
     });
 
-    this._chart.listeners(this._listeners = {});
+    this._listeners = {};
     return this;
   };
 

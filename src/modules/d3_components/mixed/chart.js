@@ -4,7 +4,6 @@ define(function (require) {
 
   return function chart() {
     var opts = {};
-    var listeners = {};
 
     function generator(selection) {
       selection.each(function (data) {
@@ -14,8 +13,7 @@ define(function (require) {
         var chart = charts[chartType]()
           .width(data.width)
           .height(data.height)
-          .accessor(accessor)
-          .listeners(listeners);
+          .accessor(accessor);
 
         [opts, dataOpts].forEach(function (o) {
           d3.entries(o).forEach(function (d) {
@@ -32,20 +30,6 @@ define(function (require) {
     generator.options = function (_) {
       if (!arguments.length) return opts;
       opts = typeof _ === 'object' && !Array.isArray(_) ? _ : opts;
-      return generator;
-    };
-
-    generator.listeners = function (_) {
-      if (!arguments.length) return listeners;
-      listeners = typeof _ === 'object' && !Array.isArray(_) ? _ : listeners;
-      return generator;
-    };
-
-    generator.on = function (event, listener) {
-      if (listener && typeof listener === 'function') {
-        if (!listeners[event]) listeners[event] = [];
-        listeners[event].push(listener);
-      }
       return generator;
     };
 
