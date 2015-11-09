@@ -4,6 +4,7 @@ define(function (require) {
   var layout = require('src/modules/d3_components/generator/layout');
   var events = require('src/modules/d3_components/control/events');
   var sumListeners = require('src/modules/helpers/sum_listeners');
+  var validateSize = require('src/modules/helpers/validate_size');
 
   function evaluate(self) {
     if (!self._selection || !self._selection.node()) {
@@ -15,28 +16,18 @@ define(function (require) {
     if (!self._opts) throw new Error('No options given');
   }
 
-  function validateSize(arr) {
-    var width = arr[0];
-    var height = arr[1];
-
-    if (width <= 0 || height <= 0) {
-      throw new Error('Unable to render chart(s), the parent DOM element has no' +
-        'width ' + width + ' and/or height ' + height);
-    }
-
-    return arr;
-  }
-
   function removeBrush(selection) {
-    var brushEvents = [
-      'mousedown.brush', 'touchstart.brush',
-      'mousemove.brush', 'mouseup.brush',
-      'touchmove.brush', 'touchend.brush',
-      'keydown.brush', 'keyup.brush'
-    ];
+    var brushEvents = ['mousedown.brush', 'touchstart.brush'];
 
-    brushEvents.forEach(function (event) {
-      selection.on(event, null);
+    selection.selectAll('g.brush').each(function () {
+      var g = d3.select(this);
+
+      // Remove events
+      brushEvents.forEach(function (event) {
+        g.on(event, null);
+      });
+
+      g.remove(); // Remove brush
     });
   }
 
@@ -64,24 +55,18 @@ define(function (require) {
    * or returns the current selected element.
    *
    * @param {HTMLElement} [el] - Reference to DOM element
-   * @param {Number|Function} [width] - Numerical value or function that evaluates to a numerical value
-   * @param {Number|Function} [height] - Numerical value or function that evaluates to a numerical value
    * @returns {*}
    */
-  Phx.prototype.element = function (el, width, height) {
-    if (!arguments.length) return this._el; // => Getter
+  Phx.prototype.element = function (el) {
+    if (!arguments.length) return this._el.node(); // => Getter
     if (!(el instanceof HTMLElement) && !(el instanceof String) &&
       !(el instanceof d3.selection) && !(d3.select(el).node())) {
       throw new Error('Phx requires a valid HTML element');
     }
 
-    var selection = el instanceof d3.selection ? el : d3.select(el);
-
-    this._el = el; // => Setter
-    this._selection = selection.append('svg')
-      .attr('class', 'parent')
-      .attr('width', width || selection.node().clientWidth)
-      .attr('height', height || selection.node().clientHeight);
+    this._el = el instanceof d3.selection ? el : d3.select(el); // => Setter
+    this._selection = this._el.append('svg')
+      .attr('class', 'parent');
 
     // Bind datum to selection if datum exists
     if (this._datum) this.data(this._datum);
@@ -157,7 +142,7 @@ define(function (require) {
    * @param {Function|Number} [height] - Specifies height of DOM element
    * @returns {Phx}
    */
-  Phx.prototype.draw = function () {
+  Phx.prototype.draw = function (width, height) {
     var node;
     var size;
 
@@ -167,16 +152,18 @@ define(function (require) {
     size = validateSize([node.clientWidth, node.clientHeight]);
 
     this._events.listeners(this._listeners);
-    this._layout
-      .layout(this._opts.layout || 'rows')
+    this._layout.layout(this._opts.layout || 'grid')
       .columns(this._opts.numOfColumns || 0)
       .size(size);
-    this._chart.options(this._opts);
+    this._chart.options(this._opts)
+      .listeners(this._listeners);
 
-    this._selection
+    this._selection.attr('width', width || size[0])
+      .attr('height', height || size[1])
       .call(this._events) // Add event listeners to svg
       .call(this._layout) // Create layout of g elements
-      .selectAll('g.chart').call(this._chart); // Draw chart(s)
+      .selectAll('g.chart')
+      .call(this._chart); // Draw chart(s)
     return this;
   };
 
@@ -252,12 +239,17 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.off = function (event, listener) {
+    var brushEvents = ['brush', 'brushstart', 'brushend'];
     var listeners = this._listeners;
 
     if (!this._selection) throw new Error('A valid element is required');
 
     if (listeners[event]) {
       if (!listener) {
+        // TODO: create a separate function that takes an optional event argument.
+        if (brushEvents.indexOf(event) !== -1) {
+          this._selection.selectAll('g.brush').on(event, null);
+        }
         this._selection.on(event, null);
         delete this._listeners[event];
       }

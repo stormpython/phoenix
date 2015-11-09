@@ -14,12 +14,12 @@ define(function (require) {
     var properties = {};
     var text = {};
 
-    function chart(selection) {
-      selection.each(function (data, index) {
+    function chart(g) {
+      g.each(function (data, index) {
         data = accessor.call(this, data, index);
 
-        width = width - margin.left - margin.right;
-        height = height - margin.top - margin.bottom;
+        var adjustedWidth = width - margin.left - margin.right;
+        var adjustedHeight = height - margin.top - margin.bottom;
 
         var histogram = d3.layout.histogram()
           .bins(bins)
@@ -37,17 +37,7 @@ define(function (require) {
           .domain([0, d3.max(data, value)])
           .range([height, 0]);
 
-        var svg = d3.select(this).selectAll('svg')
-          .data([data]);
-
-        svg.exit().remove();
-        svg.enter().append('svg');
-        svg
-          .attr('width', width + margin.left + margin.right)
-          .attr('height', height + margin.top + margin.bottom);
-
-        var g = svg.selectAll('g')
-          .data([data]);
+        var g = d3.select(this).selectAll('g').data([data]);
 
         g.exit().remove();
         g.enter().append('g');
@@ -65,8 +55,7 @@ define(function (require) {
           .attr('class', 'y axis')
           .call(yAxis);
 
-        var group = g.selectAll('g')
-          .data(data);
+        var group = g.selectAll('g').data(data);
 
         group.exit().remove();
         group.enter().append('g');

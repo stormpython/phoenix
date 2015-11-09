@@ -12,9 +12,10 @@ define(function (require) {
     var radius = d3.functor(5);
     var cssClass = 'points';
     var fill = colorFill;
+    var fillOpacity = null;
     var stroke = colorFill;
     var strokeWidth = 0;
-    var opacity = null;
+    var strokeOpacity = null;
     var scatterLayout = layout();
     var circles = circle();
 
@@ -27,17 +28,17 @@ define(function (require) {
 
         circles.class(cssClass)
           .fill(fill)
+          .fillOpacity(fillOpacity)
           .stroke(stroke)
           .strokeWidth(strokeWidth)
-          .opacity(opacity);
+          .strokeOpacity(strokeOpacity);
 
         var g = d3.select(this).selectAll('.points-group')
           .data([scatterLayout(data)]);
 
         g.exit().remove();
         g.enter().append('g');
-        g.attr('class', 'points-group')
-          .call(circles);
+        g.attr('class', 'points-group').call(circles);
       });
     }
 
@@ -86,9 +87,9 @@ define(function (require) {
       return generator;
     };
 
-    generator.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
+    generator.fillOpacity = function (_) {
+      if (!arguments.length) return fillOpacity;
+      fillOpacity = _;
       return generator;
     };
 
@@ -101,6 +102,12 @@ define(function (require) {
     generator.strokeWidth = function (_) {
       if (!arguments.length) return strokeWidth;
       strokeWidth = _;
+      return generator;
+    };
+
+    generator.strokeOpacity = function (_) {
+      if (!arguments.length) return strokeOpacity;
+      strokeOpacity = _;
       return generator;
     };
 

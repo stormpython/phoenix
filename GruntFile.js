@@ -29,7 +29,7 @@ module.exports = function(grunt) {
           mainConfigFile: 'src/require.config.js',
           include: ['src/require.config', 'phx'],
           optimize: 'none',
-          out: 'build/phx.js',
+          out: 'dist/phx.js',
           wrap: {
             startFile: "src/start.js",
             endFile: "src/end.js"
@@ -44,7 +44,7 @@ module.exports = function(grunt) {
       },
       js: {
         files: {
-          'build/phx.min.js': ['build/phx.js']
+          'dist/phx.min.js': ['dist/phx.js']
         }
       }
     },
@@ -72,7 +72,7 @@ module.exports = function(grunt) {
     cssmin: {
       dist: {
         files: {
-          'src/styles/phx.min.css' : ['build/phx.css']
+          'src/styles/phx.min.css' : ['dist/phx.css']
         }
       }
     }

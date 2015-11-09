@@ -35,13 +35,13 @@ define(function (require) {
       line: pathGenerator().type('line'),
       points: pointsGenerator()
     };
-    var listeners = {};
     var xAxes = [];
     var yAxes = [];
     var brushOpts = {};
     var stackOpts = {};
     var zeroLineOpts = {};
     var elements = { area: {}, bar: {}, line: [], points: [] };
+    var listeners = {};
 
     function chart(g)  {
       g.each(function (data, index) {
@@ -88,7 +88,7 @@ define(function (require) {
         });
 
         // Brush
-        if (listeners.brushstart || listeners.brush || listeners.brushend) {
+        if (listeners.brush || listeners.brushstart || listeners.brushend) {
           if (brushOpts.y) brush.yScale(axisFunctions.left.scale());
 
           brush.xScale(axisFunctions.bottom.scale());
@@ -270,7 +270,7 @@ define(function (require) {
 
     chart.listeners = function (_) {
       if (!arguments.length) return listeners;
-      listeners = typeof _ !== 'object' ? listeners : _;
+      listeners = _;
       return chart;
     };
 

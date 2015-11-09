@@ -8,13 +8,18 @@ define(function (require) {
 
     function control(selection) {
       selection.each(function () {
+        var brushEvents = ['brush', 'brushend', 'brushstart'];
+        var svg = this;
+
         d3.entries(listeners).forEach(function (e) {
           // Stop listening for event types that have
           // an empty listeners array or that is set to null
           if (!e.value || !e.value.length) {
-            d3.select(this).on(e.key, null);
+            d3.select(svg).on(e.key, null);
+          } else if (brushEvents.indexOf(e.key) !== -1) {
+            return; // Don't add brush events to svg
           } else {
-            d3.select(this).on(e.key, function () {
+            d3.select(svg).on(e.key, function () {
               d3.event.stopPropagation(); // => event.stopPropagation()
 
               e.value.forEach(function (listener) {
