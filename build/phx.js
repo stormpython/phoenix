@@ -11180,7 +11180,8 @@ define('src/modules/d3_components/generator/element/svg/rect',['require','d3'],f
     var fill = colorFill;
     var stroke = colorFill;
     var strokeWidth = 0;
-    var opacity = 1;
+    var fillOpacity = 1;
+    var strokeOpacity = null;
 
     function element(selection) {
       selection.each(function (data) {
@@ -11202,7 +11203,8 @@ define('src/modules/d3_components/generator/element/svg/rect',['require','d3'],f
           .attr('ry', ry)
           .attr('width', width)
           .attr('height', height)
-          .style('opacity', opacity);
+          .style('fill-opacity', opacity)
+          .style('stroke-opacity', opacity);
       });
     }
 
@@ -11259,9 +11261,9 @@ define('src/modules/d3_components/generator/element/svg/rect',['require','d3'],f
       return element;
     };
 
-    element.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
+    element.fillOpacity = function (_) {
+      if (!arguments.length) return fillOpacity;
+      fillOpacity = _;
       return element;
     };
 
@@ -11274,6 +11276,12 @@ define('src/modules/d3_components/generator/element/svg/rect',['require','d3'],f
     element.strokeWidth = function (_) {
       if (!arguments.length) return strokeWidth;
       strokeWidth = _;
+      return element;
+    };
+
+    element.strokeOpacity = function (_) {
+      if (!arguments.length) return strokeOpacity;
+      strokeOpacity = _;
       return element;
     };
 
@@ -12277,7 +12285,8 @@ define('src/modules/d3_components/generator/element/svg/line',['require','d3'],f
     var cssClass = 'line';
     var stroke = colorFill;
     var strokeWidth = 2;
-    var opacity = 1;
+    var strokeOpacity = 1;
+    var fillOpacity = null;
 
     function element(selection) {
       selection.each(function (data) {
@@ -12300,7 +12309,8 @@ define('src/modules/d3_components/generator/element/svg/line',['require','d3'],f
           .attr('y2', y2)
           .attr('stroke', stroke)
           .attr('stroke-width', strokeWidth)
-          .style('opacity', opacity);
+          .style('stroke-opacity', strokeOpacity)
+          .style('fill-opacity', fillOpacity);
       });
     }
 
@@ -12339,12 +12349,6 @@ define('src/modules/d3_components/generator/element/svg/line',['require','d3'],f
       return element;
     };
 
-    element.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
-      return element;
-    };
-
     element.stroke = function (_) {
       if (!arguments.length) return stroke;
       stroke = _;
@@ -12354,6 +12358,18 @@ define('src/modules/d3_components/generator/element/svg/line',['require','d3'],f
     element.strokeWidth = function (_) {
       if (!arguments.length) return strokeWidth;
       strokeWidth = _;
+      return element;
+    };
+
+    element.strokeOpacity = function (_) {
+      if (!arguments.length) return strokeOpacity;
+      strokeOpacity = _;
+      return element;
+    };
+
+    element.fillOpacity = function (_) {
+      if (!arguments.length) return fillOpacity;
+      fillOpacity = _;
       return element;
     };
 
@@ -12499,7 +12515,8 @@ define('src/modules/d3_components/generator/element/svg/path',['require','d3'],f
     var fill = 'none';
     var stroke = function (d, i) { return color(i); };
     var strokeWidth = 1;
-    var opacity = 1;
+    var fillOpacity = 1;
+    var strokeOpacity = null;
 
     function element(selection) {
       selection.each(function (data) {
@@ -12517,7 +12534,8 @@ define('src/modules/d3_components/generator/element/svg/path',['require','d3'],f
           .attr('stroke', stroke)
           .attr('stroke-width', strokeWidth)
           .attr('d', value)
-          .style('opacity', opacity);
+          .style('fill-opacity', fillOpacity)
+          .style('stroke-opacity', strokeOpacity);
       });
     }
 
@@ -12546,9 +12564,9 @@ define('src/modules/d3_components/generator/element/svg/path',['require','d3'],f
       return element;
     };
 
-    element.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
+    element.fillOpacity = function (_) {
+      if (!arguments.length) return fillOpacity;
+      fillOpacity = _;
       return element;
     };
 
@@ -12561,6 +12579,12 @@ define('src/modules/d3_components/generator/element/svg/path',['require','d3'],f
     element.strokeWidth = function (_) {
       if (!arguments.length) return strokeWidth;
       strokeWidth = _;
+      return element;
+    };
+
+    element.strokeOpacity = function (_) {
+      if (!arguments.length) return strokeOpacity;
+      strokeOpacity = _;
       return element;
     };
 
@@ -13272,7 +13296,8 @@ define('src/modules/d3_components/generator/element/svg/circle',['require','d3']
     var fill = colorFill;
     var stroke = colorFill;
     var strokeWidth = 0;
-    var opacity = null;
+    var fillOpacity = null;
+    var strokeOpacity = null;
 
     function element(selection) {
       selection.each(function (data) {
@@ -13295,7 +13320,8 @@ define('src/modules/d3_components/generator/element/svg/circle',['require','d3']
           .attr('r', radius)
           .attr('cx', cx)
           .attr('cy', cy)
-          .style('opacity', opacity);
+          .style('fill-opacity', fillOpacity)
+          .style('stroke-opacity', strokeOpacity);
       });
     }
 
@@ -13334,9 +13360,9 @@ define('src/modules/d3_components/generator/element/svg/circle',['require','d3']
       return element;
     };
 
-    element.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
+    element.fillOpacity = function (_) {
+      if (!arguments.length) return fillOpacity;
+      fillOpacity = _;
       return element;
     };
 
@@ -13349,6 +13375,12 @@ define('src/modules/d3_components/generator/element/svg/circle',['require','d3']
     element.strokeWidth = function (_) {
       if (!arguments.length) return strokeWidth;
       strokeWidth = _;
+      return element;
+    };
+
+    element.strokeOpacity = function (_) {
+      if (!arguments.length) return strokeOpacity;
+      strokeOpacity = _;
       return element;
     };
 

@@ -10,7 +10,8 @@ define(function (require) {
     var cssClass = 'line';
     var stroke = colorFill;
     var strokeWidth = 2;
-    var opacity = 1;
+    var strokeOpacity = 1;
+    var fillOpacity = null;
 
     function element(selection) {
       selection.each(function (data) {
@@ -33,7 +34,8 @@ define(function (require) {
           .attr('y2', y2)
           .attr('stroke', stroke)
           .attr('stroke-width', strokeWidth)
-          .style('opacity', opacity);
+          .style('stroke-opacity', strokeOpacity)
+          .style('fill-opacity', fillOpacity);
       });
     }
 
@@ -72,12 +74,6 @@ define(function (require) {
       return element;
     };
 
-    element.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
-      return element;
-    };
-
     element.stroke = function (_) {
       if (!arguments.length) return stroke;
       stroke = _;
@@ -87,6 +83,18 @@ define(function (require) {
     element.strokeWidth = function (_) {
       if (!arguments.length) return strokeWidth;
       strokeWidth = _;
+      return element;
+    };
+
+    element.strokeOpacity = function (_) {
+      if (!arguments.length) return strokeOpacity;
+      strokeOpacity = _;
+      return element;
+    };
+
+    element.fillOpacity = function (_) {
+      if (!arguments.length) return fillOpacity;
+      fillOpacity = _;
       return element;
     };
 

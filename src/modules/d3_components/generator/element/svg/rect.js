@@ -13,7 +13,8 @@ define(function (require) {
     var fill = colorFill;
     var stroke = colorFill;
     var strokeWidth = 0;
-    var opacity = 1;
+    var fillOpacity = 1;
+    var strokeOpacity = null;
 
     function element(selection) {
       selection.each(function (data) {
@@ -35,7 +36,8 @@ define(function (require) {
           .attr('ry', ry)
           .attr('width', width)
           .attr('height', height)
-          .style('opacity', opacity);
+          .style('fill-opacity', opacity)
+          .style('stroke-opacity', opacity);
       });
     }
 
@@ -92,9 +94,9 @@ define(function (require) {
       return element;
     };
 
-    element.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
+    element.fillOpacity = function (_) {
+      if (!arguments.length) return fillOpacity;
+      fillOpacity = _;
       return element;
     };
 
@@ -107,6 +109,12 @@ define(function (require) {
     element.strokeWidth = function (_) {
       if (!arguments.length) return strokeWidth;
       strokeWidth = _;
+      return element;
+    };
+
+    element.strokeOpacity = function (_) {
+      if (!arguments.length) return strokeOpacity;
+      strokeOpacity = _;
       return element;
     };
 
