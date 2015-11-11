@@ -6,7 +6,6 @@ define(function (require) {
   var clipPathGenerator = require('src/modules/d3_components/generator/clippath');
   var axisGenerator = require('src/modules/d3_components/generator/axis/axis');
   var brushControl = require('src/modules/d3_components/control/brush');
-  var events = require('src/modules/d3_components/control/events');
   var lineElement = require('src/modules/d3_components/generator/element/svg/line');
   var pathGenerator = require('src/modules/d3_components/generator/path');
   var barGenerator = require('src/modules/d3_components/generator/bars');
@@ -23,7 +22,6 @@ define(function (require) {
     var brush = brushControl();
     var clippath = clipPathGenerator();
     var stack = d3.layout.stack();
-    var svgEvents = events();
     var zeroLine = lineElement();
     var axisFunctions = {
       bottom: axisGenerator(),
@@ -37,24 +35,22 @@ define(function (require) {
       line: pathGenerator().type('line'),
       points: pointsGenerator()
     };
-    var listeners = {};
     var xAxes = [];
     var yAxes = [];
     var brushOpts = {};
     var stackOpts = {};
     var zeroLineOpts = {};
     var elements = { area: {}, bar: {}, line: [], points: [] };
+    var listeners = {};
 
-    function chart(selection)  {
-      selection.each(function (data, index) {
-        data = formatData(accessor.call(this, data, index));
-
+    function chart(g)  {
+      g.each(function (data, index) {
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
+        var out = elements.bar.show ? stackOut().stackCount(data.length) : defaultOut;
+        var g;
 
         // Stack data
-        var out = elements.bar.show ? stackOut().stackCount(data.length) : defaultOut;
-
         stack.x(x).y(y)
           .offset(stackOpts.offset || 'zero')
           .order(stackOpts.order || 'default')
@@ -63,30 +59,25 @@ define(function (require) {
         // Brush
         brush
           .height(adjustedHeight)
-          .opacity(brushOpts.opacity || 0.1)
+          .fillOpacity(brushOpts.fillOpacity || 0.1)
+          .strokeOpacity(brushOpts.strokeOpacity || null)
           .brushstart(listeners.brushstart)
           .brush(listeners.brush)
           .brushend(listeners.brushend);
 
         // ClipPath
         clippath.width(adjustedWidth).height(adjustedHeight);
-        /* ************************************************** */
-        data = stack(data);
 
-        // SVG - create/update the svg
-        var svg = d3.select(this).selectAll('svg').data([data]);
-        svg.exit().remove();
-        svg.enter().append('svg');
-        svg.attr('width', width)
-          .attr('height', height)
-          .call(svgEvents.listeners(listeners));
+        data = stack(formatData(accessor.call(this, data, index)));
 
-        var g = svg.selectAll('g').data([data]);
+        g = d3.select(this).selectAll('g').data([data]);
+
         g.exit().remove();
         g.enter().append('g');
         g.attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
-        // Axes
+        /* ************************************************** */
+        // Draw Axes
         [xAxes, yAxes].forEach(function (axis) {
           axis.forEach(function (opts) {
             var generator = builder(opts, axisFunctions[opts.position])
@@ -98,7 +89,7 @@ define(function (require) {
         });
 
         // Brush
-        if (listeners.brushstart || listeners.brush || listeners.brushend) {
+        if (listeners.brush || listeners.brushstart || listeners.brushend) {
           if (brushOpts.y) brush.yScale(axisFunctions.left.scale());
 
           brush.xScale(axisFunctions.bottom.scale());
@@ -106,27 +97,31 @@ define(function (require) {
         }
 
         // Zero line
-        if (zeroLineOpts.show) {
+        var reduced = d3.extent(data.reduce(function (a, b) {
+            return a.concat(b);
+          }, []), function (d) { return d.y0 + d.y; });
+
+        if (reduced[0] < 0 && reduced[1] > 0) {
           zeroLine
             .x1(function () {
-              return axisFunctions.bottom.scale()(0);
-              //return axisFunctions.bottom.scale().range()[0];
+              //return axisFunctions.bottom.scale()(0);
+              return axisFunctions.bottom.scale().range()[0];
             })
             .x2(function () {
-              return axisFunctions.bottom.scale()(0);
-              //return axisFunctions.bottom.scale().range()[1];
+              //return axisFunctions.bottom.scale()(0);
+              return axisFunctions.bottom.scale().range()[1];
             })
             .y1(function () {
-              return axisFunctions.left.scale().range()[0];
-              //return axisFunctions.left.scale()(0);
+              //return axisFunctions.left.scale().range()[0];
+              return axisFunctions.left.scale()(0);
             })
             .y2(function () {
-              return axisFunctions.left.scale().range()[1];
-              //return axisFunctions.left.scale()(0);
+              //return axisFunctions.left.scale().range()[1];
+              return axisFunctions.left.scale()(0);
             })
             .stroke(zeroLineOpts.stroke || "#000000")
             .strokeWidth(zeroLineOpts.strokeWidth || 1)
-            .opacity(zeroLineOpts.opacity || 0.2);
+            .strokeOpacity(zeroLineOpts.opacity || 0.2);
 
           var zeroLineG = g.selectAll('.zero-line').data([data]);
           zeroLineG.exit().remove();
@@ -136,13 +131,14 @@ define(function (require) {
             .call(zeroLine);
         }
 
-        // Clippath
-        var clippedG = g.call(clippath)
-          .selectAll('g.clip-path').data([data]);
+        // Attach Clippath
+        var clippedG = g.call(clippath).selectAll('g.clip-path')
+          .data([data]);
+
         clippedG.exit().remove();
-        clippedG.enter().append('g');
-        clippedG.attr('class', 'clip-path')
-          .attr('clip-path', 'url(#' + clippath.id() + ')');
+        clippedG.enter().append('g')
+          .attr('class', 'clip-path');
+        clippedG.attr('clip-path', 'url(#' + clippath.id() + ')');
 
         // Elements - bars, area, line, points
         d3.entries(elements).forEach(function (d) {
@@ -280,7 +276,7 @@ define(function (require) {
 
     chart.listeners = function (_) {
       if (!arguments.length) return listeners;
-      listeners = typeof _ !== 'object' ? listeners : _;
+      listeners = _;
       return chart;
     };
 

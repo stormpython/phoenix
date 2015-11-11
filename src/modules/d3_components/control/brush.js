@@ -2,10 +2,10 @@ define(function (require) {
   var d3 = require('d3');
 
   // Creates a brush control and binds it to an <svg></svg>.
-  return function brush() {
+  return function brushControl() {
     var margin = { top: 0, right: 0, bottom: 0, left: 0 };
-    var cssClass = 'brush';
-    var opacity = 0.2;
+    var fillOpacity = 0.2;
+    var strokeOpacity = null;
     var width = null;
     var height = null;
     var xScale = null;
@@ -16,54 +16,58 @@ define(function (require) {
     var brushStartCallback = [];
     var brushCallback = [];
     var brushEndCallback = [];
-    var brushG;
 
     function control(selection) {
-      selection.each(function (data, index) {
+      selection.each(function (data) {
         width = width - margin.left - margin.right;
         height = height - margin.top - margin.bottom;
-
-        brush
-          .on('brushstart', brushStartCallback ? brushStart : null)
-          .on('brush', brushCallback ? brushF : null)
-          .on('brushend', brushEndCallback ? brushEnd : null);
 
         if (xScale) brush.x(xScale);
         if (yScale) brush.y(yScale);
         if (extent) brush.extent(extent);
         if (clamp) brush.clamp(clamp);
 
-        if (!brushG) brushG = d3.select(this).append('g');
+        brush
+          .on('brushstart', brushStartCallback ? brushStart : null)
+          .on('brush', brushCallback ? brushF : null)
+          .on('brushend', brushEndCallback ? brushEnd : null);
 
-        // Attach new brush
-        brushG.attr('class', cssClass)
-          .attr('opacity', opacity)
+        var brushG = d3.select(this).selectAll('g.brush')
+          .data([data]);
+
+        brushG.exit().remove();
+        brushG.enter().append('g')
+          .attr('class', 'brush');
+
+        // Update brush
+        brushG
+          .attr('fill-opacity', fillOpacity)
+          .attr('stroke-opacity', strokeOpacity)
           .call(brush);
 
         if (width) brushG.selectAll('rect').attr('width', width);
         if (height) brushG.selectAll('rect').attr('height', height);
-
-        function brushStart() {
-          brushStartCallback.forEach(function (listener) {
-            listener.call(this, brush, data, index);
-          });
-        }
-
-        function brushF() {
-          brushCallback.forEach(function (listener) {
-            listener.call(this, brush, data, index);
-          });
-        }
-
-        function brushEnd() {
-          brushEndCallback.forEach(function (listener) {
-            listener.call(this, brush, data, index);
-
-            // Clear brush
-            d3.selectAll('g.' + cssClass).call(brush.clear());
-          });
-        }
       });
+    }
+
+    function brushStart(d, i) {
+      brushStartCallback.forEach(function (listener) {
+        listener.call(null, d, i);
+      });
+    }
+
+    function brushF(d, i) {
+      brushCallback.forEach(function (listener) {
+        listener.call(null, d, i);
+      });
+    }
+
+    function brushEnd(d, i) {
+      brushEndCallback.forEach(function (listener) {
+        listener.call(null, d, i);
+      });
+
+      d3.selectAll('g.brush').call(brush.clear()); // Clear brush
     }
 
     // Public API
@@ -88,15 +92,15 @@ define(function (require) {
       return control;
     };
 
-    control.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
+    control.fillOpacity = function (_) {
+      if (!arguments.length) return fillOpacity;
+      fillOpacity = _;
       return control;
     };
 
-    control.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
+    control.strokeOpacity = function (_) {
+      if (!arguments.length) return strokeOpacity;
+      strokeOpacity = _;
       return control;
     };
 
@@ -127,24 +131,21 @@ define(function (require) {
     control.brushstart = function (_) {
       if (!arguments.length) return brushStartCallback;
       if (typeof _ === 'function') brushStartCallback.push(_);
-      if (Array.isArray(_)) brushStartCallback = _;
-      if (_ === null) brushStartCallback = _;
+      if (Array.isArray(_) || _ === null) brushStartCallback = _;
       return control;
     };
 
     control.brush = function (_) {
       if (!arguments.length) return brushCallback;
       if (typeof _ === 'function') brushCallback.push(_);
-      if (Array.isArray(_)) brushCallback = _;
-      if (_ === null) brushCallback = _;
+      if (Array.isArray(_) || _ === null) brushCallback = _;
       return control;
     };
 
     control.brushend = function (_) {
       if (!arguments.length) return brushEndCallback;
       if (typeof _ === 'function') brushEndCallback.push(_);
-      if (Array.isArray(_)) brushEndCallback = _;
-      if (_ === null) brushEndCallback = _;
+      if (Array.isArray(_) || _ === null) brushEndCallback = _;
       return control;
     };
 

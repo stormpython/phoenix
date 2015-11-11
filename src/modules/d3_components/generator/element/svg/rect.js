@@ -36,8 +36,8 @@ define(function (require) {
           .attr('ry', ry)
           .attr('width', width)
           .attr('height', height)
-          .style('fill-opacity', opacity)
-          .style('stroke-opacity', opacity);
+          .style('fill-opacity', fillOpacity)
+          .style('stroke-opacity', strokeOpacity);
       });
     }
 

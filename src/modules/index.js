@@ -1,9 +1,10 @@
 define(function (require) {
   var d3 = require('d3');
   var chart = require('src/modules/d3_components/mixed/chart');
-  var layout = require('src/modules/d3_components/generator/element/html/div');
-  var sizeFunc = require('src/modules/helpers/size');
+  var layout = require('src/modules/d3_components/generator/layout');
+  var events = require('src/modules/d3_components/control/events');
   var sumListeners = require('src/modules/helpers/sum_listeners');
+  var validateSize = require('src/modules/helpers/validate_size');
 
   function evaluate(self) {
     if (!self._selection || !self._selection.node()) {
@@ -15,36 +16,18 @@ define(function (require) {
     if (!self._opts) throw new Error('No options given');
   }
 
-  function validateSize(arr) {
-    var width = arr[0];
-    var height = arr[1];
-
-    if (width <= 0 || height <= 0) {
-      throw new Error('Unable to render chart(s), the parent DOM element has no' +
-        'width ' + width + ' and/or height ' + height);
-    }
-
-    return arr;
-  }
-
   function removeBrush(selection) {
-    var brushEvents = [
-      'mousedown.brush', 'touchstart.brush',
-      'mousemove.brush', 'mouseup.brush',
-      'touchmove.brush', 'touchend.brush',
-      'keydown.brush', 'keyup.brush'
-    ];
+    var events = ['mousedown.brush', 'touchstart.brush'];
 
-    selection.selectAll('svg').each(function () {
-      brushEvents.forEach(function (event) {
-        d3.select(this).on(event, null);
+    selection.selectAll('g.brush').each(function () {
+      var g = d3.select(this);
+
+      // Remove events
+      events.forEach(function (event) {
+        g.on(event, null);
       });
-    });
-  }
 
-  function removeListeners(selection, event) {
-    selection.selectAll('svg').each(function () {
-      d3.select(this).on(event, null);
+      g.remove();
     });
   }
 
@@ -60,6 +43,7 @@ define(function (require) {
 
     this._chart = chart();
     this._layout = layout();
+    this._events = events();
     this._listeners = {};
     this.element(el || null);
     this._datum = [];
@@ -74,15 +58,16 @@ define(function (require) {
    * @returns {*}
    */
   Phx.prototype.element = function (el) {
-    if (!arguments.length) return this._el; // => Getter
+    if (!arguments.length) return this._el.node(); // => Getter
     if (!(el instanceof HTMLElement) && !(el instanceof String) &&
       !(el instanceof d3.selection) && !(d3.select(el).node())) {
       throw new Error('Phx requires a valid HTML element');
     }
 
-    this._el = el; // => Setter
-    // Create d3 selection
-    this._selection = el instanceof d3.selection ? el : d3.select(el);
+    this._el = el instanceof d3.selection ? el : d3.select(el); // => Setter
+    this._selection = this._el.append('svg')
+      .attr('class', 'parent');
+
     // Bind datum to selection if datum exists
     if (this._datum) this.data(this._datum);
     return this;
@@ -158,19 +143,26 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.draw = function (width, height) {
-    var layout;
-    var chart;
+    var node;
     var size;
 
-    evaluate(this);
-    layout = this._layout
-      .layout(this._opts.layout || 'rows')
-      .columns(this._opts.numOfColumns || 0);
-    chart = this._chart.options(this._opts);
-    size = validateSize(sizeFunc(this._selection, width, height));
+    evaluate(this); // Verify all needed vars are available
 
-    this._selection.call(layout.size(size))
-      .selectAll('.' + layout.class()).call(chart);
+    node = this._selection.node().parentNode;
+    size = validateSize([node.clientWidth, node.clientHeight]);
+
+    this._layout.layout(this._opts.layout || 'grid')
+      .columns(this._opts.numberOfColumns || 0)
+      .size(size);
+    this._chart.options(this._opts)
+      .listeners(this._listeners);
+
+    this._selection.attr('width', width || size[0])
+      .attr('height', height || size[1])
+      .call(this._events) // Add event listeners to svg
+      .call(this._layout) // Create layout of g elements
+      .selectAll('g.chart')
+      .call(this._chart); // Draw chart(s)
     return this;
   };
 
@@ -193,7 +185,7 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.remove = function () {
-    this._selection.remove();
+    this._selection.selectAll('g.chart').remove();
     return this;
   };
 
@@ -210,6 +202,7 @@ define(function (require) {
     this._selection = null;
     this._chart = null;
     this._layout = null;
+    this._events = null;
     this._opts = null;
     this._datum = null;
     this._el = null;
@@ -224,9 +217,15 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.on = function (event, listener) {
+    var listeners = this._listeners;
+
     if (!this._selection) throw new Error('A valid element is required');
-    this._chart.on(event, listener); // value => 'on' or 'off'
-    this._listeners = this._chart.listeners(); // Redefine listeners
+    if (listener && typeof listener === 'function') {
+      if (!listeners[event]) listeners[event] = [];
+      listeners[event].push(listener);
+    }
+    // Attach listener
+    this._selection.call(this._events.listeners(listeners));
     return this;
   };
 
@@ -241,18 +240,29 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.off = function (event, listener) {
+    var brushEvents = ['brush', 'brushend', 'brushstart'];
+    var listeners = this._listeners;
+
     if (!this._selection) throw new Error('A valid element is required');
-    if (this._listeners[event]) {
+
+    if (listeners[event]) {
       if (!listener) {
-        removeListeners(this._selection, event);
+        // Special case for brush events
+        if (brushEvents.indexOf(event) !== -1) removeBrush(this._selection);
+
+        this._selection.on(event, null); // Detach listener(s)
         delete this._listeners[event];
-        this._chart.listeners(this._listeners);
       }
-      if (event && listener) {
-        this._chart.off(event, listener);
-        this._listeners = this._chart.listeners();
+
+      if (listener && typeof listener === 'function') {
+        // Filter listener from listeners array
+        listeners[event] = listeners[event].filter(function (handler) {
+          return handler !== listener;
+        });
+        this._selection.call(this._events.listeners(listeners)); // Update events
       }
     }
+
     return this;
   };
 
@@ -269,10 +279,10 @@ define(function (require) {
 
     removeBrush(selection);
     Object.keys(this._listeners).forEach(function (event) {
-      removeListeners(selection, event);
+      selection.on(event, null);
     });
 
-    this._chart.listeners(this._listeners = {});
+    this._events.listeners(this._listeners = {});
     return this;
   };
 
