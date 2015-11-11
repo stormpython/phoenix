@@ -151,9 +151,8 @@ define(function (require) {
     node = this._selection.node().parentNode;
     size = validateSize([node.clientWidth, node.clientHeight]);
 
-    this._events.listeners(this._listeners);
     this._layout.layout(this._opts.layout || 'grid')
-      .columns(this._opts.numOfColumns || 0)
+      .columns(this._opts.numberOfColumns || 0)
       .size(size);
     this._chart.options(this._opts)
       .listeners(this._listeners);
@@ -186,7 +185,7 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.remove = function () {
-    this._selection.remove();
+    this._selection.selectAll('g').remove();
     return this;
   };
 
@@ -225,6 +224,8 @@ define(function (require) {
       if (!listeners[event]) listeners[event] = [];
       listeners[event].push(listener);
     }
+    // Attach listener
+    this._selection.call(this._events.listeners(listeners));
     return this;
   };
 
@@ -239,17 +240,13 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.off = function (event, listener) {
-    var brushEvents = ['brush', 'brushstart', 'brushend'];
     var listeners = this._listeners;
 
     if (!this._selection) throw new Error('A valid element is required');
 
     if (listeners[event]) {
       if (!listener) {
-        // TODO: create a separate function that takes an optional event argument.
-        if (brushEvents.indexOf(event) !== -1) {
-          this._selection.selectAll('g.brush').on(event, null);
-        }
+        if (event === 'brush') removeBrush(this._selection);
         this._selection.on(event, null);
         delete this._listeners[event];
       }
@@ -260,6 +257,8 @@ define(function (require) {
         });
       }
     }
+    // Detach listener(s)
+    this._selection.call(this._events.listeners(listeners));
     return this;
   };
 
@@ -279,7 +278,7 @@ define(function (require) {
       selection.on(event, null);
     });
 
-    this._listeners = {};
+    this._events.listeners(this._listeners = {});
     return this;
   };
 

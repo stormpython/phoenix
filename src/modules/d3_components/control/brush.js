@@ -2,7 +2,7 @@ define(function (require) {
   var d3 = require('d3');
 
   // Creates a brush control and binds it to an <svg></svg>.
-  return function brush() {
+  return function brushControl() {
     var margin = { top: 0, right: 0, bottom: 0, left: 0 };
     var opacity = 0.2;
     var width = null;
@@ -17,10 +17,7 @@ define(function (require) {
     var brushEndCallback = [];
 
     function control(selection) {
-      selection.each(function (data, index) {
-        var brushG = d3.select(this).selectAll('g.brush')
-          .data([data]);
-
+      selection.each(function (data) {
         width = width - margin.left - margin.right;
         height = height - margin.top - margin.bottom;
 
@@ -30,9 +27,12 @@ define(function (require) {
         if (clamp) brush.clamp(clamp);
 
         brush
-          .on('brushstart', brushStartCallback ? brushStart() : null)
-          .on('brush', brushCallback ? brushF() : null)
-          .on('brushend', brushEndCallback ? brushEnd() : null);
+          .on('brushstart', brushStartCallback ? brushStart : null)
+          .on('brush', brushCallback ? brushF : null)
+          .on('brushend', brushEndCallback ? brushEnd : null);
+
+        var brushG = d3.select(this).selectAll('g.brush')
+          .data([data]);
 
         brushG.exit().remove();
         brushG.enter().append('g')
@@ -43,28 +43,27 @@ define(function (require) {
 
         if (width) brushG.selectAll('rect').attr('width', width);
         if (height) brushG.selectAll('rect').attr('height', height);
-
-        function brushStart() {
-          brushStartCallback.forEach(function (listener) {
-            listener.call(brushG, brush, data, index);
-          });
-        }
-
-        function brushF() {
-          brushCallback.forEach(function (listener) {
-            listener.call(brushG, brush, data, index);
-          });
-        }
-
-        function brushEnd() {
-          brushEndCallback.forEach(function (listener) {
-            listener.call(brushG, brush, data, index);
-
-            // Clear brush
-            d3.selectAll('g.brush').call(brush.clear());
-          });
-        }
       });
+    }
+
+    function brushStart(d, i) {
+      brushStartCallback.forEach(function (listener) {
+        listener.call(null, d, i);
+      });
+    }
+
+    function brushF(d, i) {
+      brushCallback.forEach(function (listener) {
+        listener.call(null, d, i);
+      });
+    }
+
+    function brushEnd(d, i) {
+      brushEndCallback.forEach(function (listener) {
+        listener.call(null, d, i);
+      });
+
+      d3.selectAll('g.brush').call(brush.clear()); // Clear brush
     }
 
     // Public API
