@@ -13556,7 +13556,8 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
       g.each(function (data, index) {
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
-        var out = elements.bar.show ? stackOut().stackCount(data.length) : defaultOut;
+        var out = elements.bar.show && stackOpts.offset !== 'expand' ?
+          stackOut().stackCount(data.length) : defaultOut;
         var g;
 
         // Stack data
