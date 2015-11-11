@@ -17,17 +17,17 @@ define(function (require) {
   }
 
   function removeBrush(selection) {
-    var brushEvents = ['mousedown.brush', 'touchstart.brush'];
+    var events = ['mousedown.brush', 'touchstart.brush'];
 
     selection.selectAll('g.brush').each(function () {
       var g = d3.select(this);
 
       // Remove events
-      brushEvents.forEach(function (event) {
+      events.forEach(function (event) {
         g.on(event, null);
       });
 
-      g.remove(); // Remove brush
+      g.remove();
     });
   }
 
@@ -185,7 +185,7 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.remove = function () {
-    this._selection.selectAll('g').remove();
+    this._selection.selectAll('g.chart').remove();
     return this;
   };
 
@@ -240,25 +240,29 @@ define(function (require) {
    * @returns {Phx}
    */
   Phx.prototype.off = function (event, listener) {
+    var brushEvents = ['brush', 'brushend', 'brushstart'];
     var listeners = this._listeners;
 
     if (!this._selection) throw new Error('A valid element is required');
 
     if (listeners[event]) {
       if (!listener) {
-        if (event === 'brush') removeBrush(this._selection);
-        this._selection.on(event, null);
+        // Special case for brush events
+        if (brushEvents.indexOf(event) !== -1) removeBrush(this._selection);
+
+        this._selection.on(event, null); // Detach listener(s)
         delete this._listeners[event];
       }
 
       if (listener && typeof listener === 'function') {
+        // Filter listener from listeners array
         listeners[event] = listeners[event].filter(function (handler) {
           return handler !== listener;
         });
+        this._selection.call(this._events.listeners(listeners)); // Update events
       }
     }
-    // Detach listener(s)
-    this._selection.call(this._events.listeners(listeners));
+
     return this;
   };
 
