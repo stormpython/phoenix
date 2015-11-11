@@ -45,10 +45,11 @@ define(function (require) {
 
     function chart(g)  {
       g.each(function (data, index) {
+        data = formatData(accessor.call(this, data, index));
+
         var adjustedWidth = width - margin.left - margin.right;
         var adjustedHeight = height - margin.top - margin.bottom;
-        var out = elements.bar.show && stackOpts.offset !== 'expand' ?
-          stackOut().stackCount(data.length) : defaultOut;
+        var out = elements.bar.show ? stackOut().stackCount(data.length) : defaultOut;
         var g;
 
         // Stack data
@@ -69,7 +70,7 @@ define(function (require) {
         // ClipPath
         clippath.width(adjustedWidth).height(adjustedHeight);
 
-        data = stack(formatData(accessor.call(this, data, index)));
+        data = stack(data);
 
         g = d3.select(this).selectAll('g').data([data]);
 
