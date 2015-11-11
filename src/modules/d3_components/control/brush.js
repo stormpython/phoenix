@@ -4,7 +4,8 @@ define(function (require) {
   // Creates a brush control and binds it to an <svg></svg>.
   return function brushControl() {
     var margin = { top: 0, right: 0, bottom: 0, left: 0 };
-    var opacity = 0.2;
+    var fillOpacity = 0.2;
+    var strokeOpacity = null;
     var width = null;
     var height = null;
     var xScale = null;
@@ -39,7 +40,10 @@ define(function (require) {
           .attr('class', 'brush');
 
         // Update brush
-        brushG.attr('opacity', opacity).call(brush);
+        brushG
+          .attr('fill-opacity', fillOpacity)
+          .attr('stroke-opacity', strokeOpacity)
+          .call(brush);
 
         if (width) brushG.selectAll('rect').attr('width', width);
         if (height) brushG.selectAll('rect').attr('height', height);
@@ -88,9 +92,15 @@ define(function (require) {
       return control;
     };
 
-    control.opacity = function (_) {
-      if (!arguments.length) return opacity;
-      opacity = _;
+    control.fillOpacity = function (_) {
+      if (!arguments.length) return fillOpacity;
+      fillOpacity = _;
+      return control;
+    };
+
+    control.strokeOpacity = function (_) {
+      if (!arguments.length) return strokeOpacity;
+      strokeOpacity = _;
       return control;
     };
 

@@ -59,7 +59,8 @@ define(function (require) {
         // Brush
         brush
           .height(adjustedHeight)
-          .opacity(brushOpts.opacity || 0.1)
+          .fillOpacity(brushOpts.fillOpacity || 0.1)
+          .strokeOpacity(brushOpts.strokeOpacity || null)
           .brushstart(listeners.brushstart)
           .brush(listeners.brush)
           .brushend(listeners.brushend);
