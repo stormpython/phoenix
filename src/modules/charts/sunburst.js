@@ -1,6 +1,7 @@
 define(function (require) {
   var d3 = require('d3');
   var path = require('src/modules/d3_components/generator/element/svg/path');
+  var textElement = require('src/modules/d3_components/generator/element/svg/text');
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function sunburst() {
@@ -12,6 +13,7 @@ define(function (require) {
     var sort = null;
     var value = function (d) { return d.size; };
     var children = function (d) { return d.children; };
+    var label = function (d) { return d.name; };
     var xScale = d3.scale.linear().range([0, 2 * Math.PI]);
     var yScale = d3.scale.sqrt();
     var donut = false;
@@ -21,6 +23,7 @@ define(function (require) {
       if (d.depth === 0) return 'none';
       return color(i);
     };
+    var text = {};
 
     function chart (g) {
       g.each(function (data, index) {
@@ -49,13 +52,25 @@ define(function (require) {
           .stroke(stroke)
           .fill(fill);
 
+        var arcText = textElement()
+          .transform(text.transform || function (d) {
+            return 'translate(' + arc.centroid(d) + ')';
+          })
+          .dy(text.dy || '.35em')
+          .anchor(text.anchor || 'middle')
+          .fill(text.fill || '#ffffff')
+          .text(function (d, i) {
+            return label.call(this, d, i);
+          });
+
         var g = d3.select(this).selectAll('g').data([data]);
 
         g.exit().remove();
         g.enter().append('g')
           .datum(partition.nodes)
           .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
-          .call(arcPath);
+          .call(arcPath)
+          .call(arcText);
       });
     }
 
@@ -119,6 +134,12 @@ define(function (require) {
     chart.children = function (_) {
       if (!arguments.length) return children;
       children = valuator(_);
+      return chart;
+    };
+
+    chart.label = function (_) {
+      if (!arguments.length) return label;
+      label = valuator(_);
       return chart;
     };
 

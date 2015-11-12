@@ -14063,9 +14063,10 @@ define('src/modules/charts/pie',['require','d3','src/modules/d3_components/gener
     return chart;
   };
 });
-define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/generator/element/svg/path','src/modules/d3_components/helpers/valuator'],function (require) {
+define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/generator/element/svg/path','src/modules/d3_components/generator/element/svg/text','src/modules/d3_components/helpers/valuator'],function (require) {
   var d3 = require('d3');
   var path = require('src/modules/d3_components/generator/element/svg/path');
+  var textElement = require('src/modules/d3_components/generator/element/svg/text');
   var valuator = require('src/modules/d3_components/helpers/valuator');
 
   return function sunburst() {
@@ -14077,6 +14078,7 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
     var sort = null;
     var value = function (d) { return d.size; };
     var children = function (d) { return d.children; };
+    var label = function (d) { return d.name; };
     var xScale = d3.scale.linear().range([0, 2 * Math.PI]);
     var yScale = d3.scale.sqrt();
     var donut = false;
@@ -14086,6 +14088,7 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
       if (d.depth === 0) return 'none';
       return color(i);
     };
+    var text = {};
 
     function chart (g) {
       g.each(function (data, index) {
@@ -14114,13 +14117,25 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
           .stroke(stroke)
           .fill(fill);
 
+        var arcText = textElement()
+          .transform(text.transform || function (d) {
+            return 'translate(' + arc.centroid(d) + ')';
+          })
+          .dy(text.dy || '.35em')
+          .anchor(text.anchor || 'middle')
+          .fill(text.fill || '#ffffff')
+          .text(function (d, i) {
+            return label.call(this, d, i);
+          });
+
         var g = d3.select(this).selectAll('g').data([data]);
 
         g.exit().remove();
         g.enter().append('g')
           .datum(partition.nodes)
           .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
-          .call(arcPath);
+          .call(arcPath)
+          .call(arcText);
       });
     }
 
@@ -14184,6 +14199,12 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
     chart.children = function (_) {
       if (!arguments.length) return children;
       children = valuator(_);
+      return chart;
+    };
+
+    chart.label = function (_) {
+      if (!arguments.length) return label;
+      label = valuator(_);
       return chart;
     };
 
