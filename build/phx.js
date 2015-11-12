@@ -14076,6 +14076,7 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
     var color = d3.scale.category10();
     var sort = null;
     var value = function (d) { return d.size; };
+    var children = function (d) { return d.children; };
     var xScale = d3.scale.linear().range([0, 2 * Math.PI]);
     var yScale = d3.scale.sqrt();
     var donut = false;
@@ -14098,7 +14099,8 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
 
         var partition = d3.layout.partition()
           .sort(sort)
-          .value(value);
+          .value(value)
+          .children(children);
 
         var arc = d3.svg.arc()
           .startAngle(startAngle)
@@ -14176,6 +14178,12 @@ define('src/modules/charts/sunburst',['require','d3','src/modules/d3_components/
     chart.value = function (_) {
       if (!arguments.length) return value;
       value = valuator(_);
+      return chart;
+    };
+
+    chart.children = function (_) {
+      if (!arguments.length) return children;
+      children = valuator(_);
       return chart;
     };
 
