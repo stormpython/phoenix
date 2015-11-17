@@ -13532,7 +13532,6 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
     var clippath = clipPathGenerator();
     var stack = d3.layout.stack();
     var zeroLine = lineElement();
-    var legend = legendGenerator();
     var axisFunctions = {
       bottom: axisGenerator(),
       left: axisGenerator(),
