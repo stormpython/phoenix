@@ -13532,6 +13532,7 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
     var clippath = clipPathGenerator();
     var stack = d3.layout.stack();
     var zeroLine = lineElement();
+    var legend = legendGenerator();
     var axisFunctions = {
       bottom: axisGenerator(),
       left: axisGenerator(),
@@ -13806,6 +13807,7 @@ define('src/modules/d3_components/generator/element/svg/text',['require','d3'],f
     var cssClass = 'text';
     var fill = '#ffffff';
     var anchor = 'middle';
+    var pointerEvents = null;
     var texts = '';
 
     function element(selection) {
@@ -13826,6 +13828,7 @@ define('src/modules/d3_components/generator/element/svg/text',['require','d3'],f
           .attr('dy', dy)
           .attr('fill', fill)
           .style('text-anchor', anchor)
+          .style('pointer-events', pointerEvents)
           .text(texts);
       });
     }
@@ -13876,6 +13879,12 @@ define('src/modules/d3_components/generator/element/svg/text',['require','d3'],f
     element.fill = function (_) {
       if (!arguments.length) return fill;
       fill = _;
+      return element;
+    };
+
+    element.pointerEvents = function (_) {
+      if (!arguments.length) return pointerEvents;
+      pointerEvents = _;
       return element;
     };
 

@@ -10,6 +10,7 @@ define(function (require) {
     var cssClass = 'text';
     var fill = '#ffffff';
     var anchor = 'middle';
+    var pointerEvents = null;
     var texts = '';
 
     function element(selection) {
@@ -30,6 +31,7 @@ define(function (require) {
           .attr('dy', dy)
           .attr('fill', fill)
           .style('text-anchor', anchor)
+          .style('pointer-events', pointerEvents)
           .text(texts);
       });
     }
@@ -80,6 +82,12 @@ define(function (require) {
     element.fill = function (_) {
       if (!arguments.length) return fill;
       fill = _;
+      return element;
+    };
+
+    element.pointerEvents = function (_) {
+      if (!arguments.length) return pointerEvents;
+      pointerEvents = _;
       return element;
     };
 

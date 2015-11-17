@@ -1,48 +1,97 @@
 define(function (require) {
   var d3 = require('d3');
+  var base = require('src/modules/d3_components/layout/base');
 
   return function legend() {
-    // Private variables
     var color = d3.scale.category10();
-    var symbol = { type: 'circle', size: 3 };
-    var cell = { width: 50, padding: 5 };
-    var values = [];
-    var orientation = 'horizontal';
-    var position = 'nw';
-    var fill = function (d) { return color(d); };
-    var stroke = '#000000';
-    var strokeWidth = 1;
-    var text = '';
+    var layout = base();
+    var shape = d3.svg.symbol();
+    var size = [30, 90];
+    var values = function (d) { return d; };
+    var orientation = 'vertical'; // 'horizontal, vertical, grid'
+    var symbol = {};
+    var text = {};
 
     function component(g) {
-      g.each(function () {
-        var shape = d3.svg.symbol()
-          .type(symbol.type)
-          .size(symbol.size);
+      g.each(function (data) {
+        var layoutType = {
+          vertical: 'rows',
+          horizontal: 'columns',
+          grid: 'grid'
+        };
 
-        g.selectAll('g.legend-cells')
-          .data(values)
-          .enter().append('g')
-          .attr('class', 'legend-cells')
-          .attr('transform', function (d, i) {
-            return 'translate(' + (i * (cell.width + cell.padding)) + ',0)';
+        shape
+          .type(symbol.type || 'circle')
+          .size(symbol.size || 90);
+
+        layout
+          .type(layoutType[orientation] || 'rows')
+          .size(size);
+
+        var cells = d3.select(this).selectAll('g.legend-cells')
+          .data(layout(data));
+
+        cells.exit().remove();
+        cells.enter().append('g')
+          .attr('legend-cells');
+
+        cells
+          .attr('transform', function (d) {
+            return 'translate(' + d.dx + ',' + d.dy + ')';
           });
 
-        g.selectAll('g.legend-cells')
-          .append('path')
+        cells.append('path')
           .attr('d', shape)
-          .style('fill', fill)
-          .style('stroke', stroke)
-          .style('stroke-width', strokeWidth);
+          .attr('fill', symbol.fill || getColor)
+          .attr('fill-opacity', symbol.fillOpacity || 1)
+          .attr('stroke', symbol.stroke || 'none')
+          .attr('stroke-width', symbol.strokeWidth || 0)
+          .attr('stroke-opacity', symbol.strokeOpacity || 1);
 
-        g.selectAll('g.legend-cells')
-          .append('text')
-          .attr('class', 'legend-labels')
-          .attr('y', -7)
-          .style('pointer-events', 'none')
-          .text(text);
+        cells.append('text')
+          .attr('x', text.x || 7)
+          .attr('y', text.y || 0)
+          .attr('dx', text.dx || '')
+          .attr('dy', text.dy || '.35em')
+          .attr('fill', text.fill || '#000000')
+          .attr('pointer-events', text.pointerEvents || 'none')
+          .style('text-anchor', text.anchor || 'start')
+          .text(values);
       });
     }
+
+    function getColor(d, i) { return color(i); }
+
+    // Public API
+    component.values = function (_) {
+      if (!arguments.length) return values;
+      values = _;
+      return component;
+    };
+
+    component.orientation = function (_) {
+      if (!arguments.length) return orientation;
+      orientation = _;
+      return component;
+    };
+
+    component.size = function (_) {
+      if (!arguments.length) return size;
+      size = Array.isArray(_) ? _ : size;
+      return component;
+    };
+
+    component.symbol = function (_) {
+      if (!arguments.length) return symbol;
+      symbol = _;
+      return component;
+    };
+
+    component.text = function (_) {
+      if (!arguments.length) return text;
+      text = _;
+      return component;
+    };
 
     return component;
   };
