@@ -7,18 +7,25 @@ define(function (require) {
     var layout = base();
     var shape = d3.svg.symbol();
     var size = [30, 90];
-    var values = function (d) { return d; };
+    var values = [];
     var orientation = 'vertical'; // 'horizontal, vertical, grid'
     var symbol = {};
     var text = {};
 
     function component(g) {
-      g.each(function (data) {
+      g.each(function () {
         var layoutType = {
           vertical: 'rows',
           horizontal: 'columns',
           grid: 'grid'
         };
+
+        // Mutate the values array
+        values = values.map(function (d) {
+          return {
+            label: d
+          };
+        });
 
         shape
           .type(symbol.type || 'circle')
@@ -29,7 +36,7 @@ define(function (require) {
           .size(size);
 
         var cells = d3.select(this).selectAll('g.legend-cells')
-          .data(layout(data));
+          .data(layout(values));
 
         cells.exit().remove();
         cells.enter().append('g')
@@ -44,9 +51,19 @@ define(function (require) {
           .attr('d', shape)
           .attr('fill', symbol.fill || getColor)
           .attr('fill-opacity', symbol.fillOpacity || 1)
-          .attr('stroke', symbol.stroke || 'none')
-          .attr('stroke-width', symbol.strokeWidth || 0)
-          .attr('stroke-opacity', symbol.strokeOpacity || 1);
+          .attr('stroke', symbol.stroke || getColor)
+          .attr('stroke-width', symbol.strokeWidth || 1)
+          .attr('stroke-opacity', symbol.strokeOpacity || 1)
+          .on('click', function () {
+            var icon = d3.select(this);
+            var noFill = icon.attr('fill') === '#ffffff';
+
+            if (noFill) {
+              icon.attr('fill', symbol.fill || getColor);
+            } else {
+              icon.attr('fill', '#ffffff');
+            }
+          });
 
         cells.append('text')
           .attr('x', text.x || 7)
@@ -56,11 +73,13 @@ define(function (require) {
           .attr('fill', text.fill || '#000000')
           .attr('pointer-events', text.pointerEvents || 'none')
           .style('text-anchor', text.anchor || 'start')
-          .text(values);
+          .text(function (d) { return d.label; });
       });
     }
 
-    function getColor(d, i) { return color(i); }
+    function getColor(d) {
+      return color(d.label);
+    }
 
     // Public API
     component.values = function (_) {

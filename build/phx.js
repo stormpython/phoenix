@@ -12268,6 +12268,208 @@ define('src/modules/d3_components/control/brush',['require','d3'],function (requ
     return control;
   };
 });
+define('src/modules/d3_components/layout/base',['require','d3','src/modules/d3_components/helpers/is_number'],function (require) {
+  var d3 = require('d3');
+  var isNumber = require('src/modules/d3_components/helpers/is_number');
+
+  return function format() {
+    // Private variables
+    var type = 'rows'; // available types: 'rows', 'columns', 'grid'
+    var size = [500, 500]; // [width, height]
+    var rowScale = d3.scale.linear();
+    var columnScale = d3.scale.linear();
+    var numOfCols = 0;
+
+    function layout(data) {
+      var format = formatType(data.length, type, numOfCols);
+      var rows = format.rows;
+      var columns = format.columns;
+      var cellWidth = size[0] / columns;
+      var cellHeight = size[1] / rows;
+      var cell = 0;
+
+      rowScale.domain([0, rows]).range([0, size[1]]);
+      columnScale.domain([0, columns]).range([0, size[0]]);
+
+      d3.range(rows).forEach(function (row) {
+        d3.range(columns).forEach(function (col) {
+          if (!data[cell]) { return; }
+
+          data[cell].dx = columnScale(col);
+          data[cell].dy = rowScale(row);
+          data[cell].width = cellWidth;
+          data[cell].height = cellHeight;
+          cell++;
+        });
+      });
+
+      return data;
+    }
+
+    function formatType(length, type, cols) {
+      var output = {};
+
+      switch (type) {
+        case 'grid':
+          output.rows = cols ? Math.ceil(length / cols) :
+            Math.round(Math.sqrt(length));
+          output.columns = cols ? cols : Math.ceil(Math.sqrt(length));
+          break;
+
+        case 'columns':
+          output.rows = 1;
+          output.columns = length;
+          break;
+
+        default:
+          output.rows = length;
+          output.columns = 1;
+          break;
+      }
+
+      return output;
+    }
+
+    // Public API
+    layout.type = function (_) {
+      if (!arguments.length) return type;
+      type = typeof _ === 'string' ? _ : type;
+      return layout;
+    };
+
+    layout.columns = function (_) {
+      if (!arguments.length) return numOfCols;
+      numOfCols = typeof _ === 'number' ? _ : numOfCols;
+      return layout;
+    };
+
+    layout.size = function (_) {
+      if (!arguments.length) return size;
+      size = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : size;
+      return layout;
+    };
+
+    return layout;
+  };
+});
+
+define('src/modules/d3_components/generator/legend',['require','d3','src/modules/d3_components/layout/base'],function (require) {
+  var d3 = require('d3');
+  var base = require('src/modules/d3_components/layout/base');
+
+  return function legend() {
+    var color = d3.scale.category10();
+    var layout = base();
+    var shape = d3.svg.symbol();
+    var size = [30, 90];
+    var values = [];
+    var orientation = 'vertical'; // 'horizontal, vertical, grid'
+    var symbol = {};
+    var text = {};
+
+    function component(g) {
+      g.each(function () {
+        var layoutType = {
+          vertical: 'rows',
+          horizontal: 'columns',
+          grid: 'grid'
+        };
+
+        // Mutate the values array
+        values = values.map(function (d) {
+          return {
+            label: d
+          };
+        });
+
+        shape
+          .type(symbol.type || 'circle')
+          .size(symbol.size || 90);
+
+        layout
+          .type(layoutType[orientation] || 'rows')
+          .size(size);
+
+        var cells = d3.select(this).selectAll('g.legend-cells')
+          .data(layout(values));
+
+        cells.exit().remove();
+        cells.enter().append('g')
+          .attr('legend-cells');
+
+        cells
+          .attr('transform', function (d) {
+            return 'translate(' + d.dx + ',' + d.dy + ')';
+          });
+
+        cells.append('path')
+          .attr('d', shape)
+          .attr('fill', symbol.fill || getColor)
+          .attr('fill-opacity', symbol.fillOpacity || 1)
+          .attr('stroke', symbol.stroke || getColor)
+          .attr('stroke-width', symbol.strokeWidth || 1)
+          .attr('stroke-opacity', symbol.strokeOpacity || 1)
+          .on('click', function (d, i) {
+            var icon = d3.select(this);
+            var noFill = icon.attr('fill') === '#ffffff';
+
+            if (noFill) {
+              icon.attr('fill', symbol.fill || getColor);
+            } else {
+              icon.attr('fill', '#ffffff');
+            }
+          });
+
+        cells.append('text')
+          .attr('x', text.x || 7)
+          .attr('y', text.y || 0)
+          .attr('dx', text.dx || '')
+          .attr('dy', text.dy || '.35em')
+          .attr('fill', text.fill || '#000000')
+          .attr('pointer-events', text.pointerEvents || 'none')
+          .style('text-anchor', text.anchor || 'start')
+          .text(function (d) { return d.label; });
+      });
+    }
+
+    function getColor(d) {
+      return color(d.label);
+    }
+
+    // Public API
+    component.values = function (_) {
+      if (!arguments.length) return values;
+      values = _;
+      return component;
+    };
+
+    component.orientation = function (_) {
+      if (!arguments.length) return orientation;
+      orientation = _;
+      return component;
+    };
+
+    component.size = function (_) {
+      if (!arguments.length) return size;
+      size = Array.isArray(_) ? _ : size;
+      return component;
+    };
+
+    component.symbol = function (_) {
+      if (!arguments.length) return symbol;
+      symbol = _;
+      return component;
+    };
+
+    component.text = function (_) {
+      if (!arguments.length) return text;
+      text = _;
+      return component;
+    };
+
+    return component;
+  };
+});
 define('src/modules/d3_components/generator/element/svg/line',['require','d3'],function (require) {
   var d3 = require('d3');
 
@@ -13507,7 +13709,7 @@ define('src/modules/d3_components/generator/points',['require','d3','src/modules
   };
 });
 
-define('src/modules/charts/series',['require','d3','src/modules/d3_components/helpers/builder','src/modules/d3_components/helpers/valuator','src/modules/d3_components/helpers/stack_neg_pos','src/modules/d3_components/generator/clippath','src/modules/d3_components/generator/axis/axis','src/modules/d3_components/control/brush','src/modules/d3_components/generator/element/svg/line','src/modules/d3_components/generator/path','src/modules/d3_components/generator/bars','src/modules/d3_components/generator/points'],function (require) {
+define('src/modules/charts/series',['require','d3','src/modules/d3_components/helpers/builder','src/modules/d3_components/helpers/valuator','src/modules/d3_components/helpers/stack_neg_pos','src/modules/d3_components/generator/clippath','src/modules/d3_components/generator/axis/axis','src/modules/d3_components/control/brush','src/modules/d3_components/generator/legend','src/modules/d3_components/generator/element/svg/line','src/modules/d3_components/generator/path','src/modules/d3_components/generator/bars','src/modules/d3_components/generator/points'],function (require) {
   var d3 = require('d3');
   var builder = require('src/modules/d3_components/helpers/builder');
   var valuator = require('src/modules/d3_components/helpers/valuator');
@@ -13515,6 +13717,7 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
   var clipPathGenerator = require('src/modules/d3_components/generator/clippath');
   var axisGenerator = require('src/modules/d3_components/generator/axis/axis');
   var brushControl = require('src/modules/d3_components/control/brush');
+  var legendGenerator = require('src/modules/d3_components/generator/legend');
   var lineElement = require('src/modules/d3_components/generator/element/svg/line');
   var pathGenerator = require('src/modules/d3_components/generator/path');
   var barGenerator = require('src/modules/d3_components/generator/bars');
@@ -13532,6 +13735,7 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
     var clippath = clipPathGenerator();
     var stack = d3.layout.stack();
     var zeroLine = lineElement();
+    var legend = legendGenerator();
     var axisFunctions = {
       bottom: axisGenerator(),
       left: axisGenerator(),
@@ -13586,6 +13790,17 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
         g.exit().remove();
         g.enter().append('g');
         g.attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+
+        var values = data.reduce(function (a, b) {
+            return a.concat(b);
+          }, []).map(function (d) {
+            return d.label;
+          }).filter(function (item, index, array) {
+            return array.indexOf(item) === index;
+          });
+        g.append('g')
+          .attr('class', 'legend')
+          .call(legend.values(values));
 
         /* ************************************************** */
         // Draw Axes
@@ -14401,91 +14616,6 @@ define('src/modules/d3_components/mixed/chart',['require','d3','src/modules/char
     return generator;
   };
 });
-define('src/modules/d3_components/layout/base',['require','d3','src/modules/d3_components/helpers/is_number'],function (require) {
-  var d3 = require('d3');
-  var isNumber = require('src/modules/d3_components/helpers/is_number');
-
-  return function format() {
-    // Private variables
-    var type = 'rows'; // available types: 'rows', 'columns', 'grid'
-    var size = [500, 500]; // [width, height]
-    var rowScale = d3.scale.linear();
-    var columnScale = d3.scale.linear();
-    var numOfCols = 0;
-
-    function layout(data) {
-      var format = formatType(data.length, type, numOfCols);
-      var rows = format.rows;
-      var columns = format.columns;
-      var cellWidth = size[0] / columns;
-      var cellHeight = size[1] / rows;
-      var cell = 0;
-
-      rowScale.domain([0, rows]).range([0, size[1]]);
-      columnScale.domain([0, columns]).range([0, size[0]]);
-
-      d3.range(rows).forEach(function (row) {
-        d3.range(columns).forEach(function (col) {
-          if (!data[cell]) { return; }
-
-          data[cell].dx = columnScale(col);
-          data[cell].dy = rowScale(row);
-          data[cell].width = cellWidth;
-          data[cell].height = cellHeight;
-          cell++;
-        });
-      });
-
-      return data;
-    }
-
-    function formatType(length, type, cols) {
-      var output = {};
-
-      switch (type) {
-        case 'grid':
-          output.rows = cols ? Math.ceil(length / cols) :
-            Math.round(Math.sqrt(length));
-          output.columns = cols ? cols : Math.ceil(Math.sqrt(length));
-          break;
-
-        case 'columns':
-          output.rows = 1;
-          output.columns = length;
-          break;
-
-        default:
-          output.rows = length;
-          output.columns = 1;
-          break;
-      }
-
-      return output;
-    }
-
-    // Public API
-    layout.type = function (_) {
-      if (!arguments.length) return type;
-      type = typeof _ === 'string' ? _ : type;
-      return layout;
-    };
-
-    layout.columns = function (_) {
-      if (!arguments.length) return numOfCols;
-      numOfCols = typeof _ === 'number' ? _ : numOfCols;
-      return layout;
-    };
-
-    layout.size = function (_) {
-      if (!arguments.length) return size;
-      size = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : size;
-      return layout;
-    };
-
-    return layout;
-  };
-});
-
 define('src/modules/d3_components/generator/layout',['require','d3','src/modules/d3_components/layout/base'],function (require) {
   var d3 = require('d3');
   var base = require('src/modules/d3_components/layout/base');

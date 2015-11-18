@@ -6,6 +6,7 @@ define(function (require) {
   var clipPathGenerator = require('src/modules/d3_components/generator/clippath');
   var axisGenerator = require('src/modules/d3_components/generator/axis/axis');
   var brushControl = require('src/modules/d3_components/control/brush');
+  var legendGenerator = require('src/modules/d3_components/generator/legend');
   var lineElement = require('src/modules/d3_components/generator/element/svg/line');
   var pathGenerator = require('src/modules/d3_components/generator/path');
   var barGenerator = require('src/modules/d3_components/generator/bars');
@@ -23,6 +24,7 @@ define(function (require) {
     var clippath = clipPathGenerator();
     var stack = d3.layout.stack();
     var zeroLine = lineElement();
+    var legend = legendGenerator();
     var axisFunctions = {
       bottom: axisGenerator(),
       left: axisGenerator(),
@@ -77,6 +79,17 @@ define(function (require) {
         g.exit().remove();
         g.enter().append('g');
         g.attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+
+        var values = data.reduce(function (a, b) {
+            return a.concat(b);
+          }, []).map(function (d) {
+            return d.label;
+          }).filter(function (item, index, array) {
+            return array.indexOf(item) === index;
+          });
+        g.append('g')
+          .attr('class', 'legend')
+          .call(legend.values(values));
 
         /* ************************************************** */
         // Draw Axes
