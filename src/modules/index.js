@@ -6,322 +6,331 @@ define(function (require) {
   var sumListeners = require('src/modules/helpers/sum_listeners');
   var validateSize = require('src/modules/helpers/validate_size');
 
-  function evaluate(self) {
-    if (!self._selection || !self._selection.node()) {
-      throw new Error('A valid element is required');
-    }
-    if (!self._datum && !self._datum.length || !self._selection.datum()) {
-      throw new Error('No data provided');
-    }
-    if (!self._opts) throw new Error('No options given');
-  }
-
-  function removeBrush(selection) {
-    var events = ['mousedown.brush', 'touchstart.brush'];
-
-    selection.selectAll('g.brush').each(function () {
-      var g = d3.select(this);
-
-      // Remove events
-      events.forEach(function (event) {
-        g.on(event, null);
-      });
-
-      g.remove();
-    });
-  }
-
   /**
    * D3 Charting Library wrapper
    *
    * @param {HTMLElement} el - Reference to DOM element
-   * @returns {Phx}
-   * @constructor
    */
-  function Phx(el) {
-    if (!(this instanceof Phx)) return new Phx(el);
+  return function phx(el) {
+    var chart = chart();
+    var base = layout();
+    var events = events();
+    var el = el ? wrapper.element(el) : null;
+    var selection = null;
+    var datum = [];
+    var opts = {};
+    var listeners = {};
 
-    this._chart = chart();
-    this._layout = layout();
-    this._events = events();
-    this._listeners = {};
-    this.element(el || null);
-    this._datum = [];
-    this._opts = {};
-  }
+    function wrapper() {}
 
-  /**
-   * Creates a d3 selection for chart(s) placement,
-   * or returns the current selected element.
-   *
-   * @param {HTMLElement} [el] - Reference to DOM element
-   * @returns {*}
-   */
-  Phx.prototype.element = function (el) {
-    if (!arguments.length) return this._el.node(); // => Getter
-    if (!(el instanceof HTMLElement) && !(el instanceof String) &&
-      !(el instanceof d3.selection) && !(d3.select(el).node())) {
-      throw new Error('Phx requires a valid HTML element');
+    function destroy() {
+      chart = null;
+      base = null;
+      events = null;
+      el = null;
+      selection = null;
+      datum = [];
+      opts = {};
+      listeners = {};
     }
 
-    this._el = el instanceof d3.selection ? el : d3.select(el); // => Setter
-    this._selection = this._el.append('svg')
-      .attr('class', 'parent');
+    function removeBrush(e) {
+      var brushEvents = ['brush', 'brushend', 'brushstart'];
+      var events = ['mousedown.brush', 'touchstart.brush'];
 
-    // Bind datum to selection if datum exists
-    if (this._datum) this.data(this._datum);
-    return this;
-  };
+      if (!e) {
+        selection.selectAll('g.brush').each(function () {
+          var g = d3.select(this);
 
-  /**
-   * Binds data to the d3 selection,
-   * or returns the bound data array.
-   *
-   * @param {Array} [datum] - Single object or Array of objects
-   * @returns {*}
-   */
-  Phx.prototype.data = function (datum) {
-    if (!arguments.length) return this._datum; // => Getter
+          // Remove events
+          events.forEach(function (event) {
+            g.on(event, null);
+          });
 
-    // Allow for a single chart objects to be passed in directly.
-    if (typeof datum === 'object' && !Array.isArray(datum)) datum = [datum];
-
-    datum.every(function (obj) {
-      if (!(obj instanceof Object)) {
-        throw new Error('data expects an array of objects');
+          g.remove();
+        });
       }
-    });
 
-    this._datum = datum; // => Setter
-    this._selection.datum(this._datum); // Bind data
-    return this;
-  };
-
-  /**
-   * Sets the options object, or returns the current options.
-   *
-   * @param {Object} [opts] - Chart options
-   * @returns {Phx}
-   */
-  Phx.prototype.options = function (opts) {
-    if (!arguments.length) return this._opts; // => Getter
-    if (!(opts instanceof Object) || Array.isArray(opts)) {
-      throw new Error('The options method expects a valid object');
+      if (brushEvents.indexOf(e) !== -1) {}
     }
 
-    this._opts = opts; // => Setter
-    return this;
-  };
-
-  /**
-   * Sets value for an options attribute.
-   *
-   * @param {String} name - Options attribute
-   * @param {*} value - Value for options attribute
-   * @returns {Phx}
-   */
-  Phx.prototype.set = function (name, value) {
-    this._opts[name] = value;
-    return this;
-  };
-
-  /**
-   * Returns an options object attribute.
-   *
-   * @param {String} name - Options attribute
-   * @returns {*}
-   */
-  Phx.prototype.get = function (name) {
-    return this._opts[name];
-  };
-
-  /**
-   * Draws the chart(s).
-   *
-   * @param {Function|Number} [width] - Specifies width of DOM element
-   * @param {Function|Number} [height] - Specifies height of DOM element
-   * @returns {Phx}
-   */
-  Phx.prototype.draw = function (width, height) {
-    var node;
-    var size;
-
-    evaluate(this); // Verify all needed vars are available
-
-    node = this._selection.node().parentNode;
-    size = validateSize([node.clientWidth, node.clientHeight]);
-
-    this._layout.layout(this._opts.layout || 'grid')
-      .columns(this._opts.numberOfColumns || 0)
-      .size(size);
-    this._chart.options(this._opts)
-      .listeners(this._listeners);
-
-    this._selection.attr('width', width || size[0])
-      .attr('height', height || size[1])
-      .call(this._events) // Add event listeners to svg
-      .call(this._layout) // Create layout of g elements
-      .selectAll('g.chart')
-      .call(this._chart); // Draw chart(s)
-    return this;
-  };
-
-  /**
-   * Resizes the chart(s).
-   *
-   * @param {Function|Number} [width] - Specifies width of DOM element
-   * @param {Function|Number} [height] - Specifies height of DOM element
-   * @returns {Phx}
-   */
-  Phx.prototype.resize = Phx.prototype.draw;
-
-  /**
-   * Detaches nodes from DOM, effectively removing
-   * the chart(s). However this does not destroy charts.
-   * It is only meant to clear the nodes from the screen.
-   * They still exist in memory. Use `destroy` to prepare
-   * the chart object for GC.
-   *
-   * @returns {Phx}
-   */
-  Phx.prototype.remove = function () {
-    this._selection.selectAll('g.chart').remove();
-    return this;
-  };
-
-  /**
-   * Removes chart(s) from the selected DOM element,
-   * and prepares the chart object for garbage collection.
-   *
-   * @returns {Phx}
-   */
-  Phx.prototype.destroy = function () {
-    this.removeAllListeners();
-    this._selection.remove();
-    this._selection.datum(null);
-    this._selection = null;
-    this._chart = null;
-    this._layout = null;
-    this._events = null;
-    this._opts = null;
-    this._datum = null;
-    this._el = null;
-    return this;
-  };
-
-  /**
-   * Adds event listeners to chart(s).
-   *
-   * @param {String} event - DOM event, e.g. 'click'
-   * @param {Function} listener - Listener for specified event type
-   * @returns {Phx}
-   */
-  Phx.prototype.on = function (event, listener) {
-    var listeners = this._listeners;
-
-    if (!this._selection) throw new Error('A valid element is required');
-    if (listener && typeof listener === 'function') {
-      if (!listeners[event]) listeners[event] = [];
-      listeners[event].push(listener);
-    }
-    // Attach listener
-    this._selection.call(this._events.listeners(listeners));
-    return this;
-  };
-
-  /**
-   * Removes event listeners from chart(s).
-   * e.g. chart.off('click') => Removes all click listeners
-   * e.g. chart.off('click', clickFunction) => Removes clickFunction
-   * from click event listeners array.
-   *
-   * @param {String} event - DOM event, e.g. 'click'
-   * @param {Function} [listener] - Listener for specified event type
-   * @returns {Phx}
-   */
-  Phx.prototype.off = function (event, listener) {
-    var brushEvents = ['brush', 'brushend', 'brushstart'];
-    var listeners = this._listeners;
-
-    if (!this._selection) throw new Error('A valid element is required');
-
-    if (listeners[event]) {
-      if (!listener) {
-        // Special case for brush events
-        if (brushEvents.indexOf(event) !== -1) removeBrush(this._selection);
-
-        this._selection.on(event, null); // Detach listener(s)
-        delete this._listeners[event];
+    function evaluate(args) {
+      if (args.selection) {
+        if (!selection || !selection.node()) {
+          throw new Error('A valid reference to a DOM element is required');
+        }
       }
+
+      if (args.datum) {
+        if (!datum && !datum.length || !selection.datum()) {
+          throw new Error('No data provided');
+        }
+      }
+
+      if (args.opts) {
+        if (!opts) throw new Error('No options given');
+      }
+    }
+
+    function filterListeners(event) {
+      listeners[event] = listeners[event].filter(function (handler) {
+        return handler !== listener;
+      });
+      // Update events
+      selection.call(events.listeners(listeners));
+    }
+
+    function removeEvents(event) {
+      if (!arguments.length) {
+        Object.keys(listeners).forEach(function (event) {
+          selection.on(event, null);
+        });
+      }
+
+      if (event) {
+        selection.on(event, null); // Detach listener(s)
+        delete listeners[event];
+      }
+    }
+
+
+    // Public API
+
+    /**
+     * Creates a d3 selection for chart(s) placement,
+     * or returns the current selected element.
+     *
+     * @param _ {HTMLElement} - Reference to DOM element
+     * @returns {*}
+     */
+    wrapper.element = function (_) {
+      if (!arguments.length) return el;
+
+      if (!(_ instanceof HTMLElement) && !(_ instanceof String) &&
+        !(_ instanceof d3.selection) && !(d3.select(_).node())) {
+        throw new Error('A valid reference to a DOM element is required');
+      }
+
+      el = _ instanceof d3.selection ? _ : d3.select(_);
+      selection = el.append('svg').attr('class', 'parent');
+
+      if (datum) wrapper.data(datum); // Bind data
+      return wrapper;
+    };
+
+    /**
+     * Binds data to the d3 selection,
+     * or returns the bound data array.
+     *
+     * @param _ {Object | Array} - Single object or Array of objects
+     * @returns {*}
+     */
+    wrapper.data = function (_) {
+      if (!arguments.length) return datum;
+
+      // Allow for single chart objects to be passed in directly.
+      _ = (_ instanceof Object && !Array.isArray(_)) ? [_] : _;
+
+      _.every(function (obj) {
+        if (!(obj instanceof Object)) {
+          throw new Error('data expects an array of objects');
+        }
+      });
+
+      datum = _;
+      if (selection) selection.datum(datum); // Bind data
+      return wrapper;
+    };
+
+    /**
+     *
+     * @param _
+     * @returns {*}
+     */
+    wrapper.options = function (_) {
+      if (!arguments.length) return opts;
+
+      if (!(_ instanceof Object) || Array.isArray(_)) {
+        throw new Error('The options method expects a valid object');
+      }
+
+      opts = _;
+      return wrapper;
+    };
+
+    /**
+     * Sets value for an options attribute.
+     *
+     * @param {String} name - Options attribute
+     * @param {*} value - Value for options attribute
+     * @returns {Phx}
+     */
+    wrapper.set = function (name, value) {
+      opts[name] = value;
+      return wrapper;
+    };
+
+    /**
+     * Returns an options object attribute.
+     *
+     * @param {String} name - Options attribute
+     * @returns {*}
+     */
+    wrapper.get = function (name) {
+      return opts[name];
+    };
+
+    /**
+     * Draws the chart(s).
+     *
+     * @param width {Function|Number} - Specifies width of DOM element
+     * @param height {Function|Number} - Specifies height of DOM element
+     * @returns {wrapper}
+     */
+    wrapper.draw = function (width, height) {
+      evaluate({ selection: selection, datum: datum, opts: opts });
+
+      var node = selection.node().parentNode;
+      var size = validateSize([node.clientWidth, node.clientHeight]);
+
+      base.layout(opts.layout || 'grid')
+        .columns(opts.numberOfColumns || 0)
+        .size(size);
+
+      chart.options(opts).listeners(listeners);
+
+      selection.attr('width', width || size[0])
+        .attr('height', height || size[1])
+        .call(events) // Add event listeners to svg
+        .call(base) // Create layout of g elements
+        .selectAll('g.chart')
+        .call(chart); // Draw chart(s)
+
+      return wrapper;
+    };
+
+    /**
+     * Resizes chart(s).
+     *
+     * @type {wrapper.draw|*}
+     */
+    wrapper.resize = wrapper.draw;
+
+    /**
+     * Detaches nodes from DOM, effectively removing
+     * the chart(s). However this does not destroy charts.
+     * It is only meant to clear the nodes from the screen.
+     * They still exist in memory. Use `destroy` to prepare
+     * the chart object for GC.
+     *
+     * @returns {wrapper}
+     */
+    wrapper.remove = function () {
+      selection.selectAll('g.chart').remove();
+      return wrapper;
+    };
+
+    /**
+     * Removes chart(s) from the selected DOM element,
+     * and prepares the chart object for garbage collection.
+     *
+     * @returns {wrapper}
+     */
+    wrapper.destroy = function () {
+      wrapper.removeAllListeners();
+      selection.remove();
+      selection.datum(null);
+      destroy();
+      return wrapper;
+    };
+
+    /**
+     * Adds event listeners to chart(s).
+     *
+     * @param event {String} - DOM event, e.g. 'click'
+     * @param listener {Function} - Listener for specified event type
+     * @returns {wrapper}
+     */
+    wrapper.on = function (event, listener) {
+      evaluate({ selection: selection }); // Validate selection
 
       if (listener && typeof listener === 'function') {
-        // Filter listener from listeners array
-        listeners[event] = listeners[event].filter(function (handler) {
-          return handler !== listener;
-        });
-        this._selection.call(this._events.listeners(listeners)); // Update events
+        if (!listeners[event]) listeners[event] = [];
+        listeners[event].push(listener);
       }
-    }
+      // Attach listener
+      selection.call(events.listeners(listeners));
+      return wrapper;
+    };
 
-    return this;
-  };
+    /**
+     * Removes event listeners from chart(s).
+     * e.g. chart.off('click') => Removes all click listeners
+     * e.g. chart.off('click', clickFunction) => Removes clickFunction
+     * from click event listeners array.
+     *
+     * @param event {String} - DOM event, e.g. 'click'
+     * @param listener {Function} - Callback function for specified event type
+     * @returns {wrapper}
+     */
+    wrapper.off = function (event, listener) {
+      evaluate({ selection: selection }); // Validate selection
 
-  /**
-   * Removes all event listeners from chart(s),
-   * and resets the listeners object.
-   *
-   * @returns {Phx}
-   */
-  Phx.prototype.removeAllListeners = function () {
-    var selection = this._selection;
+      if (listeners[event]) {
+        if (!listener) removeEvents(event);
+        if (listener && typeof listener === 'function') filterListeners(event);
+      }
 
-    if (!selection) throw new Error('A valid element is required');
+      return wrapper;
+    };
 
-    removeBrush(selection);
-    Object.keys(this._listeners).forEach(function (event) {
-      selection.on(event, null);
-    });
+    /**
+     * Removes all event listeners from chart(s),
+     * and resets the listeners object.
+     *
+     * @returns {wrapper}
+     */
+    wrapper.removeAllListeners = function () {
+      evaluate({ selection: selection });
+      //removeBrush();
+      removeEvents();
+      events.listeners(listeners = {}); // Reset listeners
+      return wrapper;
+    };
 
-    this._events.listeners(this._listeners = {});
-    return this;
-  };
+    /**
+     * Returns the listeners array for a specified event type.
+     *
+     * @param event {String} - DOM event, e.g. 'click'
+     * @returns {Array}
+     */
+    wrapper.listeners = function (event) {
+      return listeners[event] ? listeners[event] : [];
+    };
 
-  /**
-   * Returns the listeners array for a specified event type,
-   * e.g. 'click'.
-   *
-   * @param {String} event - DOM event, e.g. 'click'
-   * @returns {Array}
-   */
-  Phx.prototype.listeners = function (event) {
-    return this._listeners[event] ? this._listeners[event] : [];
-  };
+    /**
+     * Returns the listeners count for a specified event type
+     * or the total listeners count.
+     *
+     * @param {String} [event] - DOM event, e.g. 'click'
+     * @returns {Number}
+     */
+    wrapper.listenerCount = function (event) {
+      if (!arguments.length) return sumListeners(listeners);
+      return event && listeners[event] ? listeners[event].length : 0;
+    };
 
-  /**
-   * Returns the listeners count for a specified event type
-   * or the total listeners count.
-   *
-   * @param {String} [event] - DOM event, e.g. 'click'
-   * @returns {Number}
-   */
-  Phx.prototype.listenerCount = function (event) {
-    if (!arguments.length) return sumListeners(this._listeners);
-    if (event && this._listeners[event]) return this._listeners[event].length;
-    return 0;
-  };
+    /**
+     * Returns an array of event types with active listeners.
+     *
+     * @returns {Array}
+     */
+    wrapper.activeEvents = function () {
+      return Object.keys(listeners).filter(function (key) {
+        return listeners[key].length;
+      });
+    };
 
-  /**
-   * Returns an array of event types with active listeners.
-   *
-   * @returns {Array}
-   */
-  Phx.prototype.activeEvents = function () {
-    var listeners = this._listeners;
-
-    return Object.keys(listeners).filter(function (key) {
-      return listeners[key].length;
-    });
-  };
-
-  return Phx;
+    return wrapper;
+  }
 });
