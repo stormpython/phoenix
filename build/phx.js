@@ -12358,9 +12358,10 @@ define('src/modules/d3_components/generator/legend',['require','d3','src/modules
   var base = require('src/modules/d3_components/layout/base');
 
   return function legend() {
+    var layoutType = { vertical: 'rows', horizontal: 'columns', grid: 'grid' };
     var color = d3.scale.category10();
-    var layout = base();
     var shape = d3.svg.symbol();
+    var layout = base();
     var size = [30, 90];
     var values = [];
     var orientation = 'vertical'; // 'horizontal, vertical, grid'
@@ -12369,21 +12370,13 @@ define('src/modules/d3_components/generator/legend',['require','d3','src/modules
 
     function component(g) {
       g.each(function () {
-        var layoutType = {
-          vertical: 'rows',
-          horizontal: 'columns',
-          grid: 'grid'
-        };
-
         // Mutate the values array
         values = values.map(function (d) {
-          return {
-            label: d
-          };
+          return { label: d };
         });
 
         shape
-          .type(symbol.type || 'circle')
+          .type(symbol.type || 'square')
           .size(symbol.size || 90);
 
         layout
@@ -12409,7 +12402,7 @@ define('src/modules/d3_components/generator/legend',['require','d3','src/modules
           .attr('stroke', symbol.stroke || getColor)
           .attr('stroke-width', symbol.strokeWidth || 1)
           .attr('stroke-opacity', symbol.strokeOpacity || 1)
-          .on('click', function (d, i) {
+          .on('click', function () {
             var icon = d3.select(this);
             var noFill = icon.attr('fill') === '#ffffff';
 
@@ -13800,7 +13793,8 @@ define('src/modules/charts/series',['require','d3','src/modules/d3_components/he
           });
         g.append('g')
           .attr('class', 'legend')
-          .call(legend.values(values));
+          .attr('transform', 'translate(10,' + -margin.top / 2 + ')')
+          .call(legend.values(values).orientation('horizontal').size([adjustedWidth, 10]));
 
         /* ************************************************** */
         // Draw Axes

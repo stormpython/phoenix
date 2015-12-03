@@ -3,9 +3,10 @@ define(function (require) {
   var base = require('src/modules/d3_components/layout/base');
 
   return function legend() {
+    var layoutType = { vertical: 'rows', horizontal: 'columns', grid: 'grid' };
     var color = d3.scale.category10();
-    var layout = base();
     var shape = d3.svg.symbol();
+    var layout = base();
     var size = [30, 90];
     var values = [];
     var orientation = 'vertical'; // 'horizontal, vertical, grid'
@@ -14,21 +15,13 @@ define(function (require) {
 
     function component(g) {
       g.each(function () {
-        var layoutType = {
-          vertical: 'rows',
-          horizontal: 'columns',
-          grid: 'grid'
-        };
-
         // Mutate the values array
         values = values.map(function (d) {
-          return {
-            label: d
-          };
+          return { label: d };
         });
 
         shape
-          .type(symbol.type || 'circle')
+          .type(symbol.type || 'square')
           .size(symbol.size || 90);
 
         layout
@@ -48,6 +41,7 @@ define(function (require) {
           });
 
         cells.append('path')
+          .attr('class', 'legend-symbol')
           .attr('d', shape)
           .attr('fill', symbol.fill || getColor)
           .attr('fill-opacity', symbol.fillOpacity || 1)
@@ -66,6 +60,7 @@ define(function (require) {
           });
 
         cells.append('text')
+          .attr('class', 'legend-labels')
           .attr('x', text.x || 7)
           .attr('y', text.y || 0)
           .attr('dx', text.dx || '')
@@ -74,6 +69,9 @@ define(function (require) {
           .attr('pointer-events', text.pointerEvents || 'none')
           .style('text-anchor', text.anchor || 'start')
           .text(function (d) { return d.label; });
+
+        debugger;
+        d3.selectAll()
       });
     }
 

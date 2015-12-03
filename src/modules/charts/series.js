@@ -89,7 +89,8 @@ define(function (require) {
           });
         g.append('g')
           .attr('class', 'legend')
-          .call(legend.values(values));
+          .attr('transform', 'translate(10,' + -margin.top / 2 + ')')
+          .call(legend.values(values).orientation('horizontal').size([adjustedWidth, 10]));
 
         /* ************************************************** */
         // Draw Axes
