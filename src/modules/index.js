@@ -53,7 +53,7 @@ define(function (require) {
       listeners = {};
     }
 
-    function filterListeners(event) {
+    function filterListeners(event, listener) {
       listeners[event] = listeners[event].filter(function (handler) {
         return handler !== listener;
       });
@@ -303,7 +303,9 @@ define(function (require) {
 
       if (listeners[event]) {
         if (!listener) removeEvents(event);
-        if (listener && typeof listener === 'function') filterListeners(event);
+        if (listener && typeof listener === 'function') {
+          filterListeners(event, listener);
+        }
       }
 
       return this;
