@@ -23,37 +23,6 @@ define(function (require) {
 
     function wrapper() {}
 
-    function destroy() {
-      chart = null;
-      base = null;
-      events = null;
-      el = null;
-      selection = null;
-      datum = [];
-      opts = {};
-      listeners = {};
-    }
-
-    function removeBrush(e) {
-      var brushEvents = ['brush', 'brushend', 'brushstart'];
-      var events = ['mousedown.brush', 'touchstart.brush'];
-
-      if (!e) {
-        selection.selectAll('g.brush').each(function () {
-          var g = d3.select(this);
-
-          // Remove events
-          events.forEach(function (event) {
-            g.on(event, null);
-          });
-
-          g.remove();
-        });
-      }
-
-      if (brushEvents.indexOf(e) !== -1) {}
-    }
-
     function evaluate(args) {
       if (args.selection) {
         if (!selection || !selection.node()) {
@@ -72,6 +41,18 @@ define(function (require) {
       }
     }
 
+    // Prepare phx function for garbage collection
+    function destroy() {
+      chart = null;
+      base = null;
+      events = null;
+      el = null;
+      selection = null;
+      datum = [];
+      opts = {};
+      listeners = {};
+    }
+
     function filterListeners(event) {
       listeners[event] = listeners[event].filter(function (handler) {
         return handler !== listener;
@@ -81,16 +62,56 @@ define(function (require) {
     }
 
     function removeEvents(event) {
-      if (!arguments.length) {
-        Object.keys(listeners).forEach(function (event) {
+      Object.keys(listeners).forEach(function (e) {
+        if (!event || event && event === e) {
           selection.on(event, null);
-        });
-      }
+          delete listeners[event];
+        }
+      });
+      removeBrush(event);
+    }
 
-      if (event) {
-        selection.on(event, null); // Detach listener(s)
-        delete listeners[event];
-      }
+    function removeBrush(event) {
+      if (event && !isBrushEvent(event)) return;
+
+      var domEvents = getEvents(event);
+
+      selection.selectAll('g.brush').each(function () {
+        var g = d3.select(this);
+
+        domEvents.forEach(function (e) {
+          g.on(e, null);
+        });
+
+        if (!event || isBrushEmpty(listeners)) g.remove();
+      });
+    }
+
+    function isBrushEvent(event) {
+      var brushEvents = ['brush', 'brushstart', 'brushend'];
+      return !event || (event && brushEvents.indexOf(event) !== -1) ? true : false;
+    }
+
+    function getEvents(event) {
+      var eventsMap = {
+        brushstart: ['mousedown.brush', 'touchstart.brush'],
+        brush: ['mousemove.brush', 'touchmove.brush'],
+        brushend: ['mouseup.brush', 'touchend.brush']
+      };
+
+      return !event ? concatEventsMap(eventsMap) : eventsMap[event];
+    }
+
+    function concatEventsMap(map) {
+      return Object.keys(map)
+        .map(function (event) { return map[event]; })
+        .reduce(function (a, b) { return a.concat(b); }, []);
+    }
+
+    function isBrushEmpty(listeners) {
+      return ['brush', 'brushstart', 'brushend'].every(function (event) {
+        return !listeners[event] || !listeners[event].length;
+      });
     }
 
 
@@ -108,14 +129,14 @@ define(function (require) {
 
       if (!(_ instanceof HTMLElement) && !(_ instanceof String) &&
         !(_ instanceof d3.selection) && !(d3.select(_).node())) {
-        throw new Error('A valid reference to a DOM element is required');
+        throw new Error('phx.element expects a valid reference to a DOM element.');
       }
 
       el = _ instanceof d3.selection ? _ : d3.select(_);
       selection = el.append('svg').attr('class', 'parent');
 
-      if (datum) wrapper.data(datum); // Bind data
-      return wrapper;
+      if (datum && datum.length) this.data(datum); // Bind data
+      return this;
     };
 
     /**
@@ -128,21 +149,25 @@ define(function (require) {
     wrapper.data = function (_) {
       if (!arguments.length) return datum;
 
-      // Allow for single chart objects to be passed in directly.
-      _ = (_ instanceof Object && !Array.isArray(_)) ? [_] : _;
+      if (!(_ instanceof Object)) {
+        throw new Error('phx.data expects an object or array');
+      }
 
+      // Allow for single chart objects to be passed in directly.
+      _ = (!Array.isArray(_)) ? [_] : _;
       _.every(function (obj) {
         if (!(obj instanceof Object)) {
-          throw new Error('data expects an array of objects');
+          throw new Error('phx.data expects an array of objects');
         }
       });
 
       datum = _;
       if (selection) selection.datum(datum); // Bind data
-      return wrapper;
+      return this;
     };
 
     /**
+     * Sets the chart options
      *
      * @param _
      * @returns {*}
@@ -151,23 +176,23 @@ define(function (require) {
       if (!arguments.length) return opts;
 
       if (!(_ instanceof Object) || Array.isArray(_)) {
-        throw new Error('The options method expects a valid object');
+        throw new Error('phx.options expects a valid object');
       }
 
       opts = _;
-      return wrapper;
+      return this;
     };
 
     /**
      * Sets value for an options attribute.
      *
-     * @param {String} name - Options attribute
-     * @param {*} value - Value for options attribute
-     * @returns {Phx}
+     * @param name {String} - Options attribute
+     * @param value {*} - Value for options attribute
+     * @returns {wrapper}
      */
     wrapper.set = function (name, value) {
       opts[name] = value;
-      return wrapper;
+      return this;
     };
 
     /**
@@ -206,7 +231,7 @@ define(function (require) {
         .selectAll('g.chart')
         .call(chart); // Draw chart(s)
 
-      return wrapper;
+      return this;
     };
 
     /**
@@ -219,7 +244,7 @@ define(function (require) {
     /**
      * Detaches nodes from DOM, effectively removing
      * the chart(s). However this does not destroy charts.
-     * It is only meant to clear the nodes from the screen.
+     * It is only meant to clear the DOM nodes from the screen.
      * They still exist in memory. Use `destroy` to prepare
      * the chart object for GC.
      *
@@ -227,7 +252,7 @@ define(function (require) {
      */
     wrapper.remove = function () {
       selection.selectAll('g.chart').remove();
-      return wrapper;
+      return this;
     };
 
     /**
@@ -237,11 +262,11 @@ define(function (require) {
      * @returns {wrapper}
      */
     wrapper.destroy = function () {
-      wrapper.removeAllListeners();
+      this.removeAllListeners();
       selection.remove();
       selection.datum(null);
       destroy();
-      return wrapper;
+      return this;
     };
 
     /**
@@ -258,9 +283,9 @@ define(function (require) {
         if (!listeners[event]) listeners[event] = [];
         listeners[event].push(listener);
       }
-      // Attach listener
+      // Attach listener(s)
       selection.call(events.listeners(listeners));
-      return wrapper;
+      return this;
     };
 
     /**
@@ -281,7 +306,7 @@ define(function (require) {
         if (listener && typeof listener === 'function') filterListeners(event);
       }
 
-      return wrapper;
+      return this;
     };
 
     /**
@@ -292,10 +317,9 @@ define(function (require) {
      */
     wrapper.removeAllListeners = function () {
       evaluate({ selection: selection });
-      //removeBrush();
       removeEvents();
       events.listeners(listeners = {}); // Reset listeners
-      return wrapper;
+      return this;
     };
 
     /**
