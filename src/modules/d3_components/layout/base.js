@@ -1,6 +1,5 @@
 define(function (require) {
   var d3 = require('d3');
-  var isNumber = require('src/modules/d3_components/helpers/is_number');
 
   return function format() {
     // Private variables
@@ -17,23 +16,34 @@ define(function (require) {
       var cellWidth = size[0] / columns;
       var cellHeight = size[1] / rows;
       var cell = 0;
+      var newData = [];
 
       rowScale.domain([0, rows]).range([0, size[1]]);
       columnScale.domain([0, columns]).range([0, size[0]]);
 
       d3.range(rows).forEach(function (row) {
         d3.range(columns).forEach(function (col) {
-          if (!data[cell]) { return; }
+          var datum = data[cell];
 
-          data[cell].dx = columnScale(col);
-          data[cell].dy = rowScale(row);
-          data[cell].width = cellWidth;
-          data[cell].height = cellHeight;
+          if (!datum) { return; }
+
+          // Do not mutate the original data, return a new object
+          newData.push(
+            Object.keys(datum).reduce(function (a, b) {
+                a[b] = datum[b];
+                return a;
+              }, {
+                dx: columnScale(col),
+                dy: rowScale(row),
+                width: cellWidth,
+                height: cellHeight
+              })
+          );
           cell++;
         });
       });
 
-      return data;
+      return newData;
     }
 
     function formatType(length, type, cols) {
@@ -58,6 +68,10 @@ define(function (require) {
       }
 
       return output;
+    }
+
+    function isNumber(val) {
+      return typeof val === 'number';
     }
 
     // Public API

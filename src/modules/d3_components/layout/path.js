@@ -25,15 +25,13 @@ define(function (require) {
         pathFunction.x(X).y(Y);
       }
 
-      data = data.map(function (d, i) {
+      return data.map(function (d, i) {
         return {
           d: pathFunction(d),
           label: label.call(this, d[0], i),
           values: d
         };
       });
-
-      return [data];
     }
 
     function X(d, i) {

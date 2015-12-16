@@ -10,21 +10,16 @@ define(function (require) {
 
     function layout(data) {
       // Merge inner arrays => [[]] to []
-      data = data
-        .reduce(function (a, b) {
+      return data.reduce(function (a, b) {
           return a.concat(b);
         }, [])
-        .map(function (d, i) {
+        .forEach(function (d, i) {
           if (!d.coords) d.coords = {};
 
           d.coords.cx = X.call(this, d, i);
           d.coords.cy = Y.call(this, d, i);
           d.coords.radius = radius.call(this, d, i);
-
-          return d;
         });
-
-      return data;
     }
 
     function X(d, i) {

@@ -8,7 +8,7 @@ define(function (require) {
     var accessor = function (d) { return d; };
 
     function layout(data) {
-      data.forEach(function (d, i) {
+      return data.map(function (d, i) {
         var numbers = accessor.call(this, values.call(this, d, i));
 
         d.median = d3.median(numbers);
@@ -17,8 +17,6 @@ define(function (require) {
         d.max = d3.max(numbers);
         d.min = d3.min(numbers);
       });
-
-      return data;
     }
 
     // Public API

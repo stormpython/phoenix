@@ -3,7 +3,6 @@ define(function (require) {
   var chart = require('src/modules/d3_components/mixed/chart');
   var layout = require('src/modules/d3_components/generator/layout');
   var events = require('src/modules/d3_components/control/events');
-  var sumListeners = require('src/modules/helpers/sum_listeners');
   var validateSize = require('src/modules/helpers/validate_size');
 
   /**
@@ -19,26 +18,18 @@ define(function (require) {
     var selection = null;
     var datum = [];
     var opts = {};
-    var listeners = {};
+    var wrapper = {};
 
-    function wrapper() {}
-
-    function evaluate(args) {
-      if (args.selection) {
-        if (!selection || !selection.node()) {
-          throw new Error('A valid reference to a DOM element is required');
-        }
+    function evaluate() {
+      if (!selection || !selection.node()) {
+        throw new Error('A valid reference to a DOM element is required');
       }
 
-      if (args.datum) {
-        if (!datum && !datum.length || !selection.datum()) {
-          throw new Error('No data provided');
-        }
+      if (!datum && !datum.length || !selection.datum()) {
+        throw new Error('No data provided');
       }
 
-      if (args.opts) {
-        if (!opts) throw new Error('No options given');
-      }
+      if (!opts) throw new Error('No options given');
     }
 
     // Prepare phx function for garbage collection
@@ -52,68 +43,6 @@ define(function (require) {
       opts = {};
       listeners = {};
     }
-
-    function filterListeners(event, listener) {
-      listeners[event] = listeners[event].filter(function (handler) {
-        return handler !== listener;
-      });
-      // Update events
-      selection.call(events.listeners(listeners));
-    }
-
-    function removeEvents(event) {
-      Object.keys(listeners).forEach(function (e) {
-        if (!event || event && event === e) {
-          selection.on(event, null);
-          delete listeners[event];
-        }
-      });
-      removeBrush(event);
-    }
-
-    function removeBrush(event) {
-      if (event && !isBrushEvent(event)) return;
-
-      var domEvents = getEvents(event);
-
-      selection.selectAll('g.brush').each(function () {
-        var g = d3.select(this);
-
-        domEvents.forEach(function (e) {
-          g.on(e, null);
-        });
-
-        if (!event || isBrushEmpty(listeners)) g.remove();
-      });
-    }
-
-    function isBrushEvent(event) {
-      var brushEvents = ['brush', 'brushstart', 'brushend'];
-      return !event || (event && brushEvents.indexOf(event) !== -1) ? true : false;
-    }
-
-    function getEvents(event) {
-      var eventsMap = {
-        brushstart: ['mousedown.brush', 'touchstart.brush'],
-        brush: ['mousemove.brush', 'touchmove.brush'],
-        brushend: ['mouseup.brush', 'touchend.brush']
-      };
-
-      return !event ? concatEventsMap(eventsMap) : eventsMap[event];
-    }
-
-    function concatEventsMap(map) {
-      return Object.keys(map)
-        .map(function (event) { return map[event]; })
-        .reduce(function (a, b) { return a.concat(b); }, []);
-    }
-
-    function isBrushEmpty(listeners) {
-      return ['brush', 'brushstart', 'brushend'].every(function (event) {
-        return !listeners[event] || !listeners[event].length;
-      });
-    }
-
 
     // Public API
 
@@ -136,7 +65,7 @@ define(function (require) {
       selection = el.append('svg').attr('class', 'parent');
 
       if (datum && datum.length) this.data(datum); // Bind data
-      return this;
+      return wrapper;
     };
 
     /**
@@ -163,7 +92,7 @@ define(function (require) {
 
       datum = _;
       if (selection) selection.datum(datum); // Bind data
-      return this;
+      return wrapper;
     };
 
     /**
@@ -180,7 +109,7 @@ define(function (require) {
       }
 
       opts = _;
-      return this;
+      return wrapper;
     };
 
     /**
@@ -192,7 +121,7 @@ define(function (require) {
      */
     wrapper.set = function (name, value) {
       opts[name] = value;
-      return this;
+      return wrapper;
     };
 
     /**
@@ -213,7 +142,7 @@ define(function (require) {
      * @returns {wrapper}
      */
     wrapper.draw = function (width, height) {
-      evaluate({ selection: selection, datum: datum, opts: opts });
+      evaluate();
 
       var node = selection.node().parentNode;
       var size = validateSize([node.clientWidth, node.clientHeight]);
@@ -231,7 +160,7 @@ define(function (require) {
         .selectAll('g.chart')
         .call(chart); // Draw chart(s)
 
-      return this;
+      return wrapper;
     };
 
     /**
@@ -252,7 +181,7 @@ define(function (require) {
      */
     wrapper.remove = function () {
       selection.selectAll('g.chart').remove();
-      return this;
+      return wrapper;
     };
 
     /**
@@ -266,7 +195,7 @@ define(function (require) {
       selection.remove();
       selection.datum(null);
       destroy();
-      return this;
+      return wrapper;
     };
 
     /**
@@ -276,17 +205,7 @@ define(function (require) {
      * @param listener {Function} - Listener for specified event type
      * @returns {wrapper}
      */
-    wrapper.on = function (event, listener) {
-      evaluate({ selection: selection }); // Validate selection
-
-      if (listener && typeof listener === 'function') {
-        if (!listeners[event]) listeners[event] = [];
-        listeners[event].push(listener);
-      }
-      // Attach listener(s)
-      selection.call(events.listeners(listeners));
-      return this;
-    };
+    wrapper.on = events.on;
 
     /**
      * Removes event listeners from chart(s).
@@ -298,18 +217,7 @@ define(function (require) {
      * @param listener {Function} - Callback function for specified event type
      * @returns {wrapper}
      */
-    wrapper.off = function (event, listener) {
-      evaluate({ selection: selection }); // Validate selection
-
-      if (listeners[event]) {
-        if (!listener) removeEvents(event);
-        if (listener && typeof listener === 'function') {
-          filterListeners(event, listener);
-        }
-      }
-
-      return this;
-    };
+    wrapper.off = events.off;
 
     /**
      * Removes all event listeners from chart(s),
@@ -317,12 +225,7 @@ define(function (require) {
      *
      * @returns {wrapper}
      */
-    wrapper.removeAllListeners = function () {
-      evaluate({ selection: selection });
-      removeEvents();
-      events.listeners(listeners = {}); // Reset listeners
-      return this;
-    };
+    wrapper.removeAllListeners = events.removeAllListeners;
 
     /**
      * Returns the listeners array for a specified event type.
@@ -330,9 +233,7 @@ define(function (require) {
      * @param event {String} - DOM event, e.g. 'click'
      * @returns {Array}
      */
-    wrapper.listeners = function (event) {
-      return listeners[event] ? listeners[event] : [];
-    };
+    wrapper.listeners = events.listeners;
 
     /**
      * Returns the listeners count for a specified event type
@@ -341,21 +242,14 @@ define(function (require) {
      * @param {String} [event] - DOM event, e.g. 'click'
      * @returns {Number}
      */
-    wrapper.listenerCount = function (event) {
-      if (!arguments.length) return sumListeners(listeners);
-      return event && listeners[event] ? listeners[event].length : 0;
-    };
+    wrapper.listenerCount = events.listenerCount;
 
     /**
      * Returns an array of event types with active listeners.
      *
      * @returns {Array}
      */
-    wrapper.activeEvents = function () {
-      return Object.keys(listeners).filter(function (key) {
-        return listeners[key].length;
-      });
-    };
+    wrapper.activeEvents = events.activeEvents;
 
     return wrapper;
   }
