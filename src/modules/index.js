@@ -3,7 +3,7 @@ define(function (require) {
   var chart = require('src/modules/d3_components/mixed/chart');
   var layout = require('src/modules/d3_components/generator/layout');
   var events = require('src/modules/d3_components/control/events');
-  var validateSize = require('src/modules/helpers/validate_size');
+  var validateSize = require('src/modules/utils/validate_size');
 
   /**
    * D3 Charting Library wrapper

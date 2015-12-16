@@ -1,8 +1,8 @@
 define(function (require) {
   var d3 = require('d3');
-  var parseTime = require('src/modules/d3_components/helpers/timeparser');
-  var valuator = require('src/modules/d3_components/helpers/valuator');
-  var isNumber = require('src/modules/d3_components/helpers/is_number');
+  var parseTime = require('src/modules/d3_components/utils/timeparser');
+  var valuator = require('src/modules/d3_components/utils/valuator');
+  var isNumber = require('src/modules/d3_components/utils/is_number');
 
   return function scale() {
     var type = null;

@@ -1,5 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
+  var isNumber = require('src/modules/d3_components/utils/is_number');
 
   return function format() {
     // Private variables
@@ -69,10 +70,6 @@ define(function (require) {
       }
 
       return output;
-    }
-
-    function isNumber(val) {
-      return typeof val === 'number';
     }
 
     // Public API

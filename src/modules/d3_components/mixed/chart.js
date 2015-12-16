@@ -1,10 +1,10 @@
 define(function (require) {
   var d3 = require('d3');
   var charts = require('src/modules/charts/index');
+  var builder = require('src/modules/d3_components/utils/builder');
 
   return function chart() {
     var opts = {};
-    var listeners = {};
 
     function generator(selection) {
       selection.each(function (data) {
@@ -16,29 +16,18 @@ define(function (require) {
           .height(data.height)
           .accessor(accessor);
 
-        if (typeof chart.listeners === 'function') chart.listeners(listeners);
-
         [opts, dataOpts].forEach(function (o) {
-          d3.entries(o).forEach(function (d) {
-            if (typeof chart[d.key] === 'function') {
-              chart[d.key](d.value);
-            }
-          });
+          builder(o, chart);
         });
 
         d3.select(this).call(chart); // Draw Chart
       });
     }
 
+    // Public API
     generator.options = function (_) {
       if (!arguments.length) return opts;
       opts = typeof _ === 'object' && !Array.isArray(_) ? _ : opts;
-      return generator;
-    };
-
-    generator.listeners = function (_) {
-      if (!arguments.length) return listeners;
-      listeners = typeof _ === 'object' && !Array.isArray(_) ? _ : listeners;
       return generator;
     };
 
