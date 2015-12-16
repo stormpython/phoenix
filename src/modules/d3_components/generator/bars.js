@@ -45,13 +45,12 @@ define(function (require) {
           .strokeWidth(strokeWidth)
           .fillOpacity(fillOpacity);
 
-        var g = d3.select(this).selectAll('.bar-layers')
+        var g = d3.select(this).selectAll('g.bar-layers')
           .data(barLayout(data));
 
         g.exit().remove();
-        g.enter().append('g');
-        g.attr('class', 'bar-layers')
-          .call(rects);
+        g.enter().append('g').attr('class', 'bar-layers');
+        g.call(rects);
       });
     }
 

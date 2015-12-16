@@ -13,16 +13,14 @@ define(function (require) {
         // Appends divs based on the data array
         layout.type(type).columns(columns).size(size);
 
-        var g = d3.select(this).selectAll('g')
+        var g = d3.select(this).selectAll('g.chart')
           .data(layout(data));
 
         g.exit().remove();
-        g.enter().append('g');
-        g
-          .attr('class', 'chart')
-          .attr('transform', function (d) {
-            return 'translate(' + d.dx + ',' + d.dy + ')';
-          });
+        g.enter().append('g').attr('class', 'chart');
+        g.attr('transform', function (d) {
+          return 'translate(' + d.dx + ',' + d.dy + ')';
+        });
       });
     }
 

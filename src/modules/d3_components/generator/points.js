@@ -33,12 +33,12 @@ define(function (require) {
           .strokeWidth(strokeWidth)
           .strokeOpacity(strokeOpacity);
 
-        var g = d3.select(this).selectAll('.points-group')
+        var g = d3.select(this).selectAll('g.points-group')
           .data([scatterLayout(data)]);
 
         g.exit().remove();
-        g.enter().append('g');
-        g.attr('class', 'points-group').call(circles);
+        g.enter().append('g').attr('class', 'points-group');
+        g.call(circles);
       });
     }
 

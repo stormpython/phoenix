@@ -19,13 +19,12 @@ define(function (require) {
         g.attr('id', id)
           .attr('transform', transform);
 
-        var rect = g.selectAll('.clip-path-rect')
+        var rect = g.selectAll('rect.clip-path-rect')
           .data([data]);
 
         rect.exit().remove();
-        rect.enter().append('rect');
-        rect.attr('class', 'clip-path-rect')
-          .attr('x', x)
+        rect.enter().append('rect').attr('class', 'clip-path-rect');
+        rect.attr('x', x)
           .attr('y', y)
           .attr('width', width)
           .attr('height', height);

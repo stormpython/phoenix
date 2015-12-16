@@ -45,12 +45,12 @@ define(function (require) {
           .strokeWidth(strokeWidth)
           .strokeOpacity(strokeOpacity);
 
-        var g = d3.select(this).selectAll('.path-layers')
+        var g = d3.select(this).selectAll('g.path-layers')
           .data(pathLayout(data));
 
         g.exit().remove();
-        g.enter().append('g');
-        g.attr('class', 'path-layers').call(paths);
+        g.enter().append('g').attr('class', 'path-layers');
+        g.call(paths);
       });
     }
 
