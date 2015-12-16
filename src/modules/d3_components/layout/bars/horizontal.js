@@ -46,12 +46,12 @@ define(function (require) {
         return arr.map(function (d, i) {
           var obj = {
             coords: {
-              x: X.call(this, d, i);
-              y: Y.call(this, d, i, j);
-              width: width.call(this, d, i);
-              height: height.call(this, d, i);
-              rx: rx.call(this, d, i);
-              ry: ry.call(this, d, i);
+              x: X.call(this, d, i),
+              y: Y.call(this, d, i, j),
+              width: width.call(this, d, i),
+              height: height.call(this, d, i),
+              rx: rx.call(this, d, i),
+              ry: ry.call(this, d, i)
             }
           };
 

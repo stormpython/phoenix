@@ -16,9 +16,11 @@ define(function (require) {
         }, [])
         .map(function (d, i) {
           var obj = {
-            cx: X.call(this, d, i),
-            cy: Y.call(this, d, i),
-            radius: radius.call(this, d, i)
+            coords: {
+              cx: X.call(this, d, i),
+              cy: Y.call(this, d, i),
+              radius: radius.call(this, d, i)
+            }
           };
 
           function reduce(a, b) {

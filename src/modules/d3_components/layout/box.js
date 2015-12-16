@@ -12,11 +12,13 @@ define(function (require) {
       return data.map(function (d, i) {
         var numbers = accessor.call(this, values.call(this, d, i));
         var obj = {
-          median: d3.median(numbers),
-          q1: d3.quantile(numbers, 0.25),
-          q3: d3.quantile(numbers, 0.75),
-          max: d3.max(numbers),
-          min: d3.min(numbers)
+          coords: {
+            median: d3.median(numbers),
+            q1: d3.quantile(numbers, 0.25),
+            q3: d3.quantile(numbers, 0.75),
+            max: d3.max(numbers),
+            min: d3.min(numbers)
+          }
         };
 
         function reduce(a, b) {
