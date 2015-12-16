@@ -41,18 +41,26 @@ define(function (require) {
       groupScale.domain(d3.range(data.length))
         .rangeRoundBands(groupRange, groupPadding, 0);
 
+      // Do not mutate the original data, returns a new object
       return data.map(function (arr) {
         return arr.map(function (d, i) {
-          if (!d.coords) d.coords = {};
+          var obj = {
+            coords: {
+              x: X.call(this, d, i, j),
+              y: Y.call(this, d, i),
+              width: width.call(this, d, i),
+              height: height.call(this, d, i),
+              rx: rx.call(this, d, i),
+              ry: ry.call(this, d, i)
+            }
+          };
 
-          d.coords.x = X.call(this, d, i, j);
-          d.coords.y = Y.call(this, d, i);
-          d.coords.width = width.call(this, d, i);
-          d.coords.height = height.call(this, d, i);
-          d.coords.rx = rx.call(this, d, i);
-          d.coords.ry = ry.call(this, d, i);
+          function reduce(a, b) {
+            a[b] = d[b];
+            return a;
+          }
 
-          return d;
+          return Object.keys(d).reduce(reduce, obj);
         });
 
         j++; // increment thru stack layers

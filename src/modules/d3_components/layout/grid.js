@@ -14,27 +14,39 @@ define(function (require) {
       var gridCellWidth = gridSize[0] / columns;
       var gridCellHeight = gridSize[1] / rows;
       var cell = 0;
+      var newData = [];
 
       rowScale.domain([0, rows]).range([0, gridSize[1]]);
       columnScale.domain([0, columns]).range([0, gridSize[0]]);
 
       d3.range(rows).forEach(function (row) {
         d3.range(columns).forEach(function (col) {
-          if (!data[cell]) { return; }
+          var datum = data[cell];
+          var obj = {
+            dx: columnScale(col),
+            dy: rowScale(row),
+            height: gridCellHeight,
+            width: gridCellWidth
+          };
 
-          data[cell].dx = columnScale(col);
-          data[cell].dy = rowScale(row);
-          data[cell].height = gridCellHeight;
-          data[cell].width = gridCellWidth;
+          function reduce(a, b) {
+            a[b] = datum[b];
+            return a;
+          }
+
+          if (!datum) return;
+
+          // Do not mutate the original data, return a new object
+          newData.push(Object.keys(datum).reduce(reduce, obj));
           cell++;
         });
       });
 
-      return data;
+      return newData;
     }
 
     // Public API
-    layout.size = function (_) {
+    layout.gridSize = function (_) {
       if (!arguments.length) return gridSize;
       gridSize = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : gridSize;
       return layout;

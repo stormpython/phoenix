@@ -25,6 +25,7 @@ define(function (require) {
         pathFunction.x(X).y(Y);
       }
 
+      // Do not mutate the original data, return a new object
       return data.map(function (d, i) {
         return {
           d: pathFunction(d),

@@ -24,21 +24,22 @@ define(function (require) {
       d3.range(rows).forEach(function (row) {
         d3.range(columns).forEach(function (col) {
           var datum = data[cell];
+          var obj = {
+            dx: columnScale(col),
+            dy: rowScale(row),
+            width: cellWidth,
+            height: cellHeight
+          };
 
-          if (!datum) { return; }
+          function reduce(a, b) {
+            a[b] = datum[b];
+            return a;
+          }
+
+          if (!datum) return;
 
           // Do not mutate the original data, return a new object
-          newData.push(
-            Object.keys(datum).reduce(function (a, b) {
-                a[b] = datum[b];
-                return a;
-              }, {
-                dx: columnScale(col),
-                dy: rowScale(row),
-                width: cellWidth,
-                height: cellHeight
-              })
-          );
+          newData.push(Object.keys(datum).reduce(reduce, obj));
           cell++;
         });
       });

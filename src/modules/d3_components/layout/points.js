@@ -10,15 +10,23 @@ define(function (require) {
 
     function layout(data) {
       // Merge inner arrays => [[]] to []
+      // Do not mutate the original data, return a new object
       return data.reduce(function (a, b) {
           return a.concat(b);
         }, [])
-        .forEach(function (d, i) {
-          if (!d.coords) d.coords = {};
+        .map(function (d, i) {
+          var obj = {
+            cx: X.call(this, d, i),
+            cy: Y.call(this, d, i),
+            radius: radius.call(this, d, i)
+          };
 
-          d.coords.cx = X.call(this, d, i);
-          d.coords.cy = Y.call(this, d, i);
-          d.coords.radius = radius.call(this, d, i);
+          function reduce(a, b) {
+            a[b] = d[b];
+            return a;
+          }
+
+          return Object.keys(d).reduce(reduce, obj);
         });
     }
 
@@ -30,6 +38,9 @@ define(function (require) {
     }
 
     function Y(d, i) {
+      if (typeof yScale.rangeRoundBands === 'function') {
+        return yScale(x.call(this, d, i)) + yScale.rangeBand() / 2;
+      }
       return yScale(y.call(this, d, i));
     }
 

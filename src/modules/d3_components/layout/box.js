@@ -8,14 +8,23 @@ define(function (require) {
     var accessor = function (d) { return d; };
 
     function layout(data) {
+      // Do not mutate the original data, return a new object
       return data.map(function (d, i) {
         var numbers = accessor.call(this, values.call(this, d, i));
+        var obj = {
+          median: d3.median(numbers),
+          q1: d3.quantile(numbers, 0.25),
+          q3: d3.quantile(numbers, 0.75),
+          max: d3.max(numbers),
+          min: d3.min(numbers)
+        };
 
-        d.median = d3.median(numbers);
-        d.q1 = d3.quantile(numbers, 0.25);
-        d.q3 = d3.quantile(numbers, 0.75);
-        d.max = d3.max(numbers);
-        d.min = d3.min(numbers);
+        function reduce(a, b) {
+          a[b] = d[b];
+          return a;
+        }
+
+        return Object.keys(d).reduce(reduce, obj);
       });
     }
 
