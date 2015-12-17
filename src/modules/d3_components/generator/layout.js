@@ -10,9 +10,6 @@ define(function (require) {
 
     function generator(selection) {
       selection.each(function (data) {
-        // Appends divs based on the data array
-        layout.type(type).columns(columns).size(size);
-
         var g = d3.select(this).selectAll('g.chart')
           .data(layout(data));
 
@@ -27,24 +24,12 @@ define(function (require) {
     // Public API
 
     // Layout types => 'rows', 'columns', 'grid'
-    generator.layout = function (_) {
-      if (!arguments.length) return type;
-      type = _;
-      return generator;
-    };
+    generator.type = layout.type;
 
-    generator.columns = function (_) {
-      if (!arguments.length) return columns;
-      columns = _;
-      return generator;
-    };
+    generator.columns = layout.columns;
 
     // Parent generator size, [width, height]
-    generator.size = function (_) {
-      if (!arguments.length) return size;
-      size = _;
-      return generator;
-    };
+    generator.size = layout.size;
 
     return generator;
   };
