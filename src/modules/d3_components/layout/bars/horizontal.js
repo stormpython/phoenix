@@ -1,6 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
-  var parseTime = require('src/modules/d3_components/utils/timeparser');
+  var parseTime = require('src/modules/d3vcomponents/utils/timeparser');
 
   return function horizontal() {
     var x = function (d) { return d.x; };
@@ -15,6 +15,30 @@ define(function (require) {
     var timePadding = 0.1;
     var groupScale = d3.scale.ordinal();
     var timeScale = d3.scale.ordinal();
+
+    function X(d) {
+      if (group) { return (d.y < 0) ? xScale(d.y) : xScale(0); }
+      return (d.y < 0) ? xScale(d.y) : xScale(d.y0);
+    }
+
+    function Y(d, i, j) {
+      if (group) {
+        if (timeInterval) { return yScale(x.call(this, d, i)) + groupScale(j); }
+        return yScale(x.call(this, d, i)) + groupScale(j);
+      }
+      if (timeInterval) { return yScale(x.call(this, d, i)); }
+      return yScale(x.call(this, d, i));
+    }
+
+    function width(d, i) {
+      return xScale(d.y0 + Math.abs(y.call(this, d, i))) - xScale(d.y0);
+    }
+
+    function height() {
+      if (group) { return groupScale.rangeBand(); }
+      if (timeInterval) { return timeScale.rangeBand(); }
+      return yScale.rangeBand();
+    }
 
     function layout(data) {
       var j = 0; // stack layer counter
@@ -60,95 +84,70 @@ define(function (require) {
             return a;
           }
 
+          j += 1; // increment thru stack layers
           return Object.keys(d).reduce(reduce, obj);
         });
-
-        j++; // increment thru stack layers
       });
     }
 
-    function X(d) {
-      if (group) return (d.y < 0) ? xScale(d.y) : xScale(0);
-      return (d.y < 0) ? xScale(d.y) : xScale(d.y0);
-    }
-
-    function Y(d, i, j) {
-      if (group) {
-        if (timeInterval) return yScale(x.call(this, d, i)) + groupScale(j);
-        return yScale(x.call(this, d, i)) + groupScale(j);
-      }
-      if (timeInterval) return yScale(x.call(this, d, i));
-      return yScale(x.call(this, d, i));
-    }
-
-    function width(d, i) {
-      return xScale(d.y0 + Math.abs(y.call(this, d, i))) - xScale(d.y0);
-    }
-
-    function height() {
-      if (group) return groupScale.rangeBand();
-      if (timeInterval) return timeScale.rangeBand();
-      return yScale.rangeBand();
-    }
-
     // Public API
-    layout.x = function (_) {
-      if (!arguments.length) return x;
-      x = d3.functor(_);
+    layout.x = function (v) {
+      if (!arguments.length) { return x; }
+      x = d3.functor(v);
       return layout;
     };
 
-    layout.y = function (_) {
-      if (!arguments.length) return y;
-      y = d3.functor(_);
+    layout.y = function (v) {
+      if (!arguments.length) { return y; }
+      y = d3.functor(v);
       return layout;
     };
 
-    layout.xScale = function (_) {
-      if (!arguments.length) return xScale;
-      xScale = typeof _ === 'function' ? _ : xScale;
+    layout.xScale = function (v) {
+      if (!arguments.length) { return xScale; }
+      xScale = typeof v === 'function' ? v : xScale;
       return layout;
     };
 
-    layout.yScale = function (_) {
-      if (!arguments.length) return yScale;
-      yScale = typeof _ === 'function' ? _ : yScale;
+    layout.yScale = function (v) {
+      if (!arguments.length) { return yScale; }
+      yScale = typeof v === 'function' ? v : yScale;
       return layout;
     };
 
-    layout.rx = function (_) {
-      if (!arguments.length) return rx;
-      rx = d3.functor(_);
+    layout.rx = function (v) {
+      if (!arguments.length) { return rx; }
+      rx = d3.functor(v);
       return layout;
     };
 
-    layout.ry = function (_) {
-      if (!arguments.length) return ry;
-      ry = d3.functor(_);
+    layout.ry = function (v) {
+      if (!arguments.length) { return ry; }
+      ry = d3.functor(v);
       return layout;
     };
 
-    layout.group = function (_) {
-      if (!arguments.length) return group;
-      group = typeof _ === 'boolean' ? _ : group;
+    layout.group = function (v) {
+      if (!arguments.length) { return group; }
+      group = typeof v === 'boolean' ? v : group;
       return layout;
     };
 
-    layout.groupPadding = function (_) {
-      if (!arguments.length) return groupPadding;
-      groupPadding = typeof _ === 'number' ? _ : groupPadding;
+    layout.groupPadding = function (v) {
+      if (!arguments.length) { return groupPadding; }
+      groupPadding = typeof v === 'number' ? v : groupPadding;
       return layout;
     };
 
-    layout.timeInterval = function (_) {
-      if (!arguments.length) return timeInterval;
-      timeInterval = typeof _ === 'string' ? _ : timeInterval;
+    layout.timeInterval = function (v) {
+      if (!arguments.length) { return timeInterval; }
+      timeInterval = typeof v === 'string' ? v : timeInterval;
       return layout;
     };
 
-    layout.timePadding = function (_) {
-      if (!arguments.length) return timePadding;
-      timePadding = typeof _ === 'number' ? _ : timePadding;
+    layout.timePadding = function (v) {
+      if (!arguments.length) { return timePadding; }
+      timePadding = typeof v === 'number' ? v : timePadding;
       return layout;
     };
 

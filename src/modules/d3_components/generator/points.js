@@ -1,5 +1,5 @@
 define(function (require) {
-  var d3 = require("d3");
+  var d3 = require('d3');
   var layout = require('src/modules/d3_components/layout/points');
   var circle = require('src/modules/d3_components/generator/element/svg/circle');
 

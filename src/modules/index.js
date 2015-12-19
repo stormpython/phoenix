@@ -1,35 +1,38 @@
 define(function (require) {
   var d3 = require('d3');
-  var chart = require('src/modules/d3_components/mixed/chart');
-  var layout = require('src/modules/d3_components/generator/layout');
-  var events = require('src/modules/d3_components/control/events');
-  var validateSize = require('src/modules/utils/validate_size');
+  var mixed = require('src/modules/d3xcomponents/mixed/chart');
+  var layout = require('src/modules/d3xcomponents/generator/layout');
+  var control = require('src/modules/d3xcomponents/control/events');
+  var validateSize = require('src/modules/utils/validatexsize');
 
   /**
-   * D3 Charting Library wrapper
-   *
-   * @param {HTMLElement} el - Reference to DOM element
+   * [phx description]
+   * @param  {[type]} $el [description]
+   * @return {[type]}     [description]
    */
-  return function phx(el) {
-    var chart = chart();
+  return function phx($el) {
+    var wrapper = {};
+    var chart = mixed();
     var base = layout();
-    var events = events();
-    var el = el ? wrapper.element(el) : null;
-    var selection = null;
+    var events = control();
+    var el = $el ? wrapper.element($el) : undefined;
+    var selection;
     var datum = [];
     var opts = {};
-    var wrapper = {};
+    var listeners = {};
 
     function evaluate() {
-      if (!selection || !selection.node()) {
+      if (!selection || selection.empty()) {
         throw new Error('A valid reference to a DOM element is required');
       }
 
-      if (!datum && !datum.length || !selection.datum()) {
+      if ((!datum && !datum.length) || !selection.datum()) {
         throw new Error('No data provided');
       }
 
-      if (!opts) throw new Error('No options given');
+      if (!opts) {
+        throw new Error('No options given');
+      }
     }
 
     // Prepare phx function for garbage collection
@@ -50,21 +53,21 @@ define(function (require) {
      * Creates a d3 selection for chart(s) placement,
      * or returns the current selected element.
      *
-     * @param _ {HTMLElement} - Reference to DOM element
+     * @param v {HTMLElement} - Reference to DOM element
      * @returns {*}
      */
-    wrapper.element = function (_) {
-      if (!arguments.length) return el;
+    wrapper.element = function (v) {
+      if (!arguments.length) { return el; }
 
-      if (!(_ instanceof HTMLElement) && !(_ instanceof String) &&
-        !(_ instanceof d3.selection) && !(d3.select(_).node())) {
+      if (!(v instanceof HTMLElement) && !(v instanceof String) &&
+          !(v instanceof d3.selection) && d3.select(v).empty()) {
         throw new Error('phx.element expects a valid reference to a DOM element.');
       }
 
-      el = _ instanceof d3.selection ? _ : d3.select(_);
+      el = v instanceof d3.selection ? v : d3.select(v);
       selection = el.append('svg').attr('class', 'parent');
 
-      if (datum && datum.length) this.data(datum); // Bind data
+      if (datum && datum.length) { wrapper.data(datum); } // Bind data
       return wrapper;
     };
 
@@ -72,43 +75,43 @@ define(function (require) {
      * Binds data to the d3 selection,
      * or returns the bound data array.
      *
-     * @param _ {Object | Array} - Single object or Array of objects
+     * @param v {Object | Array} - Single object or Array of objects
      * @returns {*}
      */
-    wrapper.data = function (_) {
-      if (!arguments.length) return datum;
+    wrapper.data = function (v) {
+      if (!arguments.length) { return datum; }
 
-      if (!(_ instanceof Object)) {
+      if (!(v instanceof Object)) {
         throw new Error('phx.data expects an object or array');
       }
 
       // Allow for single chart objects to be passed in directly.
-      _ = (!Array.isArray(_)) ? [_] : _;
-      _.every(function (obj) {
+      v = (!Array.isArray(v)) ? [v] : v;
+      v.every(function (obj) {
         if (!(obj instanceof Object)) {
           throw new Error('phx.data expects an array of objects');
         }
       });
 
-      datum = _;
-      if (selection) selection.datum(datum); // Bind data
+      datum = v;
+      if (selection) { selection.datum(datum); } // Bind data
       return wrapper;
     };
 
     /**
      * Sets the chart options
      *
-     * @param _
+     * @param v
      * @returns {*}
      */
-    wrapper.options = function (_) {
-      if (!arguments.length) return opts;
+    wrapper.options = function (v) {
+      if (!arguments.length) { return opts; }
 
-      if (!(_ instanceof Object) || Array.isArray(_)) {
+      if (!(v instanceof Object) || Array.isArray(v)) {
         throw new Error('phx.options expects a valid object');
       }
 
-      opts = _;
+      opts = v;
       return wrapper;
     };
 
@@ -142,10 +145,11 @@ define(function (require) {
      * @returns {wrapper}
      */
     wrapper.draw = function (width, height) {
-      evaluate();
+      var node, size;
 
-      var node = selection.node().parentNode;
-      var size = validateSize([node.clientWidth, node.clientHeight]);
+      evaluate();
+      node = selection.node().parentNode;
+      size = validateSize([node.clientWidth, node.clientHeight]);
 
       base.layout(opts.layout || 'grid')
         .columns(opts.numberOfColumns || 0)
@@ -191,7 +195,7 @@ define(function (require) {
      * @returns {wrapper}
      */
     wrapper.destroy = function () {
-      this.removeAllListeners();
+      wrapper.removeAllListeners();
       selection.remove();
       selection.datum(null);
       destroy();
@@ -252,5 +256,5 @@ define(function (require) {
     wrapper.activeEvents = events.activeEvents;
 
     return wrapper;
-  }
+  };
 });

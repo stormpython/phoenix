@@ -8,10 +8,25 @@ define(function (require) {
     var yScale = d3.scale.linear();
     var radius = d3.functor(5);
 
+    function X(d, i) {
+      if (typeof xScale.rangeRoundBands === 'function') {
+        return xScale(x.call(this, d, i)) + xScale.rangeBand() / 2;
+      }
+      return xScale(x.call(this, d, i));
+    }
+
+    function Y(d, i) {
+      if (typeof yScale.rangeRoundBands === 'function') {
+        return yScale(x.call(this, d, i)) + yScale.rangeBand() / 2;
+      }
+      return yScale(y.call(this, d, i));
+    }
+
     function layout(data) {
       // Merge inner arrays => [[]] to []
       // Do not mutate the original data, return a new object
-      return data.reduce(function (a, b) {
+      return data
+        .reduce(function (a, b) {
           return a.concat(b);
         }, [])
         .map(function (d, i) {
@@ -32,48 +47,34 @@ define(function (require) {
         });
     }
 
-    function X(d, i) {
-      if (typeof xScale.rangeRoundBands === 'function') {
-        return xScale(x.call(this, d, i)) + xScale.rangeBand() / 2;
-      }
-      return xScale(x.call(this, d, i));
-    }
-
-    function Y(d, i) {
-      if (typeof yScale.rangeRoundBands === 'function') {
-        return yScale(x.call(this, d, i)) + yScale.rangeBand() / 2;
-      }
-      return yScale(y.call(this, d, i));
-    }
-
     // Public API
-    layout.x = function (_) {
-      if (!arguments.length) return x;
-      x = d3.functor(_);
+    layout.x = function (v) {
+      if (!arguments.length) { return x; }
+      x = d3.functor(v);
       return layout;
     };
 
-    layout.y = function (_) {
-      if (!arguments.length) return y;
-      y = d3.functor(_);
+    layout.y = function (v) {
+      if (!arguments.length) { return y; }
+      y = d3.functor(v);
       return layout;
     };
 
-    layout.radius = function (_) {
-      if (!arguments.length) return radius;
-      radius = d3.functor(_);
+    layout.radius = function (v) {
+      if (!arguments.length) { return radius; }
+      radius = d3.functor(v);
       return layout;
     };
 
-    layout.xScale = function (_) {
-      if (!arguments.length) return xScale;
-      xScale = typeof _ === 'function' ? _ : xScale;
+    layout.xScale = function (v) {
+      if (!arguments.length) { return xScale; }
+      xScale = typeof v === 'function' ? v : xScale;
       return layout;
     };
 
-    layout.yScale = function (_) {
-      if (!arguments.length) return yScale;
-      yScale = typeof _ === 'function' ? _ : yScale;
+    layout.yScale = function (v) {
+      if (!arguments.length) { return yScale; }
+      yScale = typeof v === 'function' ? v : yScale;
       return layout;
     };
 

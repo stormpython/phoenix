@@ -1,14 +1,36 @@
 define(function (require) {
   var d3 = require('d3');
-  var isNumber = require('src/modules/d3_components/utils/is_number');
+  var isNumber = require('src/modules/d3vcomponents/utils/isvnumber');
 
-  return function format() {
-    // Private variables
+  return function base() {
     var type = 'rows'; // available types: 'rows', 'columns', 'grid'
     var size = [500, 500]; // [width, height]
     var rowScale = d3.scale.linear();
     var columnScale = d3.scale.linear();
     var numOfCols = 0;
+
+    function formatType(length, type, cols) {
+      var output = {};
+
+      switch (type) {
+      case 'grid':
+        output.rows = cols ? Math.ceil(length / cols) : Math.round(Math.sqrt(length));
+        output.columns = cols || Math.ceil(Math.sqrt(length));
+        break;
+
+      case 'columns':
+        output.rows = 1;
+        output.columns = length;
+        break;
+
+      default:
+        output.rows = length;
+        output.columns = 1;
+        break;
+      }
+
+      return output;
+    }
 
     function layout(data) {
       var format = formatType(data.length, type, numOfCols);
@@ -37,57 +59,33 @@ define(function (require) {
             return a;
           }
 
-          if (!datum) return;
+          if (!datum) { return; }
 
           // Do not mutate the original data, return a new object
           newData.push(Object.keys(datum).reduce(reduce, obj));
-          cell++;
+          cell += 1;
         });
       });
 
       return newData;
     }
 
-    function formatType(length, type, cols) {
-      var output = {};
-
-      switch (type) {
-        case 'grid':
-          output.rows = cols ? Math.ceil(length / cols) :
-            Math.round(Math.sqrt(length));
-          output.columns = cols ? cols : Math.ceil(Math.sqrt(length));
-          break;
-
-        case 'columns':
-          output.rows = 1;
-          output.columns = length;
-          break;
-
-        default:
-          output.rows = length;
-          output.columns = 1;
-          break;
-      }
-
-      return output;
-    }
-
     // Public API
-    layout.type = function (_) {
-      if (!arguments.length) return type;
-      type = typeof _ === 'string' ? _ : type;
+    layout.type = function (v) {
+      if (!arguments.length) { return type; }
+      type = typeof v === 'string' ? v : type;
       return layout;
     };
 
-    layout.columns = function (_) {
-      if (!arguments.length) return numOfCols;
-      numOfCols = typeof _ === 'number' ? _ : numOfCols;
+    layout.columns = function (v) {
+      if (!arguments.length) { return numOfCols; }
+      numOfCols = typeof v === 'number' ? v : numOfCols;
       return layout;
     };
 
-    layout.size = function (_) {
-      if (!arguments.length) return size;
-      size = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : size;
+    layout.size = function (v) {
+      if (!arguments.length) { return size; }
+      size = Array.isArray(v) && v.length === 2 && v.every(isNumber) ? v : size;
       return layout;
     };
 

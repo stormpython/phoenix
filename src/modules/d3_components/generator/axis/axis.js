@@ -1,22 +1,11 @@
 define(function (require) {
   var d3 = require('d3');
-  var builder = require('src/modules/d3_components/helpers/builder');
-  var rotate = require('src/modules/d3_components/generator/axis/rotate');
-  var scaleGenerator = require('src/modules/d3_components/mixed/scale');
-  var isNumber = require('src/modules/d3_components/helpers/is_number');
+  var builder = require('src/modules/d3vcomponents/helpers/builder');
+  var rotate = require('src/modules/d3vcomponents/generator/axis/rotate');
+  var scaleGenerator = require('src/modules/d3vcomponents/mixed/scale');
+  var isNumber = require('src/modules/d3vcomponents/helpers/isvnumber');
 
   return function axes() {
-    var type = null;
-    var accessor = null;
-    var categories = null;
-    var sort = null;
-    var extent = false;
-    var min = null;
-    var max = null;
-    var padding = 0.1;
-    var clamp = false;
-    var utc = false;
-    var timeInterval = null;
     var position = 'bottom';
     var tick = {};
     var rotateLabels = {};
@@ -24,38 +13,53 @@ define(function (require) {
     var size = [0, 1]; // [width, height]
     var axis = d3.svg.axis();
     var rotation = rotate();
+    var scale = scaleGenerator();
     var g;
     var text;
 
+    function getTransform(position, size) {
+      var width = size[0];
+      var height = size[1];
+
+      if (position === 'bottom') { return 'translate(0,' + height + ')'; }
+      if (position === 'right') { return 'translate(' + width + ',0)'; }
+      return 'translate(0,0)';
+    }
+
+    function getAxisClass(position) {
+      if (position === 'bottom') { return 'x axis'; }
+      if (position === 'left') { return 'y axis'; }
+      if (position === 'right') { return 'y2 axis'; }
+      if (position === 'top') { return 'x2 axis'; }
+    }
+
+    function getScaleRange(position, size, categories) {
+      var width = size[0];
+      var height = size[1];
+
+      if (position === 'bottom' || position === 'top') { return [0, width]; }
+      if (categories) { return [0, height]; }
+      if (scale.type() === 'datetime') { return [0, height]; }
+      return [height, 0];
+    }
+
     function generator(selection) {
       selection.each(function (data) {
-        var scaleRange = getScaleRange(position, size, categories);
+        var scaleRange = getScaleRange(position, size, scale.categories());
 
-        var scale = scaleGenerator()
-          .type(type)
-          .accessor(accessor)
-          .categories(categories)
-          .sort(sort)
-          .extent(extent)
-          .min(min)
-          .max(max)
-          .padding(padding)
-          .clamp(clamp)
-          .utc(utc)
-          .timeInterval(timeInterval)
-          .range(scaleRange)(data);
+        scale.range(scaleRange)(data);
 
         axis.orient(position)
           .scale(scale)
           .ticks(tick.number || 10)
-          .tickValues(tick.values || null)
+          .tickValues(tick.values)
           .tickSize(tick.size || 6)
           .innerTickSize(tick.innerTickSize || 6)
           .outerTickSize(tick.outerTickSize || 6)
           .tickPadding(tick.padding || 3)
-          .tickFormat(tick.format || null);
+          .tickFormat(tick.format);
 
-        if (!g) g = d3.select(this).append('g');
+        if (!g) { g = d3.select(this).append('g'); }
 
         // Attach axis
         g.attr('class', getAxisClass(position))
@@ -69,7 +73,7 @@ define(function (require) {
           g.call(builder(rotateLabels, rotation));
         }
 
-        if (!text) text = g.append('text');
+        if (!text) { text = g.append('text'); }
 
         text.attr('class', title.class || 'axis title')
           .attr('x', title.x || 6)
@@ -82,146 +86,161 @@ define(function (require) {
       });
     }
 
-    function getTransform(position, size) {
-      var width = size[0];
-      var height = size[1];
-
-      if (position === 'bottom') return 'translate(0,' + height + ')';
-      if (position === 'right') return 'translate(' + width + ',0)';
-      return 'translate(0,0)';
-    }
-
-    function getAxisClass(position) {
-      if (position === 'bottom') return 'x axis';
-      if (position === 'left') return 'y axis';
-      if (position === 'right') return 'y2 axis';
-      if (position === 'top') return 'x2 axis';
-    }
-
-    function getScaleRange(position, size, categories) {
-      var width = size[0];
-      var height = size[1];
-
-      if (position === 'bottom' || position === 'top') return [0, width];
-      if (categories) return [0, height];
-      if (type === 'datetime') return [0, height];
-      return [height, 0]
-    }
-
     // Public API
+
+    /**
+     * [scale description]
+     * @return {[type]} [description]
+     */
     generator.scale = function () {
       return axis.scale();
     };
 
-    generator.type = function (_) {
-      if (!arguments.length) return type;
-      type = _;
-      return generator;
-    };
+    /**
+     * [type description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.type = scale.type;
 
-    generator.accessor = function (_) {
-      if (!arguments.length) return accessor;
-      accessor = _;
-      return generator;
-    };
+    /**
+     * [accessor description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.accessor = scale.accessor;
 
-    generator.categories = function (_) {
-      if (!arguments.length) return categories;
-      categories = _;
-      return generator;
-    };
+    /**
+     * [categories description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.categories = scale.categories;
 
-    generator.sort = function (_) {
-      if (!arguments.length) return sort;
-      sort = _;
-      return generator;
-    };
+    /**
+     * [sort description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.sort = scale.sort;
 
-    generator.extent = function (_) {
-      if (!arguments.length) return extent;
-      extent = _;
-      return generator;
-    };
+    /**
+     * [extent description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.extent = scale.extent;
 
-    generator.min = function (_) {
-      if (!arguments.length) return min;
-      min = _;
-      return generator;
-    };
+    /**
+     * [min description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.min = scale.min;
 
-    generator.max = function (_) {
-      if (!arguments.length) return max;
-      max = _;
-      return generator;
-    };
+    /**
+     * [max description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.max = scale.max;
 
-    generator.padding = function (_) {
-      if (!arguments.length) return padding;
-      padding = _;
-      return generator;
-    };
+    /**
+     * [padding description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.padding = scale.padding;
 
-    generator.clamp = function (_) {
-      if (!arguments.length) return clamp;
-      clamp = _;
-      return generator;
-    };
+    /**
+     * [clamp description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.clamp = scale.clamp;
 
-    generator.timeInterval = function (_) {
-      if (!arguments.length) return timeInterval;
-      timeInterval = _;
-      return generator;
-    };
+    /**
+     * [utc description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.utc = scale.utc;
 
-    generator.utc = function (_) {
-      if (!arguments.length) return utc;
-      utc = _;
-      return generator;
-    };
+    /**
+     * [timeInterval description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.timeInterval = scale.timeInterval;
 
-    generator.position = function (_) {
+    /**
+     * [position description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.position = function (v) {
       var positions = ['bottom', 'left', 'right', 'top'];
-      var isValidPosition = positions.indexOf(_) !== -1;
+      var isValidPosition = positions.indexOf(v) !== -1;
 
-      if (!arguments.length) return position;
-      position = isValidPosition ? _ : position;
+      if (!arguments.length) { return position; }
+      position = isValidPosition ? v : position;
       return generator;
     };
 
-    generator.size = function (_) {
-      if (!arguments.length) return size;
-      size = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : size;
+    /**
+     * [size description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.size = function (v) {
+      if (!arguments.length) { return size; }
+      size = Array.isArray(v) && v.length === 2 && v.every(isNumber) ? v : size;
       return generator;
     };
 
-    generator.tick = function (_) {
-      if (!arguments.length) return tick;
-      tick.number = typeof _.number !== 'undefined' ? _.number : tick.number;
-      tick.values = typeof _.values !== 'undefined' ? _.values : tick.values;
-      tick.size = typeof _.size !== 'undefined' ? _.size : tick.size;
-      tick.padding = typeof _.padding !== 'undefined' ? _.padding : tick.padding;
-      tick.format = typeof _.format !== 'undefined' ? _.format : tick.format;
-      tick.innerTickSize = typeof _.innerTickSize !== 'undefined' ? _.innerTickSize : tick.innerTickSize;
-      tick.outerTickSize = typeof _.outerTickSize !== 'undefined' ? _.outerTickSize : tick.outerTickSize;
+    /**
+     * [tick description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.tick = function (v) {
+      if (!arguments.length) { return tick; }
+      tick.number = v.number;
+      tick.values = v.values;
+      tick.size = v.size;
+      tick.padding = v.padding;
+      tick.format = v.format;
+      tick.innerTickSize = v.innerTickSize;
+      tick.outerTickSize = v.outerTickSize;
       return generator;
     };
 
-    generator.rotateLabels = function (_) {
-      if (!arguments.length) return rotateLabels;
-      rotateLabels = typeof _ !== 'object' ? rotateLabels : _;
+    /**
+     * [rotateLabels description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.rotateLabels = function (v) {
+      if (!arguments.length) { return rotateLabels; }
+      rotateLabels = typeof v === 'object' ? v : rotateLabels;
       return generator;
     };
 
-    generator.title = function (_) {
-      if (!arguments.length) return title;
-      title.class = typeof _.class !== 'undefined' ? _.class : title.class;
-      title.x = typeof _.x !== 'undefined' ? _.x : title.x;
-      title.y = typeof _.y !== 'undefined' ? _.y : title.y;
-      title.dx = typeof _.dx !== 'undefined' ? _.dx : title.dx;
-      title.dy = typeof _.dy !== 'undefined' ? _.dy : title.dy;
-      title.transform = typeof _.transform !== 'undefined' ? _.transform : title.transform;
-      title.anchor = typeof _.anchor !== 'undefined' ? _.anchor : title.anchor;
-      title.text = typeof _.text !== 'undefined' ? _.text : title.text;
+    /**
+     * [title description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.title = function (v) {
+      if (!arguments.length) { return title; }
+      title.class = v.class;
+      title.x = v.x;
+      title.y = v.y;
+      title.dx = v.dx;
+      title.dy = v.dy;
+      title.transform = v.transform;
+      title.anchor = v.anchor;
+      title.text = v.text;
       return generator;
     };
 

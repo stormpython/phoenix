@@ -10,18 +10,18 @@ define(function (require) {
     var stroke = function (d, i) { return color(i); };
     var strokeWidth = 1;
     var fillOpacity = 1;
-    var strokeOpacity = null;
+    var strokeOpacity;
 
     function element(selection) {
       selection.each(function (data) {
-        var path = d3.select(this).selectAll('path')
+        var paths = d3.select(this).selectAll('path')
           .data(data);
 
-        path.exit().remove();
+        paths.exit().remove();
 
-        path.enter().append('path');
+        paths.enter().append('path');
 
-        path
+        paths
           .attr('transform', transform)
           .attr('class', cssClass)
           .attr('fill', fill)
@@ -34,51 +34,92 @@ define(function (require) {
     }
 
     // Public API
-    element.path = function (_) {
-      if (!arguments.length) return value;
-      value = d3.functor(_);
+
+    /**
+     * [path description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.path = function (v) {
+      if (!arguments.length) { return value; }
+      value = d3.functor(v);
       return element;
     };
 
-    element.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
+    /**
+     * [class description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.class = function (v) {
+      if (!arguments.length) { return cssClass; }
+      cssClass = v;
       return element;
     };
 
-    element.transform = function (_) {
-      if (!arguments.length) return transform;
-      transform = _;
+    /**
+     * [transform description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.transform = function (v) {
+      if (!arguments.length) { return transform; }
+      transform = v;
       return element;
     };
 
-    element.fill = function (_) {
-      if (!arguments.length) return fill;
-      fill = _;
+    /**
+     * [fill description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.fill = function (v) {
+      if (!arguments.length) { return fill; }
+      fill = v;
       return element;
     };
 
-    element.fillOpacity = function (_) {
-      if (!arguments.length) return fillOpacity;
-      fillOpacity = _;
+    /**
+     * [fillOpacity description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.fillOpacity = function (v) {
+      if (!arguments.length) { return fillOpacity; }
+      fillOpacity = v;
       return element;
     };
 
-    element.stroke = function (_) {
-      if (!arguments.length) return stroke;
-      stroke = d3.functor(_);
+    /**
+     * [stroke description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.stroke = function (v) {
+      if (!arguments.length) { return stroke; }
+      stroke = d3.functor(v);
       return element;
     };
 
-    element.strokeWidth = function (_) {
-      if (!arguments.length) return strokeWidth;
-      strokeWidth = _;
+    /**
+     * [strokeWidth description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.strokeWidth = function (v) {
+      if (!arguments.length) { return strokeWidth; }
+      strokeWidth = v;
       return element;
     };
 
-    element.strokeOpacity = function (_) {
-      if (!arguments.length) return strokeOpacity;
-      strokeOpacity = _;
+    /**
+     * [strokeOpacity description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.strokeOpacity = function (v) {
+      if (!arguments.length) { return strokeOpacity; }
+      strokeOpacity = v;
       return element;
     };
 

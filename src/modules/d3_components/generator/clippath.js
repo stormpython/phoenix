@@ -2,12 +2,17 @@ define(function (require) {
   var d3 = require('d3');
 
   return function clipPath() {
-    var id = uniqueID();
     var transform = 'translate(0,0)';
     var x = 0;
     var y = 0;
     var width = 0;
     var height = 0;
+    var id;
+
+    function uniqueID() {
+      var randomNumber = Math.floor(Math.random() * 100);
+      return 'uniqueIdv' + randomNumber;
+    }
 
     function generator(selection) {
       selection.each(function (data) {
@@ -16,7 +21,7 @@ define(function (require) {
 
         g.exit().remove();
         g.enter().append('clipPath');
-        g.attr('id', id)
+        g.attr('id', id || uniqueID())
           .attr('transform', transform);
 
         var rect = g.selectAll('rect.clip-path-rect')
@@ -31,44 +36,71 @@ define(function (require) {
       });
     }
 
-    function uniqueID() {
-      var randomNumber = Math.floor(Math.random() * 100);
-      return 'uniqueId_' + randomNumber;
-    }
+    // Public API
 
-    generator.id = function (_) {
-      if (!arguments.length) return id;
-      id = _;
+    /**
+     * [id description]
+     * @param  {*} v [description]
+     * @return {generator}   [description]
+     */
+    generator.id = function (v) {
+      if (!arguments.length) { return id; }
+      id = v;
       return generator;
     };
 
-    generator.transform = function (_) {
-      if (!arguments.length) return transform;
-      transform = _;
+    /**
+     * [transform description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.transform = function (v) {
+      if (!arguments.length) { return transform; }
+      transform = v;
       return generator;
     };
 
-    generator.x = function (_) {
-      if (!arguments.length) return x;
-      x = _;
+    /**
+     * [x description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.x = function (v) {
+      if (!arguments.length) { return x; }
+      x = v;
       return generator;
     };
 
-    generator.y = function (_) {
-      if (!arguments.length) return y;
-      y = _;
+    /**
+     * [y description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.y = function (v) {
+      if (!arguments.length) { return y; }
+      y = v;
       return generator;
     };
 
-    generator.width = function (_) {
-      if (!arguments.length) return width;
-      width = _;
+    /**
+     * [width description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.width = function (v) {
+      if (!arguments.length) { return width; }
+      width = v;
       return generator;
     };
 
-    generator.height = function (_) {
-      if (!arguments.length) return height;
-      height = _;
+    /**
+     * [height description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    generator.height = function (v) {
+      if (!arguments.length) { return height; }
+      height = v;
       return generator;
     };
 

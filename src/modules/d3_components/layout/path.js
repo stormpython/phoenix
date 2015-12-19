@@ -13,28 +13,6 @@ define(function (require) {
     var tension = 0.7;
     var defined = function (d) { return d.y !== null; };
 
-    function layout(data) {
-      var pathFunction = d3.svg[type]()
-        .interpolate(interpolate)
-        .tension(tension)
-        .defined(defined);
-
-      if (type === 'area') {
-        pathFunction.x(X).y0(Y0).y1(Y1);
-      } else {
-        pathFunction.x(X).y(Y);
-      }
-
-      // Do not mutate the original data, return a new object
-      return data.map(function (d, i) {
-        return {
-          d: pathFunction(d),
-          label: label.call(this, d[0], i),
-          values: d
-        };
-      });
-    }
-
     function X(d, i) {
       if (typeof xScale.rangeRoundBands === 'function') {
         return xScale(x.call(this, d, i)) + xScale.rangeBand() / 2;
@@ -49,76 +27,99 @@ define(function (require) {
     function Y0(d) {
       var min = Math.max(0, yScale.domain()[0]);
 
-      if (offset === 'overlap') return yScale(min);
+      if (offset === 'overlap') { return yScale(min); }
       return yScale(d.y0);
     }
 
     function Y1(d, i) {
-      if (offset === 'overlap') return yScale(y.call(this, d, i));
+      if (offset === 'overlap') { return yScale(y.call(this, d, i)); }
       return yScale(d.y0 + y.call(this, d, i));
     }
 
+    function layout(data) {
+      var pathFunction = d3.svg[type]()
+        .interpolate(interpolate)
+        .tension(tension)
+        .defined(defined);
+
+      if (type === 'area') {
+        pathFunction.x(X).y0(Y0).y1(Y1);
+      } else {
+        pathFunction.x(X).y(Y);
+      }
+
+      // Do not mutate the original data, return a new object
+      return data
+        .map(function (d, i) {
+          return {
+            d: pathFunction(d),
+            label: label.call(this, d[0], i),
+            values: d
+          };
+        });
+    }
+
     // Public API
-    layout.x = function (_) {
-      if (!arguments.length) return x;
-      x = d3.functor(_);
+    layout.x = function (v) {
+      if (!arguments.length) { return x; }
+      x = d3.functor(v);
       return layout;
     };
 
-    layout.y = function (_) {
-      if (!arguments.length) return y;
-      y = d3.functor(_);
+    layout.y = function (v) {
+      if (!arguments.length) { return y; }
+      y = d3.functor(v);
       return layout;
     };
 
-    layout.label = function (_) {
-      if (!arguments.length) return label;
-      label = d3.functor(_);
+    layout.label = function (v) {
+      if (!arguments.length) { return label; }
+      label = d3.functor(v);
       return layout;
     };
 
-    layout.type = function (_) {
+    layout.type = function (v) {
       var opts = ['area', 'line'];
-      var isValid = opts.indexOf(_) !== -1;
+      var isValid = opts.indexOf(v) !== -1;
 
-      if (!arguments.length) return type;
-      type = isValid ? _ : type;
+      if (!arguments.length) { return type; }
+      type = isValid ? v : type;
       return layout;
     };
 
-    layout.xScale = function (_) {
-      if (!arguments.length) return xScale;
-      xScale = typeof _ === 'function' ? _ : xScale;
+    layout.xScale = function (v) {
+      if (!arguments.length) { return xScale; }
+      xScale = typeof v === 'function' ? v : xScale;
       return layout;
     };
 
-    layout.yScale = function (_) {
-      if (!arguments.length) return yScale;
-      yScale = typeof _ === 'function' ? _ : yScale;
+    layout.yScale = function (v) {
+      if (!arguments.length) { return yScale; }
+      yScale = typeof v === 'function' ? v : yScale;
       return layout;
     };
 
-    layout.offset = function (_) {
-      if (!arguments.length) return offset;
-      offset = typeof _ === 'string' ? _ : offset;
+    layout.offset = function (v) {
+      if (!arguments.length) { return offset; }
+      offset = typeof v === 'string' ? v : offset;
       return layout;
     };
 
-    layout.interpolate = function (_) {
-      if (!arguments.length) return interpolate;
-      interpolate = _;
+    layout.interpolate = function (v) {
+      if (!arguments.length) { return interpolate; }
+      interpolate = v;
       return layout;
     };
 
-    layout.tension = function (_) {
-      if (!arguments.length) return tension;
-      tension = _;
+    layout.tension = function (v) {
+      if (!arguments.length) { return tension; }
+      tension = v;
       return layout;
     };
 
-    layout.defined = function (_) {
-      if (!arguments.length) return defined;
-      defined = _;
+    layout.defined = function (v) {
+      if (!arguments.length) { return defined; }
+      defined = v;
       return layout;
     };
 

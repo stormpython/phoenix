@@ -18,9 +18,15 @@ define(function (require) {
     }
 
     // Public API
-    component.maxCharLength = function (_) {
-      if (!arguments.length) return maxCharLength;
-      maxCharLength = typeof _ === 'number' ? _ : maxCharLength;
+
+    /**
+     * [maxCharLength description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    component.maxCharLength = function (v) {
+      if (!arguments.length) { return maxCharLength; }
+      maxCharLength = typeof v === 'number' ? v : maxCharLength;
       return component;
     };
 

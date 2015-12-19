@@ -6,8 +6,8 @@ define(function (require) {
     var y = function (d) { return d.coords.y; };
     var width = function (d) { return d.coords.width || 10; };
     var height = function (d) { return d.coords.height || 10; };
-    var xlink = null;
-    var preserveAspectRatio = null;
+    var xlink;
+    var preserveAspectRatio;
     var cssClass = 'image';
 
     function element(selection) {
@@ -34,45 +34,81 @@ define(function (require) {
     }
 
     // Public API
-    element.x = function (_) {
-      if (!arguments.length) return x;
-      x = d3.functor(_);
+
+    /**
+     * [x description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.x = function (v) {
+      if (!arguments.length) { return x; }
+      x = d3.functor(v);
       return element;
     };
 
-    element.y = function (_) {
-      if (!arguments.length) return y;
-      y = d3.functor(_);
+    /**
+     * [y description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.y = function (v) {
+      if (!arguments.length) { return y; }
+      y = d3.functor(v);
       return element;
     };
 
-    element.width = function (_) {
-      if (!arguments.length) return width;
-      width = d3.functor(_);
+    /**
+     * [width description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.width = function (v) {
+      if (!arguments.length) { return width; }
+      width = d3.functor(v);
       return element;
     };
 
-    element.height = function (_) {
-      if (!arguments.length) return height;
-      height = d3.functor(_);
+    /**
+     * [height description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.height = function (v) {
+      if (!arguments.length) { return height; }
+      height = d3.functor(v);
       return element;
     };
 
-    element.xlink = function (_) {
-      if (!arguments.length) return xlink;
-      xlink = _;
+    /**
+     * [xlink description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.xlink = function (v) {
+      if (!arguments.length) { return xlink; }
+      xlink = v;
       return element;
     };
 
-    element.preserveAspectRatio = function (_) {
-      if (!arguments.length) return preserveAspectRatio;
-      preserveAspectRatio = _;
+    /**
+     * [preserveAspectRatio description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.preserveAspectRatio = function (v) {
+      if (!arguments.length) { return preserveAspectRatio; }
+      preserveAspectRatio = v;
       return element;
     };
 
-    element.class = function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
+    /**
+     * [class description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.class = function (v) {
+      if (!arguments.length) { return cssClass; }
+      cssClass = v;
       return element;
     };
 

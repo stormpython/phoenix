@@ -1,9 +1,8 @@
 define(function (require) {
   var d3 = require('d3');
-  var isNumber = require('src/modules/d3_components/utils/is_number');
+  var isNumber = require('src/modules/d3vcomponents/utils/isvnumber');
 
   return function grid() {
-    // Private variables
     var gridSize = [500, 500];
     var rowScale = d3.scale.linear();
     var columnScale = d3.scale.linear();
@@ -34,11 +33,11 @@ define(function (require) {
             return a;
           }
 
-          if (!datum) return;
+          if (!datum) { return; }
 
           // Do not mutate the original data, return a new object
           newData.push(Object.keys(datum).reduce(reduce, obj));
-          cell++;
+          cell += 1;
         });
       });
 
@@ -46,9 +45,9 @@ define(function (require) {
     }
 
     // Public API
-    layout.gridSize = function (_) {
-      if (!arguments.length) return gridSize;
-      gridSize = Array.isArray(_) && _.length === 2 && _.every(isNumber) ? _ : gridSize;
+    layout.gridSize = function (v) {
+      if (!arguments.length) { return gridSize; }
+      gridSize = Array.isArray(v) && v.length === 2 && v.every(isNumber) ? v : gridSize;
       return layout;
     };
 

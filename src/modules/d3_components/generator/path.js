@@ -3,7 +3,7 @@ define(function (require) {
   var layout = require('src/modules/d3_components/layout/path');
   var pathGenerator = require('src/modules/d3_components/generator/element/svg/path');
 
-  return function paths() {
+  return function path() {
     var pathLayout = layout();
     var paths = pathGenerator();
 

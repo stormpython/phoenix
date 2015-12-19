@@ -6,23 +6,23 @@ define(function (require) {
     var y = function (d) { return d.y; };
     var dx = function (d) { return d.dx || 0; };
     var dy = function (d) { return d.dy || 0; };
-    var transform = null;
+    var transform;
     var cssClass = 'text';
     var fill = '#ffffff';
     var anchor = 'middle';
-    var pointerEvents = null;
+    var pointerEvents;
     var texts = '';
 
     function element(selection) {
       selection.each(function (data) {
-        var text = d3.select(this).selectAll('text')
+        var word = d3.select(this).selectAll('text')
           .data(data);
 
-        text.exit().remove();
+        word.exit().remove();
 
-        text.enter().append('text');
+        word.enter().append('text');
 
-        text
+        word
           .attr('class', cssClass)
           .attr('transform', transform)
           .attr('x', x)
@@ -37,63 +37,114 @@ define(function (require) {
     }
 
     // Public API
-    element.x = function (_) {
-      if (!arguments.length) return x;
-      x = d3.functor(_);
+
+    /**
+     * [x description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.x = function (v) {
+      if (!arguments.length) { return x; }
+      x = d3.functor(v);
       return element;
     };
 
-    element.y = function (_) {
-      if (!arguments.length) return y;
-      y = d3.functor(_);
+    /**
+     * [y description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.y = function (v) {
+      if (!arguments.length) { return y; }
+      y = d3.functor(v);
       return element;
     };
 
-    element.dx = function (_) {
-      if (!arguments.length) return dx;
-      dx = d3.functor(_);
+    /**
+     * [dx description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.dx = function (v) {
+      if (!arguments.length) { return dx; }
+      dx = d3.functor(v);
       return element;
     };
 
-    element.dy = function (_) {
-      if (!arguments.length) return dy;
-      dy = d3.functor(_);
+    /**
+     * [dy description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.dy = function (v) {
+      if (!arguments.length) { return dy; }
+      dy = d3.functor(v);
       return element;
     };
 
-    element.transform = function (_) {
-      if (!arguments.length) return transform;
-      transform = _;
+    /**
+     * [transform description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.transform = function (v) {
+      if (!arguments.length) { return transform; }
+      transform = v;
       return element;
     };
 
-    element.class= function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
+    /**
+     * [class description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.class = function (v) {
+      if (!arguments.length) { return cssClass; }
+      cssClass = v;
       return element;
     };
 
-    element.anchor = function (_) {
-      if (!arguments.length) return anchor;
-      anchor = _;
+    /**
+     * [anchor description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.anchor = function (v) {
+      if (!arguments.length) { return anchor; }
+      anchor = v;
       return element;
     };
 
-    element.fill = function (_) {
-      if (!arguments.length) return fill;
-      fill = _;
+    /**
+     * [fill description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.fill = function (v) {
+      if (!arguments.length) { return fill; }
+      fill = v;
       return element;
     };
 
-    element.pointerEvents = function (_) {
-      if (!arguments.length) return pointerEvents;
-      pointerEvents = _;
+    /**
+     * [pointerEvents description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.pointerEvents = function (v) {
+      if (!arguments.length) { return pointerEvents; }
+      pointerEvents = v;
       return element;
     };
 
-    element.text = function (_) {
-      if (!arguments.length) return texts;
-      texts = _;
+    /**
+     * [text description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.text = function (v) {
+      if (!arguments.length) { return texts; }
+      texts = v;
       return element;
     };
 

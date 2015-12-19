@@ -2,11 +2,8 @@ define(function (require) {
   var d3 = require('d3');
   var base = require('src/modules/d3_components/layout/base');
 
-  return function g() {
-    var type = 'grid';
-    var size = [500, 500];
+  return function chartLayout() {
     var layout = base();
-    var columns = 0;
 
     function generator(selection) {
       selection.each(function (data) {
@@ -23,12 +20,10 @@ define(function (require) {
 
     // Public API
 
-    // Layout types => 'rows', 'columns', 'grid'
     generator.type = layout.type;
 
     generator.columns = layout.columns;
 
-    // Parent generator size, [width, height]
     generator.size = layout.size;
 
     return generator;

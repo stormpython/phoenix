@@ -1,6 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
-  var valuator = require('src/modules/d3_components/utils/valuator');
+  var valuator = require('src/modules/d3vcomponents/utils/valuator');
 
   return function box() {
     // Private variables
@@ -31,15 +31,15 @@ define(function (require) {
     }
 
     // Public API
-    layout.values = function (_) {
-      if (!arguments.length) return values;
-      values = valuator(_);
+    layout.values = function (v) {
+      if (!arguments.length) { return values; }
+      values = valuator(v);
       return layout;
     };
 
-    layout.accessor = function (_) {
-      if (!arguments.length) return accessor;
-      accessor = valuator(_);
+    layout.accessor = function (v) {
+      if (!arguments.length) { return accessor; }
+      accessor = valuator(v);
       return layout;
     };
 

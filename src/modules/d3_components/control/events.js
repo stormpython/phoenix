@@ -7,13 +7,6 @@ define(function (require) {
     var listeners = {};
     var svg;
 
-    function control(selection) {
-      selection.each(function () {
-        svg = d3.select(this);
-        updateListeners(svg, listeners);
-      });
-    }
-
     function updateListeners(svg, listeners) {
       d3.entries(listeners).forEach(function (d) {
         if (svg) {
@@ -32,6 +25,13 @@ define(function (require) {
       });
     }
 
+    function control(selection) {
+      selection.each(function () {
+        svg = d3.select(this);
+        updateListeners(svg, listeners);
+      });
+    }
+
     function filterListeners(event, listener) {
       listeners[event] = listeners[event].filter(function (handler) {
         return handler !== listener;
@@ -40,12 +40,13 @@ define(function (require) {
 
     function removeAllListeners(svg, listeners) {
       d3.entries(listeners).forEach(function (d) {
-        if (svg) svg.on(d.key, null);
+        if (svg) { svg.on(d.key, null); }
       });
     }
 
     function sumListeners(listeners) {
-      return Object.keys(listeners).map(function (event) {
+      return Object
+        .keys(listeners).map(function (event) {
           return listeners[event].length;
         })
         .reduce(function (a, b) {
@@ -59,12 +60,12 @@ define(function (require) {
      * Function that defines how the d3.events object should be processed in
      * order to return the appropriate response data
      *
-     * @param _ {Function}
+     * @param v {Function}
      * @returns {control}
      */
-    control.processor = function (_) {
-      if (!arguments.length) return processor;
-      processor = typeof _ === 'function' ? _ : processor;
+    control.processor = function (v) {
+      if (!arguments.length) { return processor; }
+      processor = typeof v === 'function' ? v : processor;
       return control;
     };
 
@@ -77,10 +78,10 @@ define(function (require) {
      */
     control.on = function (event, listener) {
       if (listener && typeof listener === 'function') {
-        if (!listeners[event]) listeners[event] = [];
+        if (!listeners[event]) { listeners[event] = []; }
         listeners[event].push(listener);
 
-        if (svg) svg.on(event, listener);
+        if (svg) { svg.on(event, listener); }
       }
       return control;
     };
@@ -96,17 +97,17 @@ define(function (require) {
      * @returns {control}
      */
     control.off = function (event, listener) {
-      if (!listeners[event]) return;
+      if (!listeners[event]) { return; }
 
       if (!listener) {
         delete listeners[event];
-        if (svg) svg.on(event, null);
+        if (svg) { svg.on(event, null); }
       }
 
       if (listener && typeof listener === 'function') {
         filterListeners(event, listener);
 
-        if (svg) updateListeners(svg, listeners);
+        if (svg) { updateListeners(svg, listeners); }
       }
       return control;
     };
@@ -130,7 +131,7 @@ define(function (require) {
      * @returns {Array}
      */
     control.listeners = function (event) {
-      return listeners[event] ? listeners[event] : [];
+      return listeners[event] || [];
     };
 
     /**
@@ -141,7 +142,7 @@ define(function (require) {
      * @returns {Number}
      */
     control.listenerCount = function (event) {
-      if (!arguments.length) return sumListeners(listeners);
+      if (!arguments.length) { return sumListeners(listeners); }
       return event && listeners[event] ? listeners[event].length : 0;
     };
 

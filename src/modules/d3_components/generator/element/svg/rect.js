@@ -10,11 +10,15 @@ define(function (require) {
     var width = function (d) { return d.coords.width; };
     var height = function (d) { return d.coords.height; };
     var cssClass = 'bar';
-    var fill = colorFill;
-    var stroke = colorFill;
+    var fill;
+    var stroke;
     var strokeWidth = 0;
     var fillOpacity = 1;
-    var strokeOpacity = null;
+    var strokeOpacity;
+
+    function colorFill(d, i) {
+      return color(i);
+    }
 
     function element(selection) {
       selection.each(function (data) {
@@ -27,8 +31,8 @@ define(function (require) {
 
         bars
           .attr('class', cssClass)
-          .attr('fill', fill)
-          .attr('stroke', stroke)
+          .attr('fill', fill || colorFill)
+          .attr('stroke', stroke || colorFill)
           .attr('stroke-width', strokeWidth)
           .attr('x', x)
           .attr('y', y)
@@ -41,80 +45,137 @@ define(function (require) {
       });
     }
 
-    function colorFill(d, i) {
-      return color(i);
-    }
-
     // Public API
-    element.x = function (_) {
-      if (!arguments.length) return x;
-      x = d3.functor(_);
+
+    /**
+     * [x description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.x = function (v) {
+      if (!arguments.length) { return x; }
+      x = d3.functor(v);
       return element;
     };
 
-    element.y = function (_) {
-      if (!arguments.length) return y;
-      y = d3.functor(_);
+    /**
+     * [y description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.y = function (v) {
+      if (!arguments.length) { return y; }
+      y = d3.functor(v);
       return element;
     };
 
-    element.rx = function (_) {
-      if (!arguments.length) return rx;
-      rx = d3.functor(_);
+    /**
+     * [rx description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.rx = function (v) {
+      if (!arguments.length) { return rx; }
+      rx = d3.functor(v);
       return element;
     };
 
-    element.ry = function (_) {
-      if (!arguments.length) return ry;
-      ry = d3.functor(_);
+    /**
+     * [ry description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.ry = function (v) {
+      if (!arguments.length) { return ry; }
+      ry = d3.functor(v);
       return element;
     };
 
-    element.width = function (_) {
-      if (!arguments.length) return width;
-      width = d3.functor(_);
+    /**
+     * [width description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.width = function (v) {
+      if (!arguments.length) { return width; }
+      width = d3.functor(v);
       return element;
     };
 
-    element.height = function (_) {
-      if (!arguments.length) return height;
-      height = d3.functor(_);
+    /**
+     * [height description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.height = function (v) {
+      if (!arguments.length) { return height; }
+      height = d3.functor(v);
       return element;
     };
 
-    element.class= function (_) {
-      if (!arguments.length) return cssClass;
-      cssClass = _;
+    /**
+     * [class description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.class = function (v) {
+      if (!arguments.length) { return cssClass; }
+      cssClass = v;
       return element;
     };
 
-    element.fill = function (_) {
-      if (!arguments.length) return fill;
-      fill = _;
+    /**
+     * [fill description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.fill = function (v) {
+      if (!arguments.length) { return fill; }
+      fill = v;
       return element;
     };
 
-    element.fillOpacity = function (_) {
-      if (!arguments.length) return fillOpacity;
-      fillOpacity = _;
+    /**
+     * [fillOpacity description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.fillOpacity = function (v) {
+      if (!arguments.length) { return fillOpacity; }
+      fillOpacity = v;
       return element;
     };
 
-    element.stroke = function (_) {
-      if (!arguments.length) return stroke;
-      stroke = _;
+    /**
+     * [stroke description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.stroke = function (v) {
+      if (!arguments.length) { return stroke; }
+      stroke = v;
       return element;
     };
 
-    element.strokeWidth = function (_) {
-      if (!arguments.length) return strokeWidth;
-      strokeWidth = _;
+    /**
+     * [strokeWidth description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.strokeWidth = function (v) {
+      if (!arguments.length) { return strokeWidth; }
+      strokeWidth = v;
       return element;
     };
 
-    element.strokeOpacity = function (_) {
-      if (!arguments.length) return strokeOpacity;
-      strokeOpacity = _;
+    /**
+     * [strokeOpacity description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
+    element.strokeOpacity = function (v) {
+      if (!arguments.length) { return strokeOpacity; }
+      strokeOpacity = v;
       return element;
     };
 
