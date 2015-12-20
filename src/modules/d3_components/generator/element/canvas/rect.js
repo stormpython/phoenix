@@ -6,7 +6,6 @@ define(function (require) {
     var y = function (d) { return d.y; };
     var width = 10;
     var height = 10;
-
     var cssClass = 'rect';
     var fillStyle = 'blue';
     var lineWidth = 3;
@@ -36,19 +35,15 @@ define(function (require) {
         context.fill();
 
         data.forEach(function (d, i) {
-          d.fillStyle = getValue(d, i, fillStyle);
-          d.strokeStyle = getValue(d, i, strokeStyle);
-          d.globalAlpha = getValue(d, i, globalAlpha);
-          d.lineWidth = getValue(d, i, lineWidth);
-          d.width = getValue(d, i, width);
-          d.height = getValue(d, i, height);
+          var w = getValue(d, i, width);
+          var h = getValue(d, i, height);
 
           context.beginPath();
-          context.fillStyle = d.fillStyle;
-          context.strokeStyle = d.strokeStyle;
-          context.lineWidth = d.lineWidth;
-          context.globalAlpha = d.globalAlpha;
-          context.rect(x.call(null, d, i), y.call(null, d, i), d.width, d.height);
+          context.fillStyle = getValue(d, i, fillStyle);
+          context.strokeStyle = getValue(d, i, strokeStyle);
+          context.lineWidth = getValue(d, i, lineWidth);
+          context.globalAlpha = getValue(d, i, globalAlpha);
+          context.rect(x.call(null, d, i), y.call(null, d, i), w, h);
           context.fill();
           context.closePath();
         });
