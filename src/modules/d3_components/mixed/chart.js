@@ -3,12 +3,12 @@ define(function (require) {
   var charts = require('src/modules/charts/index');
   var builder = require('src/modules/d3_components/utils/builder');
 
-  return function chart() {
+  return function graph() {
     var opts = {};
 
     function generator(selection) {
       selection.each(function (data) {
-        var dataOpts = data && data.options || {};
+        var dataOpts = (data && data.options) || {};
         var chartType = dataOpts.type || opts.type || 'series';
         var accessor = dataOpts.accessor || opts.accessor || 'data';
         var chart = charts[chartType]()
@@ -25,9 +25,9 @@ define(function (require) {
     }
 
     // Public API
-    generator.options = function (_) {
-      if (!arguments.length) return opts;
-      opts = typeof _ === 'object' && !Array.isArray(_) ? _ : opts;
+    generator.options = function (v) {
+      if (!arguments.length) { return opts; }
+      opts = typeof v === 'object' && !Array.isArray(v) ? v : opts;
       return generator;
     };
 

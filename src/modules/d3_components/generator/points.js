@@ -2,7 +2,12 @@ define(function (require) {
   var d3 = require('d3');
   var layout = require('src/modules/d3_components/layout/points');
   var circle = require('src/modules/d3_components/generator/element/svg/circle');
+  var attrs = require('src/modules/d3_components/utils/attrs');
 
+  /**
+   * [points description]
+   * @return {[type]} [description]
+   */
   return function points() {
     var scatterLayout = layout();
     var circles = circle();
@@ -19,27 +24,9 @@ define(function (require) {
     }
 
     // Public API
-    generator.x = scatterLayout.x;
+    generator.layout = attrs(scatterLayout, generator);
 
-    generator.y = scatterLayout.y;
-
-    generator.radius = scatterLayout.radius;
-
-    generator.xScale = scatterLayout.xScale;
-
-    generator.yScale = scatterLayout.yScale;
-
-    generator.class = circles.class;
-
-    generator.fill = circles.fill;
-
-    generator.fillOpacity = circles.fillOpacity;
-
-    generator.stroke = circles.stroke;
-
-    generator.strokeWidth = circles.strokeWidth;
-
-    generator.strokeOpacity = circles.strokeOpacity;
+    generator.attr = attrs(circles, generator);
 
     return generator;
   };

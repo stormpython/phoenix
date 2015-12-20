@@ -4,7 +4,7 @@ define(function (require) {
   var canvasRect = require('src/modules/d3_components/generator/element/canvas/rect');
   var axis = require('src/modules/d3_components/generator/axis/axis');
   var events = require('src/modules/d3_components/control/events');
-  var valuator = require('src/modules/d3_components/helpers/valuator');
+  var valuator = require('src/modules/d3_components/utils/valuator');
 
   return function heatmap() {
     var accessor = function (d) { return d; };

@@ -1,24 +1,23 @@
 define(function (require) {
   var d3 = require('d3');
-  var mixed = require('src/modules/d3xcomponents/mixed/chart');
-  var layout = require('src/modules/d3xcomponents/generator/layout');
-  var control = require('src/modules/d3xcomponents/control/events');
+  var mixed = require('src/modules/d3_components/mixed/chart');
+  var layout = require('src/modules/d3_components/generator/layout');
+  var control = require('src/modules/d3_components/control/events');
 
   /**
    * [phx description]
    * @param  {[type]} $el [description]
    * @return {[type]}     [description]
    */
-  return function phx($el) {
-    var wrapper = {};
+  return function phx() {
     var chart = mixed();
     var base = layout();
     var events = control();
-    var el = $el ? wrapper.element($el) : undefined;
+    var el;
     var selection;
     var datum = [];
     var opts = {};
-    var listeners = {};
+    var wrapper = {};
 
     function evaluate() {
       if (!selection || selection.empty()) {
@@ -46,16 +45,21 @@ define(function (require) {
       return arr;
     }
 
+    function isArrayOfObjects(arr) {
+      return arr.every(function (obj) {
+        return obj instanceof Object;
+      });
+    }
+
     // Prepare phx function for garbage collection
-    function destroy() {
-      chart = null;
-      base = null;
-      events = null;
-      el = null;
-      selection = null;
+    function reset() {
+      chart = mixed();
+      base = layout();
+      events = control();
+      el = undefined;
+      selection = undefined;
       datum = [];
       opts = {};
-      listeners = {};
     }
 
     // Public API
@@ -70,6 +74,7 @@ define(function (require) {
     wrapper.element = function (v) {
       if (!arguments.length) { return el; }
 
+      // TODO: Figure out a way to throw an error is $('cssSelector') is passed
       if (!(v instanceof HTMLElement) && !(v instanceof String) &&
           !(v instanceof d3.selection) && d3.select(v).empty()) {
         throw new Error('phx.element expects a valid reference to a DOM element.');
@@ -90,19 +95,13 @@ define(function (require) {
      * @returns {*}
      */
     wrapper.data = function (v) {
+      v = (!Array.isArray(v)) ? [v] : v;
+
       if (!arguments.length) { return datum; }
 
-      if (!(v instanceof Object)) {
-        throw new Error('phx.data expects an object or array');
+      if (!isArrayOfObjects(v)) {
+        throw new Error('phx.data expects an object or an array of objects');
       }
-
-      // Allow for single chart objects to be passed in directly.
-      v = (!Array.isArray(v)) ? [v] : v;
-      v.every(function (obj) {
-        if (!(obj instanceof Object)) {
-          throw new Error('phx.data expects an array of objects');
-        }
-      });
 
       datum = v;
       if (selection) { selection.datum(datum); } // Bind data
@@ -151,8 +150,8 @@ define(function (require) {
     /**
      * Draws the chart(s).
      *
-     * @param width {Function|Number} - Specifies width of DOM element
-     * @param height {Function|Number} - Specifies height of DOM element
+     * @param width {Number} - Specifies width of DOM element
+     * @param height {Number} - Specifies height of DOM element
      * @returns {wrapper}
      */
     wrapper.draw = function (width, height) {
@@ -160,20 +159,22 @@ define(function (require) {
 
       evaluate();
       node = selection.node().parentNode;
-      size = validateSize([node.clientWidth, node.clientHeight]);
+      width = width || node.clientWidth;
+      height = height || node.clientHeight;
+      size = validateSize([width, height]);
 
-      base.layout(opts.layout || 'grid')
-        .columns(opts.numberOfColumns || 0)
-        .size(size);
+      base.layout({
+        type: opts.layout || 'grid',
+        columns: opts.numberOfColumns || 0,
+        size: size
+      });
 
-      chart.options(opts).listeners(listeners);
-
-      selection.attr('width', width || size[0])
-        .attr('height', height || size[1])
+      selection.attr('width', size[0])
+        .attr('height', size[1])
         .call(events) // Add event listeners to svg
         .call(base) // Create layout of g elements
         .selectAll('g.chart')
-        .call(chart); // Draw chart(s)
+        .call(chart.options(opts)); // Draw chart(s)
 
       return wrapper;
     };
@@ -206,10 +207,9 @@ define(function (require) {
      * @returns {wrapper}
      */
     wrapper.destroy = function () {
-      wrapper.removeAllListeners();
+      events.removeAllListeners();
       selection.remove();
-      selection.datum(null);
-      destroy();
+      reset();
       return wrapper;
     };
 
@@ -220,7 +220,10 @@ define(function (require) {
      * @param listener {Function} - Listener for specified event type
      * @returns {wrapper}
      */
-    wrapper.on = events.on;
+    wrapper.on = function (event, listener) {
+      events.on(event, listener);
+      return wrapper;
+    };
 
     /**
      * Removes event listeners from chart(s).
@@ -232,7 +235,10 @@ define(function (require) {
      * @param listener {Function} - Callback function for specified event type
      * @returns {wrapper}
      */
-    wrapper.off = events.off;
+    wrapper.off = function (event, listener) {
+      events.off(event, listener);
+      return wrapper;
+    };
 
     /**
      * Removes all event listeners from chart(s),
@@ -240,7 +246,10 @@ define(function (require) {
      *
      * @returns {wrapper}
      */
-    wrapper.removeAllListeners = events.removeAllListeners;
+    wrapper.removeAllListeners = function () {
+      events.removeAllListeners();
+      return wrapper;
+    };
 
     /**
      * Returns the listeners array for a specified event type.

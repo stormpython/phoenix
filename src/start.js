@@ -2,6 +2,6 @@
   if (typeof define === "function" && define.amd) {
     define([], factory);
   } else {
-    root.Phx = factory();
+    root.phx = factory();
   }
 }(this, function () {

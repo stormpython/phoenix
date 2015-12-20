@@ -1,7 +1,12 @@
 define(function (require) {
   var d3 = require('d3');
   var base = require('src/modules/d3_components/layout/base');
+  var attrs = require('src/modules/d3_components/utils/attrs');
 
+  /**
+   * [chartLayout description]
+   * @return {[type]} [description]
+   */
   return function chartLayout() {
     var layout = base();
 
@@ -19,12 +24,7 @@ define(function (require) {
     }
 
     // Public API
-
-    generator.type = layout.type;
-
-    generator.columns = layout.columns;
-
-    generator.size = layout.size;
+    generator.layout = attrs(layout, generator);
 
     return generator;
   };

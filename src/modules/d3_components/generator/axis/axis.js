@@ -1,9 +1,9 @@
 define(function (require) {
   var d3 = require('d3');
-  var builder = require('src/modules/d3vcomponents/helpers/builder');
-  var rotate = require('src/modules/d3vcomponents/generator/axis/rotate');
-  var scaleGenerator = require('src/modules/d3vcomponents/mixed/scale');
-  var isNumber = require('src/modules/d3vcomponents/helpers/isvnumber');
+  var builder = require('src/modules/d3_components/utils/builder');
+  var rotate = require('src/modules/d3_components/generator/axis/rotate');
+  var scaleGenerator = require('src/modules/d3_components/mixed/scale');
+  var isNumber = require('src/modules/d3_components/utils/is_number');
 
   return function axes() {
     var position = 'bottom';

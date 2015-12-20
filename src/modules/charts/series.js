@@ -1,8 +1,8 @@
 define(function (require) {
   var d3 = require('d3');
-  var builder = require('src/modules/d3_components/helpers/builder');
-  var valuator = require('src/modules/d3_components/helpers/valuator');
-  var stackOut = require('src/modules/d3_components/helpers/stack_neg_pos');
+  var builder = require('src/modules/d3_components/utils/builder');
+  var valuator = require('src/modules/d3_components/utils/valuator');
+  var stackOut = require('src/modules/d3_components/utils/stack_neg_pos');
   var clipPathGenerator = require('src/modules/d3_components/generator/clippath');
   var axisGenerator = require('src/modules/d3_components/generator/axis/axis');
   var brushControl = require('src/modules/d3_components/control/brush');

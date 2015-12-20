@@ -2,7 +2,7 @@ define(function (require) {
   var d3 = require('d3');
   var path = require('src/modules/d3_components/generator/element/svg/path');
   var textElement = require('src/modules/d3_components/generator/element/svg/text');
-  var valuator = require('src/modules/d3_components/helpers/valuator');
+  var valuator = require('src/modules/d3_components/utils/valuator');
 
   return function pieChart() {
     var accessor = function (d) { return d; };

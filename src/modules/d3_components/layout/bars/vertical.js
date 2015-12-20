@@ -1,6 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
-  var parseTime = require('src/modules/d3vcomponents/utils/timeparser');
+  var parseTime = require('src/modules/d3_components/utils/timeparser');
 
   return function vertical() {
     var x = function (d) { return d.x; };
@@ -11,7 +11,7 @@ define(function (require) {
     var ry = d3.functor(0);
     var group = false;
     var groupPadding = 0;
-    var timeInterval = null;
+    var timeInterval;
     var timePadding = 0.1;
     var groupScale = d3.scale.ordinal();
     var timeScale = d3.scale.ordinal();
@@ -39,7 +39,7 @@ define(function (require) {
     }
 
     function layout(data) {
-      var j = 0; // stack layer counter
+      var j = -1; // stack layer counter
       var groupRange;
       var timeNotation;
       var extent;
@@ -65,6 +65,7 @@ define(function (require) {
 
       // Do not mutate the original data, returns a new object
       return data.map(function (arr) {
+        j += 1; // increment thru stack layers
         return arr.map(function (d, i) {
           var obj = {
             coords: {
@@ -82,7 +83,6 @@ define(function (require) {
             return a;
           }
 
-          j += 1; // increment thru stack layers
           return Object.keys(d).reduce(reduce, obj);
         });
       });

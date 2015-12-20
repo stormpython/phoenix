@@ -1,8 +1,9 @@
 define(function (require) {
   var d3 = require('d3');
-  var vertical = require('src/modules/d3vcomponents/layout/bars/vertical');
-  var horizontal = require('src/modules/d3vcomponents/layout/bars/horizontal');
-  var rect = require('src/modules/d3vcomponents/generator/element/svg/rect');
+  var vertical = require('src/modules/d3_components/layout/bars/vertical');
+  var horizontal = require('src/modules/d3_components/layout/bars/horizontal');
+  var rect = require('src/modules/d3_components/generator/element/svg/rect');
+  var attrs = require('src/modules/d3_components/utils/attrs');
 
   return function bars() {
     var rects = rect();
@@ -29,35 +30,9 @@ define(function (require) {
       return generator;
     };
 
-    generator.x = layout.x;
+    generator.layout = attrs(layout, generator);
 
-    generator.y = layout.y;
-
-    generator.xScale = layout.xScale;
-
-    generator.yScale = layout.yScale;
-
-    generator.rx = layout.rx;
-
-    generator.ry = layout.ry;
-
-    generator.group = layout.group;
-
-    generator.groupPadding = layout.groupPadding;
-
-    generator.timeInterval = layout.timeInterval;
-
-    generator.timePadding = layout.timePadding;
-
-    generator.class = rects.class;
-
-    generator.fill = rects.fill;
-
-    generator.fillOpacity = rects.fillOpacity;
-
-    generator.stroke = rects.stroke;
-
-    generator.strokeWidth = rects.strokeWidth;
+    generator.attr = attrs(rects, generator);
 
     return generator;
   };

@@ -7,7 +7,7 @@ define(function (require) {
     var y = 0;
     var width = 0;
     var height = 0;
-    var id;
+    var id = uniqueID();
 
     function uniqueID() {
       var randomNumber = Math.floor(Math.random() * 100);
@@ -21,7 +21,7 @@ define(function (require) {
 
         g.exit().remove();
         g.enter().append('clipPath');
-        g.attr('id', id || uniqueID())
+        g.attr('id', id)
           .attr('transform', transform);
 
         var rect = g.selectAll('rect.clip-path-rect')

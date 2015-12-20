@@ -2,7 +2,12 @@ define(function (require) {
   var d3 = require('d3');
   var layout = require('src/modules/d3_components/layout/path');
   var pathGenerator = require('src/modules/d3_components/generator/element/svg/path');
+  var attrs = require('src/modules/d3_components/utils/attrs');
 
+  /**
+   * [path description]
+   * @return {[type]} [description]
+   */
   return function path() {
     var pathLayout = layout();
     var paths = pathGenerator();
@@ -19,39 +24,9 @@ define(function (require) {
     }
 
     // Public API
-    generator.x = pathLayout.x;
+    generator.layout = attrs(pathLayout, generator);
 
-    generator.y = pathLayout.y;
-
-    generator.label = pathLayout.label;
-
-    generator.type = pathLayout.type;
-
-    generator.xScale = pathLayout.xScale;
-
-    generator.yScale = pathLayout.yScale;
-
-    generator.offset = pathLayout.offset;
-
-    generator.interpolate = pathLayout.interpolate;
-
-    generator.tension = pathLayout.tension;
-
-    generator.defined = pathLayout.defined;
-
-    generator.class = pathGenerator.class;
-
-    generator.transform = pathGenerator.transform;
-
-    generator.fill = pathGenerator.fill;
-
-    generator.fillOpacity = pathGenerator.fillOpacity;
-
-    generator.stroke = pathGenerator.stroke;
-
-    generator.strokeWidth = pathGenerator.strokeWidth;
-
-    generator.strokeOpacity = pathGenerator.strokeOpacity;
+    generator.attr = attrs(paths, generator);
 
     return generator;
   };

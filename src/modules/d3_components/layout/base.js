@@ -1,6 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
-  var isNumber = require('src/modules/d3vcomponents/utils/isvnumber');
+  var isNumber = require('src/modules/d3_components/utils/is_number');
 
   return function base() {
     var type = 'rows'; // available types: 'rows', 'columns', 'grid'
