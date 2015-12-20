@@ -3,7 +3,6 @@ define(function (require) {
   var mixed = require('src/modules/d3xcomponents/mixed/chart');
   var layout = require('src/modules/d3xcomponents/generator/layout');
   var control = require('src/modules/d3xcomponents/control/events');
-  var validateSize = require('src/modules/utils/validatexsize');
 
   /**
    * [phx description]
@@ -33,6 +32,18 @@ define(function (require) {
       if (!opts) {
         throw new Error('No options given');
       }
+    }
+
+    function validateSize(arr) {
+      var width = arr[0];
+      var height = arr[1];
+
+      if (width <= 0 || height <= 0) {
+        throw new Error('Unable to render chart(s), the parent DOM element has no' +
+          'width ' + width + ' and/or height ' + height);
+      }
+
+      return arr;
     }
 
     // Prepare phx function for garbage collection
