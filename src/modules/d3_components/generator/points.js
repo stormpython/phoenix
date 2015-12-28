@@ -24,9 +24,7 @@ define(function (require) {
     }
 
     // Public API
-    generator.layout = attrs(scatterLayout, generator);
-
-    generator.attr = attrs(circles, generator);
+    generator.attr = attrs(generator)(scatterLayout, circles);
 
     return generator;
   };

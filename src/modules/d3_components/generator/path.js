@@ -24,9 +24,7 @@ define(function (require) {
     }
 
     // Public API
-    generator.layout = attrs(pathLayout, generator);
-
-    generator.attr = attrs(paths, generator);
+    generator.attr = attrs(generator)(pathLayout, paths);
 
     return generator;
   };

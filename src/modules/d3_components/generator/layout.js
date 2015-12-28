@@ -24,7 +24,7 @@ define(function (require) {
     }
 
     // Public API
-    generator.layout = attrs(layout, generator);
+    generator.attr = attrs(generator)(layout);
 
     return generator;
   };

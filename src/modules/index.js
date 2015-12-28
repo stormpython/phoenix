@@ -1,8 +1,13 @@
 define(function (require) {
   var d3 = require('d3');
+  var _ = require('lodash');
   var mixed = require('src/modules/d3_components/mixed/chart');
   var layout = require('src/modules/d3_components/generator/layout');
   var control = require('src/modules/d3_components/control/events');
+  var fail = require('src/modules/d3_components/utils/fail');
+  var isArrayOfObjects = require('src/modules/d3_components/utils/isArrayOfObjects');
+  var hasSize = require('src/modules/d3_components/utils/hasSize');
+  var allHasSize = require('src/modules/d3_components/utils/allHasSize');
 
   /**
    * [phx description]
@@ -19,39 +24,43 @@ define(function (require) {
     var opts = {};
     var wrapper = {};
 
-    function evaluate() {
+    function isSelection(selection) {
       if (!selection || selection.empty()) {
-        throw new Error('A valid reference to a DOM element is required');
+        warn('A valid reference to a DOM element is required');
+        return false;
       }
 
-      if ((!datum && !datum.length) || !selection.datum()) {
-        throw new Error('No data provided');
+      if (!hasSize(selection.datum())) {
+        warn('No data provided');
+        return false;
       }
 
-      if (!opts) {
-        throw new Error('No options given');
+      return true;
+    }
+
+    function getSize(selection, width, height) {
+      var node = selection.node().parentNode;
+      var size = [
+        width || node.clientWidth,
+        height || node.clientHeight
+      ];
+
+      if (allHasSize(size)) {
+        return size;
+      } else {
+        fail('Expects width, ' + width + ', and height, ' + height +
+         ', to be greater than zero.');
       }
     }
 
-    function validateSize(arr) {
-      var width = arr[0];
-      var height = arr[1];
-
-      if (width <= 0 || height <= 0) {
-        throw new Error('Unable to render chart(s), the parent DOM element has no' +
-          'width ' + width + ' and/or height ' + height);
+    function getSelectionSize(selection, width, height) {
+      if (isSelection(selection)) {
+        return getSize(selection, width, height);
+      } else {
+        fail('An invalid selection was provided');
       }
-
-      return arr;
     }
 
-    function isArrayOfObjects(arr) {
-      return arr.every(function (obj) {
-        return obj instanceof Object;
-      });
-    }
-
-    // Prepare phx function for garbage collection
     function reset() {
       chart = mixed();
       base = layout();
@@ -74,10 +83,8 @@ define(function (require) {
     wrapper.element = function (v) {
       if (!arguments.length) { return el; }
 
-      // TODO: Figure out a way to throw an error is $('cssSelector') is passed
-      if (!(v instanceof HTMLElement) && !(v instanceof String) &&
-          !(v instanceof d3.selection) && d3.select(v).empty()) {
-        throw new Error('phx.element expects a valid reference to a DOM element.');
+      if (!(v instanceof d3.selection) && d3.select(v).empty()) {
+        fail('phx.element expects a valid reference to a DOM element.');
       }
 
       el = v instanceof d3.selection ? v : d3.select(v);
@@ -88,19 +95,19 @@ define(function (require) {
     };
 
     /**
-     * Binds data to the d3 selection,
-     * or returns the bound data array.
+     * Binds chart objects to the d3 selection,
+     * or returns the bound chart objects array.
      *
      * @param v {Object | Array} - Single object or Array of objects
      * @returns {*}
      */
-    wrapper.data = function (v) {
-      v = (!Array.isArray(v)) ? [v] : v;
-
+    wrapper.chart = function (v) {
       if (!arguments.length) { return datum; }
 
+      v = (!_.isArray(v)) ? [v] : v;
+
       if (!isArrayOfObjects(v)) {
-        throw new Error('phx.data expects an object or an array of objects');
+        fail('phx.data expects an object or an array of objects');
       }
 
       datum = v;
@@ -117,8 +124,8 @@ define(function (require) {
     wrapper.options = function (v) {
       if (!arguments.length) { return opts; }
 
-      if (!(v instanceof Object) || Array.isArray(v)) {
-        throw new Error('phx.options expects a valid object');
+      if (!_.isPlainObject(v)) {
+        fail('phx.options expects a plain object');
       }
 
       opts = v;
@@ -155,15 +162,10 @@ define(function (require) {
      * @returns {wrapper}
      */
     wrapper.draw = function (width, height) {
-      var node, size;
+      var size = getSelectionSize(selection, width, height);
 
-      evaluate();
-      node = selection.node().parentNode;
-      width = width || node.clientWidth;
-      height = height || node.clientHeight;
-      size = validateSize([width, height]);
-
-      base.layout({
+      // Defines the layout
+      base.attr({
         type: opts.layout || 'grid',
         columns: opts.numberOfColumns || 0,
         size: size

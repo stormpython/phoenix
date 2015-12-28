@@ -30,9 +30,7 @@ define(function (require) {
       return generator;
     };
 
-    generator.layout = attrs(layout, generator);
-
-    generator.attr = attrs(rects, generator);
+    generator.attr = attrs(generator)(layout, rects);
 
     return generator;
   };
