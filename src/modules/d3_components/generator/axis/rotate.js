@@ -1,5 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
+  var _ = require('lodash');
   var truncate = require('src/modules/d3_components/generator/axis/truncate');
 
   return function rotate() {
@@ -48,7 +49,7 @@ define(function (require) {
      */
     component.axisLength = function (v) {
       if (!arguments.length) { return axisLength; }
-      axisLength = typeof v === 'number' ? v : axisLength;
+      axisLength = _.isNumber(v) ? v : axisLength;
       return component;
     };
 
@@ -59,7 +60,7 @@ define(function (require) {
      */
     component.measure = function (v) {
       if (!arguments.length) { return measure; }
-      measure = typeof v === 'string' ? v : measure;
+      measure = _.isString(v) ? v : measure;
       return component;
     };
 
@@ -70,7 +71,7 @@ define(function (require) {
      */
     component.labelPadding = function (v) {
       if (!arguments.length) { return labelPadding; }
-      labelPadding = typeof v === 'number' ? v : labelPadding;
+      labelPadding = _.isNumber(v) ? v : labelPadding;
       return component;
     };
 
@@ -81,7 +82,7 @@ define(function (require) {
      */
     component.truncateLength = function (v) {
       if (!arguments.length) { return truncateLength; }
-      truncateLength = typeof v === 'number' ? v : truncateLength;
+      truncateLength = _.isNumber(v) ? v : truncateLength;
       return component;
     };
 
@@ -92,12 +93,12 @@ define(function (require) {
      */
     component.text = function (v) {
       if (!arguments.length) { return text; }
-      text.transform = v.transform === undefined ? text.transform : v.transform;
-      text.x = v.x === undefined ? text.x : v.x;
-      text.y = v.y === undefined ? text.y : v.y;
-      text.dx = v.dx === undefined ? text.dx : v.dx;
-      text.dy = v.dy === undefined ? text.dy : v.dy;
-      text.anchor = v.anchor === undefined ? text.anchor : v.anchor;
+      text.transform = _.isUndefined(v.transform) ? text.transform : v.transform;
+      text.x = _.isUndefined(v.x) ? text.x : v.x;
+      text.y = _.isUndefined(v.y) ? text.y : v.y;
+      text.dx = _.isUndefined(v.dx) ? text.dx : v.dx;
+      text.dy = _.isUndefined(v.dy) ? text.dy : v.dy;
+      text.anchor = _.isUndefined(v.anchor) ? text.anchor : v.anchor;
       return component;
     };
 

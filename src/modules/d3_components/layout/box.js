@@ -1,5 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
+  var _ = require('lodash');
   var valuator = require('src/modules/d3_components/utils/valuator');
 
   return function box() {
@@ -9,7 +10,7 @@ define(function (require) {
 
     function layout(data) {
       // Do not mutate the original data, return a new object
-      return data.map(function (d, i) {
+      return _.map(data, function (d, i) {
         var numbers = accessor.call(this, values.call(this, d, i));
         var obj = {
           coords: {

@@ -1,5 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
+  var _ = require('lodash');
   var parseTime = require('src/modules/d3_components/utils/timeparser');
 
   return function vertical() {
@@ -64,9 +65,9 @@ define(function (require) {
         .rangeRoundBands(groupRange, groupPadding, 0);
 
       // Do not mutate the original data, returns a new object
-      return data.map(function (arr) {
+      return _.map(data, function (arr) {
         j += 1; // increment thru stack layers
-        return arr.map(function (d, i) {
+        return _.map(arr, function (d, i) {
           var obj = {
             coords: {
               x: X.call(this, d, i, j),
@@ -103,13 +104,13 @@ define(function (require) {
 
     layout.xScale = function (v) {
       if (!arguments.length) { return xScale; }
-      xScale = typeof v === 'function' ? v : xScale;
+      xScale = _.isFunction(v) ? v : xScale;
       return layout;
     };
 
     layout.yScale = function (v) {
       if (!arguments.length) { return yScale; }
-      yScale = typeof v === 'function' ? v : yScale;
+      yScale = _.isFunction(v) ? v : yScale;
       return layout;
     };
 
@@ -127,25 +128,25 @@ define(function (require) {
 
     layout.group = function (v) {
       if (!arguments.length) { return group; }
-      group = typeof v === 'boolean' ? v : group;
+      group = _.isBoolean(v) ? v : group;
       return layout;
     };
 
     layout.groupPadding = function (v) {
       if (!arguments.length) { return groupPadding; }
-      groupPadding = typeof v === 'number' ? v : groupPadding;
+      groupPadding = _.isNumber(v) ? v : groupPadding;
       return layout;
     };
 
     layout.timeInterval = function (v) {
       if (!arguments.length) { return timeInterval; }
-      timeInterval = typeof v === 'string' ? v : timeInterval;
+      timeInterval = _.isString(v) ? v : timeInterval;
       return layout;
     };
 
     layout.timePadding = function (v) {
       if (!arguments.length) { return timePadding; }
-      timePadding = typeof v === 'number' ? v : timePadding;
+      timePadding = _.isNumber(v) ? v : timePadding;
       return layout;
     };
 

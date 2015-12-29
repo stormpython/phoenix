@@ -1,5 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
+  var _ = require('lodash');
 
   return function path() {
     var x = function (d) { return d.x; };
@@ -11,10 +12,10 @@ define(function (require) {
     var yScale = d3.scale.linear();
     var interpolate = 'linear';
     var tension = 0.7;
-    var defined = function (d) { return d.y !== null; };
+    var defined = function (d) { return !_.isNull(d.y); };
 
     function X(d, i) {
-      if (typeof xScale.rangeRoundBands === 'function') {
+      if (_.isFunction(xScale.rangeRoundBands)) {
         return xScale(x.call(this, d, i)) + xScale.rangeBand() / 2;
       }
       return xScale(x.call(this, d, i));
@@ -49,14 +50,13 @@ define(function (require) {
       }
 
       // Do not mutate the original data, return a new object
-      return data
-        .map(function (d, i) {
-          return {
-            d: pathFunction(d),
-            label: label.call(this, d[0], i),
-            values: d
-          };
-        });
+      return _.map(data, function (d, i) {
+        return {
+          d: pathFunction(d),
+          label: label.call(this, d[0], i),
+          values: d
+        };
+      });
     }
 
     // Public API
@@ -80,28 +80,27 @@ define(function (require) {
 
     layout.type = function (v) {
       var opts = ['area', 'line'];
-      var isValid = opts.indexOf(v) !== -1;
 
       if (!arguments.length) { return type; }
-      type = isValid ? v : type;
+      type = _.includes(opts, v) ? v : type;
       return layout;
     };
 
     layout.xScale = function (v) {
       if (!arguments.length) { return xScale; }
-      xScale = typeof v === 'function' ? v : xScale;
+      xScale = _.isFunction(v) ? v : xScale;
       return layout;
     };
 
     layout.yScale = function (v) {
       if (!arguments.length) { return yScale; }
-      yScale = typeof v === 'function' ? v : yScale;
+      yScale = _.isFunction(v) ? v : yScale;
       return layout;
     };
 
     layout.offset = function (v) {
       if (!arguments.length) { return offset; }
-      offset = typeof v === 'string' ? v : offset;
+      offset = _.isString(v) ? v : offset;
       return layout;
     };
 

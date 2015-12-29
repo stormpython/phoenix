@@ -1,13 +1,13 @@
 define(function (require) {
   var d3 = require('d3');
-  var color = require('src/modules/d3_components/utils/color');
+  var colorScale = require('src/modules/d3_components/utils/colorScale');
 
   return function path() {
     var value = function (d) { return d.d; };
     var cssClass = 'path';
     var transform = 'translate(0,0)';
     var fill = 'none';
-    var stroke = color();
+    var stroke = colorScale();
     var strokeWidth = 1;
     var fillOpacity = 1;
     var strokeOpacity;

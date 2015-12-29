@@ -1,13 +1,24 @@
 define(function (require) {
   var builder = require('src/modules/d3_components/utils/builder');
+  var _ = require('lodash');
 
+  /**
+   * [attrs description]
+   * @param  {[type]} generator [description]
+   * @return {[type]}           [description]
+   */
   return function attrs(generator) {
+    /**
+     * [description]
+     * @param {[Array]} arguments [array of functions]
+     * @return {[Function]} [function that accepts an attr and value to set on a closure function]
+     */
     return function () {
-      var funcs = Array.prototype.slice(arguments);
+      var funcs = _.toArray(arguments);
 
       function filter(arr, attr) {
-        return arr.filter(function (func) {
-          return func[attr] instanceof Function;
+        return _.filter(arr, function (func) {
+          return _.isFunction(func[attr]);
         });
       }
 
@@ -16,24 +27,30 @@ define(function (require) {
 
         if (arr.length === 1) { return arr[0][attr](); }
 
-        return arr.map(function (func) {
+        return _.map(arr, function (func) {
           return func[attr]();
         });
       }
 
+      /**
+       * [attrs description]
+       * @param  {[type]} attr  [description]
+       * @param  {[type]} value [description]
+       * @return {[type]}       [description]
+       */
       return function (attr, value) {
-        if (!value && attr instanceof String) {
-          return getValue(filter(funcs, attr), attr);
-        }
+        if (_.isString(attr)) {
+          if (!value) {
+            return getValue(filter(funcs, attr), attr);
+          }
 
-        if (value && attr instanceof String) {
-          filter(funcs, attr).forEach(function (func) {
+          _.forEach(filter(funcs, attr), function (func) {
             func[attr](value);
           });
         }
 
-        if (!value && attr instanceof Object) {
-          funcs.forEach(function (func) {
+        if (!value && _.isPlainObject(attr)) {
+          _.forEach(funcs, function (func) {
             builder(attr, func);
           });
         }

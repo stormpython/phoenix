@@ -1,5 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
+  var _ = require('lodash');
 
   // Creates a brush control and binds it to an <svg></svg>.
   return function brushControl() {
@@ -18,23 +19,27 @@ define(function (require) {
     var brushEndCallback = [];
 
     function brushStart(d, i) {
-      brushStartCallback.forEach(function (listener) {
+      _.forEach(brushStartCallback, function (listener) {
         listener.call(null, d, i);
       });
     }
 
     function brushF(d, i) {
-      brushCallback.forEach(function (listener) {
+      _.forEach(brushCallback, function (listener) {
         listener.call(null, d, i);
       });
     }
 
     function brushEnd(d, i) {
-      brushEndCallback.forEach(function (listener) {
+      _.forEach(brushEndCallback, function (listener) {
         listener.call(null, d, i);
       });
 
       d3.selectAll('g.brush').call(brush.clear()); // Clear brush
+    }
+
+    function isArrayOrNull(v) {
+      return _.isArray(v) || _.isNull(v);
     }
 
     function control(selection) {
@@ -79,10 +84,10 @@ define(function (require) {
      */
     control.margin = function (v) {
       if (!arguments.length) { return margin; }
-      margin.top = v.top === undefined ? margin.top : v.top;
-      margin.right = v.right === undefined ? margin.right : v.right;
-      margin.bottom = v.bottom === undefined ? margin.bottom : v.bottom;
-      margin.left = v.left === undefined ? margin.left : v.left;
+      margin.top = _.isUndefined(v.top) ? margin.top : v.top;
+      margin.right = _.isUndefined(v.right) ? margin.right : v.right;
+      margin.bottom = _.isUndefined(v.bottom) ? margin.bottom : v.bottom;
+      margin.left = _.isUndefined(v.left) ? margin.left : v.left;
       return control;
     };
 
@@ -181,22 +186,32 @@ define(function (require) {
      */
     control.brushstart = function (v) {
       if (!arguments.length) { return brushStartCallback; }
-      if (typeof v === 'function') { brushStartCallback.push(v); }
-      if (Array.isArray(v) || v === null) { brushStartCallback = v; }
+      if (_.isFunction(v)) { brushStartCallback.push(v); }
+      if (isArrayOrNull(v)) { brushStartCallback = v; }
       return control;
     };
 
+    /**
+     * [brush description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
     control.brush = function (v) {
       if (!arguments.length) { return brushCallback; }
-      if (typeof v === 'function') { brushCallback.push(v); }
-      if (Array.isArray(v) || v === null) { brushCallback = v; }
+      if (_.isFunction(v)) { brushCallback.push(v); }
+      if (isArrayOrNull(v)) { brushCallback = v; }
       return control;
     };
 
+    /**
+     * [brushend description]
+     * @param  {[type]} v [description]
+     * @return {[type]}   [description]
+     */
     control.brushend = function (v) {
       if (!arguments.length) { return brushEndCallback; }
-      if (typeof v === 'function') { brushEndCallback.push(v); }
-      if (Array.isArray(v) || v === null) { brushEndCallback = v; }
+      if (_.isFunction(v)) { brushEndCallback.push(v); }
+      if (isArrayOrNull(v)) { brushEndCallback = v; }
       return control;
     };
 

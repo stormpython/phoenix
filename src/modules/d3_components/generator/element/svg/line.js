@@ -1,6 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
-  var color = require('src/modules/d3_components/utils/color');
+  var colorScale = require('src/modules/d3_components/utils/colorScale');
 
   return function line() {
     var x1 = function (d) { return d.coords.x1 || 0; };
@@ -12,7 +12,7 @@ define(function (require) {
     var strokeWidth = 2;
     var strokeOpacity = 1;
     var fillOpacity;
-    var colorFill = color();
+    var colorFill = colorScale();
 
     function element(selection) {
       selection.each(function (data) {

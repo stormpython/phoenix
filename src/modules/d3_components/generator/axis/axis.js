@@ -1,9 +1,9 @@
 define(function (require) {
   var d3 = require('d3');
+  var _ = require('lodash');
   var builder = require('src/modules/d3_components/utils/builder');
   var rotate = require('src/modules/d3_components/generator/axis/rotate');
   var scaleGenerator = require('src/modules/d3_components/mixed/scale');
-  var isNumber = require('src/modules/d3_components/utils/is_number');
 
   return function axes() {
     var position = 'bottom';
@@ -101,77 +101,121 @@ define(function (require) {
      * @param  {[type]} v [description]
      * @return {[type]}   [description]
      */
-    generator.type = scale.type;
+    generator.type = function (v) {
+      if (!arguments.length) { return scale.type(); }
+      scale.type(v);
+      return generator;
+    };
 
     /**
      * [accessor description]
      * @param  {[type]} v [description]
      * @return {[type]}   [description]
      */
-    generator.accessor = scale.accessor;
+    generator.accessor = function (v) {
+      if (!arguments.length) { return scale.accessor(); }
+      scale.accessor(v);
+      return generator;
+    };
 
     /**
      * [categories description]
      * @param  {[type]} v [description]
      * @return {[type]}   [description]
      */
-    generator.categories = scale.categories;
+    generator.categories = function (v) {
+      if (!arguments.length) { return scale.categories(); }
+      scale.categories(v);
+      return generator;
+    };
 
     /**
      * [sort description]
      * @param  {[type]} v [description]
      * @return {[type]}   [description]
      */
-    generator.sort = scale.sort;
+    generator.sort = function (v) {
+      if (!arguments.length) { return scale.sort(); }
+      scale.sort(v);
+      return generator;
+    };
 
     /**
      * [extent description]
      * @param  {[type]} v [description]
      * @return {[type]}   [description]
      */
-    generator.extent = scale.extent;
+    generator.extent = function (v) {
+      if (!arguments.length) { return scale.extent(); }
+      scale.extent(v);
+      return generator;
+    };
 
     /**
      * [min description]
      * @param  {[type]} v [description]
      * @return {[type]}   [description]
      */
-    generator.min = scale.min;
+    generator.min = function (v) {
+      if (!arguments.length) { return scale.min(); }
+      scale.min(v);
+      return generator;
+    };
 
     /**
      * [max description]
      * @param  {[type]} v [description]
      * @return {[type]}   [description]
      */
-    generator.max = scale.max;
+    generator.max = function (v) {
+      if (!arguments.length) { return scale.max(); }
+      scale.max(v);
+      return generator;
+    };
 
     /**
      * [padding description]
      * @param  {[type]} v [description]
      * @return {[type]}   [description]
      */
-    generator.padding = scale.padding;
+    generator.padding = function (v) {
+      if (!arguments.length) { return scale.padding(); }
+      scale.padding(v);
+      return generator;
+    };
 
     /**
      * [clamp description]
      * @param  {[type]} v [description]
      * @return {[type]}   [description]
      */
-    generator.clamp = scale.clamp;
+    generator.clamp = function (v) {
+      if (!arguments.length) { return scale.clamp(); }
+      scale.clamp(v);
+      return generator;
+    };
 
     /**
      * [utc description]
      * @param  {[type]} v [description]
      * @return {[type]}   [description]
      */
-    generator.utc = scale.utc;
+    generator.utc = function (v) {
+      if (!arguments.length) { return scale.utc(); }
+      scale.utc(v);
+      return generator;
+    };
 
     /**
      * [timeInterval description]
      * @param  {[type]} v [description]
      * @return {[type]}   [description]
      */
-    generator.timeInterval = scale.timeInterval;
+    generator.timeInterval = function (v) {
+      if (!arguments.length) { return scale.timeInterval(); }
+      scale.timeInterval(v);
+      return generator;
+    };
 
     /**
      * [position description]
@@ -179,10 +223,12 @@ define(function (require) {
      * @return {[type]}   [description]
      */
     generator.position = function (v) {
-      var positions = ['bottom', 'left', 'right', 'top'];
-      var isValidPosition = positions.indexOf(v) !== -1;
+      var positions, isValidPosition;
 
       if (!arguments.length) { return position; }
+
+      positions = ['bottom', 'left', 'right', 'top'];
+      isValidPosition = _.includes(positions, v);
       position = isValidPosition ? v : position;
       return generator;
     };
@@ -194,7 +240,7 @@ define(function (require) {
      */
     generator.size = function (v) {
       if (!arguments.length) { return size; }
-      size = Array.isArray(v) && v.length === 2 && v.every(isNumber) ? v : size;
+      size = (_.isArray(v) && _.size(v) === 2 && _.all(v, _.isNumber)) ? v : size;
       return generator;
     };
 
@@ -222,7 +268,7 @@ define(function (require) {
      */
     generator.rotateLabels = function (v) {
       if (!arguments.length) { return rotateLabels; }
-      rotateLabels = typeof v === 'object' ? v : rotateLabels;
+      rotateLabels = _.isPlainObject(v) ? v : rotateLabels;
       return generator;
     };
 

@@ -1,5 +1,10 @@
 define(function (require) {
   var d3 = require('d3');
+  var _ = require('lodash');
+  var updateListeners = require('src/modules/d3_components/utils/updateListeners');
+  var filterListeners = require('src/modules/d3_components/utils/filterListeners');
+  var removeAllListeners = require('src/modules/d3_components/utils/removeAllListeners');
+  var sumListeners = require('src/modules/d3_components/utils/sumListeners');
 
   // Adds event listeners to DOM elements
   return function events() {
@@ -7,51 +12,11 @@ define(function (require) {
     var listeners = {};
     var svg;
 
-    function updateListeners(svg, listeners) {
-      d3.entries(listeners).forEach(function (d) {
-        if (svg) {
-          if (!d.value || !d.value.length) {
-            svg.on(d.key, null);
-          }
-
-          svg.on(d.key, function () {
-            d3.event.stopPropagation(); // => event.stopPropagation()
-
-            d.value.forEach(function (listener) {
-              listener.call(this, processor(d3.event));
-            });
-          });
-        }
-      });
-    }
-
     function control(selection) {
       selection.each(function () {
         svg = d3.select(this);
-        updateListeners(svg, listeners);
+        updateListeners(svg, listeners, processor);
       });
-    }
-
-    function filterListeners(event, listener) {
-      listeners[event] = listeners[event].filter(function (handler) {
-        return handler !== listener;
-      });
-    }
-
-    function removeAllListeners(svg, listeners) {
-      d3.entries(listeners).forEach(function (d) {
-        if (svg) { svg.on(d.key, null); }
-      });
-    }
-
-    function sumListeners(listeners) {
-      return Object
-        .keys(listeners).map(function (event) {
-          return listeners[event].length;
-        })
-        .reduce(function (a, b) {
-          return a + b;
-        }, 0);
     }
 
     // Public API
@@ -65,7 +30,7 @@ define(function (require) {
      */
     control.processor = function (v) {
       if (!arguments.length) { return processor; }
-      processor = typeof v === 'function' ? v : processor;
+      processor = _.isFunction(v) ? v : processor;
       return control;
     };
 
@@ -77,7 +42,7 @@ define(function (require) {
      * @returns {control}
      */
     control.on = function (event, listener) {
-      if (listener && typeof listener === 'function') {
+      if (listener && _.isFunction(listener)) {
         if (!listeners[event]) { listeners[event] = []; }
         listeners[event].push(listener);
 
@@ -104,10 +69,10 @@ define(function (require) {
         if (svg) { svg.on(event, null); }
       }
 
-      if (listener && typeof listener === 'function') {
-        filterListeners(event, listener);
+      if (listener && _.isFunction(listener)) {
+        filterListeners(event, listener, listeners);
 
-        if (svg) { updateListeners(svg, listeners); }
+        if (svg) { updateListeners(svg, listeners, processor); }
       }
       return control;
     };
@@ -143,7 +108,7 @@ define(function (require) {
      */
     control.listenerCount = function (event) {
       if (!arguments.length) { return sumListeners(listeners); }
-      return event && listeners[event] ? listeners[event].length : 0;
+      return event && listeners[event] ? _.size(listeners[event]) : 0;
     };
 
     /**
@@ -152,8 +117,8 @@ define(function (require) {
      * @returns {Array}
      */
     control.activeEvents = function () {
-      return Object.keys(listeners).filter(function (event) {
-        return listeners[event].length;
+      return _.filter(_.keys(listeners), function (key) {
+        return _.size(listeners[key]);
       });
     };
 

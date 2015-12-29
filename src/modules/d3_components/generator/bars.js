@@ -1,5 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
+  var _ = require('lodash');
   var vertical = require('src/modules/d3_components/layout/bars/vertical');
   var horizontal = require('src/modules/d3_components/layout/bars/horizontal');
   var rect = require('src/modules/d3_components/generator/element/svg/rect');
@@ -26,7 +27,7 @@ define(function (require) {
       var orientation = { vertical: vertical(), horizontal: horizontal() };
 
       if (!arguments.length) { return orientation; }
-      layout = typeof v === 'string' ? orientation[v] : layout;
+      layout = _.isString(v) ? orientation[v] : layout;
       return generator;
     };
 

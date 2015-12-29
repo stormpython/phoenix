@@ -1,6 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
-  var color = require('src/modules/d3_components/utils/color');
+  var colorScale = require('src/modules/d3_components/utils/colorScale');
 
   return function ellipse() {
     var cx = function (d) { return d.coords.cx; };
@@ -13,7 +13,7 @@ define(function (require) {
     var strokeWidth = 0;
     var fillOpacity = 1;
     var strokeOpacity;
-    var colorFill = color();
+    var colorFill = colorScale();
 
     function element(selection) {
       selection.each(function (data) {

@@ -1,6 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
-  var isNumber = require('src/modules/d3_components/utils/is_number');
+  var _ = require('lodash');
 
   return function base() {
     var type = 'rows'; // available types: 'rows', 'columns', 'grid'
@@ -44,8 +44,8 @@ define(function (require) {
       rowScale.domain([0, rows]).range([0, size[1]]);
       columnScale.domain([0, columns]).range([0, size[0]]);
 
-      d3.range(rows).forEach(function (row) {
-        d3.range(columns).forEach(function (col) {
+      _.forEach(d3.range(rows), function (row) {
+        _.forEach(d3.range(columns), function (col) {
           var datum = data[cell];
           var obj = {
             dx: columnScale(col),
@@ -73,19 +73,19 @@ define(function (require) {
     // Public API
     layout.type = function (v) {
       if (!arguments.length) { return type; }
-      type = typeof v === 'string' ? v : type;
+      type = _.isString(v) ? v : type;
       return layout;
     };
 
     layout.columns = function (v) {
       if (!arguments.length) { return numOfCols; }
-      numOfCols = typeof v === 'number' ? v : numOfCols;
+      numOfCols = _.isNumber(v) ? v : numOfCols;
       return layout;
     };
 
     layout.size = function (v) {
       if (!arguments.length) { return size; }
-      size = Array.isArray(v) && v.length === 2 && v.every(isNumber) ? v : size;
+      size = (_.isArray(v) && _.size(v) === 2 && _.all(v, _.isNumber)) ? v : size;
       return layout;
     };
 

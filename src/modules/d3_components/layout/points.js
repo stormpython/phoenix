@@ -1,5 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
+  var _ = require('lodash');
 
   return function scatter() {
     var x = function (d) { return d.x; };
@@ -9,14 +10,14 @@ define(function (require) {
     var radius = d3.functor(5);
 
     function X(d, i) {
-      if (typeof xScale.rangeRoundBands === 'function') {
+      if (_.isFunction(xScale.rangeRoundBands)) {
         return xScale(x.call(this, d, i)) + xScale.rangeBand() / 2;
       }
       return xScale(x.call(this, d, i));
     }
 
     function Y(d, i) {
-      if (typeof yScale.rangeRoundBands === 'function') {
+      if (_.isFunction(yScale.rangeRoundBands)) {
         return yScale(x.call(this, d, i)) + yScale.rangeBand() / 2;
       }
       return yScale(y.call(this, d, i));
@@ -68,13 +69,13 @@ define(function (require) {
 
     layout.xScale = function (v) {
       if (!arguments.length) { return xScale; }
-      xScale = typeof v === 'function' ? v : xScale;
+      xScale = _.isFunction(v) ? v : xScale;
       return layout;
     };
 
     layout.yScale = function (v) {
       if (!arguments.length) { return yScale; }
-      yScale = typeof v === 'function' ? v : yScale;
+      yScale = _.isFunction(v) ? v : yScale;
       return layout;
     };
 

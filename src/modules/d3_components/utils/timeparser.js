@@ -1,9 +1,9 @@
 define(function () {
-  /**
-   * Function that returns the proper time string
-   * from its abbreviated form.
-   * Valid str === [0-9][time abbr], e.g. '20s'
-   */
+   /**
+    * [timeParser Returns the proper time string from its abbreviated form.]
+    * @param  {[String]} str [Abbreviated time string, [0-9][time abbr], e.g. '20s']
+    * @return {[String]}     [time notation, e.g. 'second']
+    */
   return function timeParser(str) {
     var timeNotation = {
       s: 'second',

@@ -1,5 +1,6 @@
 define(function (require) {
   var d3 = require('d3');
+  var _ = require('lodash');
 
   return function truncate() {
     var maxCharLength = 10;
@@ -26,7 +27,7 @@ define(function (require) {
      */
     component.maxCharLength = function (v) {
       if (!arguments.length) { return maxCharLength; }
-      maxCharLength = typeof v === 'number' ? v : maxCharLength;
+      maxCharLength = _.isNumber(v) ? v : maxCharLength;
       return component;
     };
 
