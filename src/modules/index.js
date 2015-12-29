@@ -13,11 +13,11 @@ define(function (require) {
    * @param  {[type]} $el [description]
    * @return {[type]}     [description]
    */
-  return function phx() {
+  return function phx($el) {
     var chart = mixed();
     var base = layout();
     var events = control();
-    var el;
+    var el = $el;
     var selection;
     var datum = [];
     var opts = {};
@@ -43,13 +43,15 @@ define(function (require) {
      * @returns {*}
      */
     wrapper.element = function (v) {
-      if (!arguments.length) { return el; }
+      if (!arguments.length) {
+        return (v instanceof d3.selection) ? el.node() : d3.select(el).node();
+      }
 
       if (!(v instanceof d3.selection) && d3.select(v).empty()) {
         fail('phx.element expects a valid reference to a DOM element.');
       }
 
-      el = v instanceof d3.selection ? v : d3.select(v);
+      el = (v instanceof d3.selection) ? v : d3.select(v);
       selection = el.append('svg').attr('class', 'parent');
 
       if (datum && datum.length) { wrapper.data(datum); } // Bind data
@@ -73,6 +75,7 @@ define(function (require) {
       }
 
       datum = v;
+      if (el && !selection) { wrapper.element(el); }
       if (selection) { selection.datum(datum); } // Bind data
       return wrapper;
     };
@@ -160,7 +163,7 @@ define(function (require) {
      * @returns {wrapper}
      */
     wrapper.remove = function () {
-      selection.selectAll('g.chart').remove();
+      selection.remove();
       return wrapper;
     };
 
@@ -172,7 +175,7 @@ define(function (require) {
      */
     wrapper.destroy = function () {
       events.removeAllListeners();
-      selection.remove();
+      wrapper.remove();
       reset();
       return wrapper;
     };
